@@ -4,6 +4,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 
 const sequelize = require('./database')
+const User = require('./models/userModel')
 
 const app = express()
 
