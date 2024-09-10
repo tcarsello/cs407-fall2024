@@ -6,8 +6,11 @@ const bodyParser = require('body-parser')
 const sequelize = require('./database')
 const User = require('./models/userModel')
 
+const userRoutes = require('./routes/userRoutes')
+
 const app = express()
 
+// Middleware
 app.use(express.json())
 app.use(bodyParser.json())
 app.use(cors())
@@ -15,6 +18,9 @@ app.use((req, res, next) => {
     console.log(req.path, req.method)
     next()
 })
+
+// API Routes
+app.use('/api/user', userRoutes)
 
 sequelize.authenticate()
     .then(() => {
