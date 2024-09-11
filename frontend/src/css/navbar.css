@@ -1,0 +1,14 @@
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid lightgrey;
+    padding: 10px 20px;
+}
+
+.top-nav-brand {
+    font-size: 32px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #0056b3;
+}

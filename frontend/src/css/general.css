@@ -1,0 +1,10 @@
+html, body, #root, .App {
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.page-container {
+    width: 100%;
+    height: 100%;   
+}
