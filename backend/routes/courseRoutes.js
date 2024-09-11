@@ -1,6 +1,8 @@
 const express = require('express')
 const requireAuth = require('../middleware/requireAuth')
-const { createCourse, getCourse, deleteCourse, updateCourse, getCourseInvites } = require('../controllers/courseController')
+const { createCourse, getCourse, deleteCourse, updateCourse,
+    getCourseInvites, joinCourse, leaveCourse,
+    removeUserFromCourse } = require('../controllers/courseController')
 const { createInvite } = require('../controllers/courseInviteController')
 
 const router = express.Router()
@@ -13,6 +15,9 @@ router.patch('/:courseId', requireAuth, updateCourse)
 
 // Actions
 router.post('/:courseId/invite', requireAuth, createInvite)
+router.post('/:courseId/join', requireAuth, joinCourse)
+router.post('/:courseId/leave', requireAuth, leaveCourse)
+router.post('/:courseId/remove', requireAuth, removeUserFromCourse)
 
 router.get('/:courseId/invites', requireAuth, getCourseInvites)
 

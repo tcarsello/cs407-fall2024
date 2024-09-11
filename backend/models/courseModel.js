@@ -3,7 +3,7 @@ const sequelize = require('../database')
 
 const User = require('./userModel')
 
-const Course = sequelize.define('Course', {
+const Course = sequelize.define('course', {
     courseId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -31,5 +31,8 @@ const Course = sequelize.define('Course', {
 })
 
 Course.belongsTo(User, { foreignKey: 'coordinatorId' })
+
+Course.belongsToMany(User, { through: 'course_members' })
+User.belongsToMany(Course, { through: 'course_members' })
 
 module.exports = Course

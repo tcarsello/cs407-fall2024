@@ -3,7 +3,7 @@ const sequelize = require('../database')
 
 const Course = require('./courseModel')
 
-const CourseInvite = sequelize.define('CourseInvite', {
+const CourseInvite = sequelize.define('course_invite', {
     courseId: {
         type: DataTypes.INTEGER,
         allowNull: false,

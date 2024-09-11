@@ -235,4 +235,32 @@ const getInvites = async (req, res) => {
     }
 }
 
-module.exports = { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword, getCoordinatingCourses, getInvites }
+const getJoinedCourses = async (req, res) => {
+    try {
+
+        const { userId } = req.params
+
+        const user = await User.findOne({ where: { userId } })
+        if (!user) throw "User does not exist"
+
+        const courses = await user.getCourses()
+
+        res.status(200).json({ courses })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+module.exports = {
+    createUser,
+    loginUser,
+    getUser,
+    deleteUser,
+    updateUser,
+    resetUserPassword,
+    getCoordinatingCourses,
+    getInvites,
+    getJoinedCourses
+}

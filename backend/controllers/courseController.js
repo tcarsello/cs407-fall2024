@@ -125,4 +125,113 @@ const getCourseInvites = async (req, res) => {
     }
 }
 
-module.exports = { createCourse, getCourse, deleteCourse, updateCourse, getCourseInvites }
+const joinCourse = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const invite = await CourseInvite.findOne({
+            where: {
+                courseId,
+                email: req.user.email
+            }
+        })
+        if (!invite) throw "Not invited to this course"
+
+        const course = await Course.findOne({
+            where: {
+                courseId
+            }
+        })
+
+        const user = await User.findOne({
+            where: {
+                userId: req.user.userId
+            }
+        })
+
+        if (!user) throw "User does not exist"
+        if (!course) throw "Course does not exist"
+
+        user.addCourse(course)
+
+        res.status(200).json({ message: 'Joined course' })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const leaveCourse = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const user = await User.findOne({
+            where: {
+                userId: req.user.userId
+            }
+        })
+        if (!user) throw "User not found"
+
+        const course = await Course.findOne({ where: { courseId } } )
+        if (!course) throw "Course not found"
+
+        user.removeCourse(course)
+
+        res.status(200).json({ message: "Left course" })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const removeUserFromCourse = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+        const { userId, email } = req.body
+
+        const course = await Course.findOne({
+            where: { courseId }
+        })
+        if (!course) throw "Course not found"
+        if (req.user.userId != course.coordinatorId) throw "Must be course coordinator"
+
+        let userQuery = {}
+        if (userId) userQuery.userId = userId
+        if (email) userQuery.email = email
+
+        const user = await User.findOne({
+            where: { ...userQuery }
+        })
+        if (!user) throw "User not found"
+
+        user.removeCourse(course)
+        await CourseInvite.destroy({
+            where: {
+                courseId,
+                email: user.email
+            }
+        })
+
+        res.status(200).json({ message: "User removed from course" })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+module.exports = {
+    createCourse,
+    getCourse,
+    deleteCourse,
+    updateCourse,
+    getCourseInvites,
+    joinCourse,
+    leaveCourse,
+    removeUserFromCourse
+}
