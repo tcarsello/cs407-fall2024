@@ -1,5 +1,6 @@
 const Course = require('../models/courseModel')
 const User = require('../models/userModel')
+const CourseInvite = require('../models/courseInviteModel')
 
 const createCourse = async (req, res) => {
     try {
@@ -96,4 +97,32 @@ const updateCourse = async (req, res) => {
     }
 }
 
-module.exports = { createCourse, getCourse, deleteCourse, updateCourse }
+const getCourseInvites = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const invites = await CourseInvite.findAll({
+            where: {
+                courseId: courseId
+            },
+            include: [
+                {
+                    model: Course,
+                    where: {
+                        coordinatorId: req.user.userId
+                    },
+                    attributes: []
+                }
+            ]
+        })
+
+        res.status(200).json({ invites })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+module.exports = { createCourse, getCourse, deleteCourse, updateCourse, getCourseInvites }

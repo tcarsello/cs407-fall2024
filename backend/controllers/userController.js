@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
+const sequelize = require('../database')
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
+const CourseInvite = require('../models/courseInviteModel')
 
 const { createJWT } = require('../utils')
 
@@ -200,9 +202,37 @@ const getCoordinatingCourses = async (req, res) => {
         res.status(200).json({ courses })
 
     } catch (err) {
-        console.log(err)
+        console.error(err)
         res.status(400).json({ error: err })
     }
 }
 
-module.exports = { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword, getCoordinatingCourses }
+const getInvites = async (req, res) => {
+    try {
+
+        const { userId } = req.params
+
+        if (userId != req.user.userId) throw "Wrong user"
+
+        const user = await User.findOne({
+            where: {
+                userId
+            }
+        })
+        if (!user) throw "User does not exist"
+
+        const invites = await CourseInvite.findAll({
+            where: {
+                email: user.email
+            }
+        })
+
+        res.status(200).json({ invites })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+module.exports = { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword, getCoordinatingCourses, getInvites }

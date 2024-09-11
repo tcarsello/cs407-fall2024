@@ -1,12 +1,19 @@
 const express = require('express')
 const requireAuth = require('../middleware/requireAuth')
-const { createCourse, getCourse, deleteCourse, updateCourse } = require('../controllers/courseController')
+const { createCourse, getCourse, deleteCourse, updateCourse, getCourseInvites } = require('../controllers/courseController')
+const { createInvite } = require('../controllers/courseInviteController')
 
 const router = express.Router()
 
+// CRUD
 router.post('/', requireAuth, createCourse)
 router.get('/:courseId', requireAuth, getCourse)
 router.delete('/:courseId', requireAuth, deleteCourse)
 router.patch('/:courseId', requireAuth, updateCourse)
+
+// Actions
+router.post('/:courseId/invite', requireAuth, createInvite)
+
+router.get('/:courseId/invites', requireAuth, getCourseInvites)
 
 module.exports = router

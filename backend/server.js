@@ -6,6 +6,7 @@ const bodyParser = require('body-parser')
 const sequelize = require('./database')
 const User = require('./models/userModel')
 const Course = require('./models/courseModel')
+const CourseInvite = require('./models/courseInviteModel')
 
 const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')

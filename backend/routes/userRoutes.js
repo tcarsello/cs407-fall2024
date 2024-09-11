@@ -1,6 +1,6 @@
 const express = require('express')
 const requireAuth = require('../middleware/requireAuth')
-const { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword, getCoordinatingCourses } = require('../controllers/userController')
+const { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword, getCoordinatingCourses, getInvites } = require('../controllers/userController')
 
 const router = express.Router()
 
@@ -14,6 +14,7 @@ router.delete('/:userId', requireAuth, deleteUser)
 router.post('/:userId/reset', requireAuth, resetUserPassword)
 router.post('/login', loginUser)
 
-router.get('/:userId/courses/coordinating', requireAuth, getCoordinatingCourses) // Get all courses user_id is coordinator of
+router.get('/:userId/courses/coordinating', requireAuth, getCoordinatingCourses) // Get all courses userId is coordinator of
+router.get('/:userId/invites', requireAuth, getInvites) // Get all invites send to userId's email
 
 module.exports = router
