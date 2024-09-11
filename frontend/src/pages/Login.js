@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import '../css/login.css'
+import '../css/general.css'
 
 const Login = () => {
 
@@ -8,6 +9,7 @@ const Login = () => {
         email: '',
         password: ''
     })
+    const [loginError, setLoginError] = useState()
 
     const [registerForm, setRegisterForm] = useState({
         email: '',
@@ -16,6 +18,7 @@ const Login = () => {
         password: '',
         confirmPassword: ''
     })
+    const [registerError, setRegisterError] = useState()
 
     const handleLoginChange = (e) => {
         const { name, value } = e.target
@@ -33,14 +36,57 @@ const Login = () => {
         })
     }
 
-    const handleLoginSubmit = (e) => {
+    const handleLoginSubmit = async (e) => {
         e.preventDefault()
+
         console.log(loginForm)
+        const response = await fetch(`/api/user/login`, {
+            method: 'POST',
+            body: JSON.stringify(loginForm),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        const json = await response.json()
+        if (!response.ok) {
+            setLoginError(json.error)
+            return
+        }
+
+        setLoginError('')
+
+        // TODO handle login
+        console.log('yur')
+
     }
 
-    const handleRegisterSubmit = (e) => {
+    const handleRegisterSubmit = async (e) => {
         e.preventDefault()
-        console.log(registerForm)
+
+        if (registerForm.password != registerForm.confirmPassword) {
+            setRegisterError('Passwords do not match!')
+            return
+        }
+
+        const response = await fetch(`/api/user/register`, {
+            method: 'POST',
+            body: JSON.stringify(registerForm),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        const json = await response.json()
+        if (!response.ok) {
+            setRegisterError(json.error)
+            return
+        }
+
+        setRegisterError('')
+        
+        // TODO: Handle register
+        
     }
 
     return (
@@ -66,6 +112,7 @@ const Login = () => {
                             required
                         />
                         <button type='submit'>Log In</button>
+                        {loginError ? <p className='form-error'>{loginError}</p> : null}
                     </form>
                 </div>
 
@@ -113,6 +160,7 @@ const Login = () => {
                             required
                         />
                         <button type='submit'>Register</button>
+                        {registerError ? <p className='form-error'>{registerError}</p> : null}
                     </form>
                 </div>
             </div>
