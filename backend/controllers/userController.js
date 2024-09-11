@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
 const User = require('../models/userModel')
+const Course = require('../models/courseModel')
 
 const { createJWT } = require('../utils')
 
@@ -132,7 +133,7 @@ const updateUser = async (req, res) => {
         const { userId } = req.params
         const { email, firstName, lastName, password } = req.body
 
-        if ( userId != req.user.userId) throw "Wrong user"
+        if (userId != req.user.userId) throw "Wrong user"
 
         let passwordHash = undefined
         if (password) {
@@ -182,4 +183,26 @@ const resetUserPassword = async (req, res) => {
     }
 }
 
-module.exports = { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword }
+const getCoordinatingCourses = async (req, res) => {
+    try {
+
+        const { userId } = req.params
+
+        if (userId != req.user.userId) throw "Wrong user"
+
+        const courses = await Course.findAll({
+            where: {
+                coordinatorId: req.user.userId
+            },
+            order: [['createdAt', 'DESC']]
+        })
+
+        res.status(200).json({ courses })
+
+    } catch (err) {
+        console.log(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+module.exports = { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword, getCoordinatingCourses }

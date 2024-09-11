@@ -5,8 +5,10 @@ const bodyParser = require('body-parser')
 
 const sequelize = require('./database')
 const User = require('./models/userModel')
+const Course = require('./models/courseModel')
 
 const userRoutes = require('./routes/userRoutes')
+const courseRoutes = require('./routes/courseRoutes')
 
 const app = express()
 
@@ -21,6 +23,7 @@ app.use((req, res, next) => {
 
 // API Routes
 app.use('/api/user', userRoutes)
+app.use('/api/course', courseRoutes)
 
 sequelize.authenticate()
     .then(() => {
