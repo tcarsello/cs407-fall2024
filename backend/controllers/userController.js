@@ -5,10 +5,46 @@ const User = require('../models/userModel')
 
 const { createJWT } = require('../utils')
 
+const genSalt = async () => {
+    const salt = await bcrypt.genSalt(5)
+    return salt
+}
+
 const createUser = async (req, res) => {
     try {
 
-        res.status(200).json()
+        const { email, firstName, lastName, password } = req.body
+
+        if (!email) throw "Email must be provided"
+        if (!firstName) throw "First Name must be provided"
+        if (!lastName) throw "Last Name must be provided"
+        if (!password) throw "Password must be provided"
+
+        if (password.length < 6) throw "Password must be at least 6 characers"
+
+        const queryUser = await User.findOne({
+            where: {
+                email
+            }
+        })
+        if (queryUser) throw "A user already exists with that email address"
+
+        const salt = await genSalt()
+        const passwordHash = await bcrypt.hash(password, salt)
+
+        const user = await User.create({
+            email,
+            firstName,
+            lastName,
+            passwordHash,
+        })
+        const token = createJWT(user.dataValues.userId)
+
+        res.status(200).json({
+            ...user.dataValues,
+            token,
+        })
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
@@ -18,7 +54,28 @@ const createUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
 
-        res.status(200).json()
+        const { email, password } = req.body
+
+        if (!email) throw "Email must be provided"
+        if (!password) throw "Password must be provided"
+
+        const user = await User.findOne({
+            where: {
+                email
+            }
+        })
+        if (!user) throw "Invalid credentials"
+
+        const match = await bcrypt.compare(password, user.dataValues.passwordHash)
+        if (!match) throw "Invalid credentials"
+
+        const token = createJWT(user.dataValues.userId)
+
+        res.status(200).json({
+            ...user.dataValues,
+            token,
+        })
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
@@ -28,7 +85,18 @@ const loginUser = async (req, res) => {
 const getUser = async (req, res) => {
     try {
 
-        res.status(200).json()
+        const { userId } = req.params
+
+        if (userId != req.user.userId) throw "Wrong user"
+
+        const user = await User.findOne({
+            where: {
+                userId
+            }
+        })
+
+        res.status(200).json(user.dataValues)
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
@@ -38,7 +106,20 @@ const getUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
 
-        res.status(200).json()
+        const { userId } = req.params
+
+        if (userId != req.user.userId) throw "Wrong user"
+
+        await User.destroy({
+            where: {
+                userId
+            }
+        })
+
+        res.status(200).json({
+            message: "User deleted"
+        })
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
@@ -48,17 +129,42 @@ const deleteUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
 
-        res.status(200).json()
-    } catch (err) {
-        console.error(err)
-        res.status(400).json({ error: err })
-    }
-}
+        const { userId } = req.params
+        const { email, firstName, lastName, password } = req.body
 
-const queryUsers = async (req, res) => {
-    try {
+        if ( userId != req.user.userId) throw "Wrong user"
 
-        res.status(200).json()
+        let passwordHash = undefined
+        if (password) {
+            const salt = await genSalt()
+            passwordHash = await bcrypt.hash(password, salt)
+        }
+
+        await User.update(
+            {
+                email,
+                firstName,
+                lastName,
+                passwordHash
+            },
+            {
+                where: {
+                    userId
+                }
+            }
+        )
+
+        const user = await User.findOne({
+            where: {
+                userId
+            }
+        })
+        if (!user) throw "User not found"
+
+        const token = createJWT(user.dataValues.userId)
+
+        res.status(200).json({...user.dataValues, token})
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
@@ -69,10 +175,11 @@ const resetUserPassword = async (req, res) => {
     try {
 
         res.status(200).json()
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
     }
 }
 
-module.exports = { createUser, loginUser, getUser, deleteUser, updateUser, queryUsers, resetUserPassword }
+module.exports = { createUser, loginUser, getUser, deleteUser, updateUser, resetUserPassword }

@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize')
 const sequelize = require('../database')
 
 const User = sequelize.define('User', {
-    user_id: {
+    userId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
@@ -15,15 +15,15 @@ const User = sequelize.define('User', {
             isEmail: true
         }
     },
-    first_name: {
+    firstName: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    last_name: {
+    lastName: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    password_hash: {
+    passwordHash: {
         type: DataTypes.STRING,
         allowNull: false
     },
