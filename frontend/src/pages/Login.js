@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { useAuthContext } from '../hooks/UseAuthContext'
 
 import '../css/login.css'
 import '../css/general.css'
 
 const Login = () => {
+
+    const { dispatch } = useAuthContext()
 
     const [loginForm, setLoginForm] = useState({
         email: '',
@@ -39,7 +42,6 @@ const Login = () => {
     const handleLoginSubmit = async (e) => {
         e.preventDefault()
 
-        console.log(loginForm)
         const response = await fetch(`/api/user/login`, {
             method: 'POST',
             body: JSON.stringify(loginForm),
@@ -56,8 +58,8 @@ const Login = () => {
 
         setLoginError('')
 
-        // TODO handle login
-        console.log('yur')
+        localStorage.setItem('user', JSON.stringify(json))
+        dispatch({type: 'LOGIN', payload: json})
 
     }
 
@@ -85,7 +87,8 @@ const Login = () => {
 
         setRegisterError('')
         
-        // TODO: Handle register
+        localStorage.setItem('user', JSON.stringify(json))
+        dispatch({type: 'LOGIN', payload: json})
         
     }
 
@@ -111,7 +114,7 @@ const Login = () => {
                             onChange={handleLoginChange}
                             required
                         />
-                        <button type='submit'>Log In</button>
+                        <button type='submit' className='standard-button'>Log In</button>
                         {loginError ? <p className='form-error'>{loginError}</p> : null}
                     </form>
                 </div>
@@ -159,7 +162,7 @@ const Login = () => {
                             onChange={handleRegisterChange}
                             required
                         />
-                        <button type='submit'>Register</button>
+                        <button type='submit' className='standard-button'>Register</button>
                         {registerError ? <p className='form-error'>{registerError}</p> : null}
                     </form>
                 </div>

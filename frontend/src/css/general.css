@@ -26,3 +26,23 @@ p.form-worked-msg {
     overflow-wrap: break-word;
     white-space: normal;
 }
+
+.standard-button {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    text-decoration: none;
+
+    opacity: 1;
+    transition: opacity 0.15s;
+}
+
+.standard-button:hover {
+    opacity: 0.85;
+}
