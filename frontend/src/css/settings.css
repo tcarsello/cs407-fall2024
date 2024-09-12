@@ -46,7 +46,7 @@
     font-weight: bold;
 }
 
-.settings-card form button {
+.settings-card button {
     width: auto;
     align-self: flex-start;
 }
