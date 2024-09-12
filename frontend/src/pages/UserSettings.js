@@ -5,6 +5,7 @@ import '../css/login.css'
 import { useState } from 'react'
 
 import { useAuthContext } from '../hooks/UseAuthContext'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 const UserSettings = () => {
 
@@ -24,6 +25,8 @@ const UserSettings = () => {
     })
     const [passwordError, setPasswordError] = useState()
     const [passwordMsg, setPasswordMsg] = useState()
+
+    const [deleteDialogEnabled, setDeleteDialogEnabled] = useState(false)
 
     const handleAccountChange = (e) => {
         const { name, value } = e.target
@@ -95,6 +98,23 @@ const UserSettings = () => {
         setPasswordMsg('Password Changed!')
         localStorage.setItem('user', JSON.stringify(json))
         dispatch({type: 'LOGIN', payload: json})
+    }
+
+    const handleDeleteAccount = async () => {
+
+        const response = await fetch(`/api/user/${user.userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            }
+        })
+
+        if (response.ok) {
+            localStorage.removeItem(user)
+            dispatch({ type: 'LOGOUT' })
+        }
+
     }
 
     return (
@@ -177,6 +197,22 @@ const UserSettings = () => {
                     {passwordMsg ? <p className='form-msg'>{passwordMsg}</p> : null}
                 </form>
             </div>
+
+            <div className='settings-card'>
+                <h2>Delete Account</h2>
+                <p style={{margin: '0'}}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
+                <button onClick={() => setDeleteDialogEnabled(true)} className='standard-button'>Delete Account</button>
+            </div>
+
+            <ConfirmDialog
+                text='Are you sure you want to delete your account?'
+                isOpen={deleteDialogEnabled}
+                onClose={() => setDeleteDialogEnabled(false) }
+                onConfirm={() => {
+                    setDeleteDialogEnabled(false)
+                    handleDeleteAccount()
+                }}
+            />
 
         </div>
     )
