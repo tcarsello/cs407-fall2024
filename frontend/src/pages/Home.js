@@ -7,7 +7,7 @@ const Home = () => {
 
     return (
         <div className='page-container'>
-            <h1>Hi, {user.firstName}</h1>
+            <span>Hi, {user.firstName}</span>
         </div>
     )
 

@@ -66,7 +66,7 @@ const Login = () => {
     const handleRegisterSubmit = async (e) => {
         e.preventDefault()
 
-        if (registerForm.password != registerForm.confirmPassword) {
+        if (registerForm.password !== registerForm.confirmPassword) {
             setRegisterError('Passwords do not match!')
             return
         }

@@ -12,3 +12,13 @@
     text-decoration: none;
     color: #0056b3;
 }
+
+.settings-icon {
+    all: unset;
+    width: 50px;
+}
+
+.top-nav-links {
+    display: flex;
+    align-items: center;
+}

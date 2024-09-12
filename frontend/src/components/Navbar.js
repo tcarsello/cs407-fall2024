@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 
 import { useAuthContext } from '../hooks/UseAuthContext'
 
+import { GrSettingsOption } from 'react-icons/gr'
+
 const Navbar = () => {
 
     const { user, dispatch } = useAuthContext()
@@ -26,9 +28,16 @@ const Navbar = () => {
                 {user ?
                     <>
                         <span>{`${user.firstName} ${user.lastName} <${user.email}>`}</span>
+                        <Link
+                            to='/settings'
+                            className='unset-all'
+                            style={{ marginLeft: '15px' }}
+                        >
+                            <GrSettingsOption size={24}/>
+                        </Link>
                         <button
                             className='standard-button'
-                            style={{marginLeft: '15px'}}
+                            style={{marginLeft: '15px', marginTop: '0'}}
                             onClick={handleLogout}
                         >
                             Log Out
