@@ -4,12 +4,14 @@ import { useAuthContext } from '../hooks/UseAuthContext'
 import '../css/home.css'
 import Collapsible from '../components/Collapsible'
 import PopupForm from '../components/PopupForm'
+import CourseDetails from '../components/course/CourseDetails'
 
 const Home = () => {
 
     const { user } = useAuthContext()
 
     const [myCourseList, setMyCourseList] = useState([])
+    const [joinedCourseList, setJoinedCourseList] = useState([])
 
     const [createCourseEnabled, setCreateCourseEnabled] = useState(false)
     const [createCourseForm, setCreateCourseForm] = useState({
@@ -62,6 +64,18 @@ const Home = () => {
             .then(json => {
                 setMyCourseList(json.courses)
             })
+        
+            fetch(`/api/user/${user.userId}/courses/joined`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+                .then(resp => resp.json())
+                .then(json => {
+                    setJoinedCourseList(json.courses)
+                })
 
     }, [])
 
@@ -82,20 +96,12 @@ const Home = () => {
             <div className='home-content'>
                 <div className='content-card'>
                     <Collapsible title={`My Courses (${myCourseList.length})`} defaultState={true}>
-                        {myCourseList.map((course) => {
-                            return (
-                                <div key={course.courseId}>
-                                    <h1>{course.courseName}</h1>
-                                    <p>{course.courseDescription}</p>
-                                </div>
-                            )
-                        })}
+                        {myCourseList.map(course => <CourseDetails key={course.courseId} course={course}/>)}
                     </Collapsible>
                 </div>
                 <div className='content-card'>
                     <Collapsible title={'Joined Courses'} defaultState={true}>
-                        <p>Hi</p>
-                        <p></p>
+                        {joinedCourseList.map(course => <CourseDetails key={course.courseId} course={course}/>)}
                     </Collapsible>
                 </div>
             </div>
