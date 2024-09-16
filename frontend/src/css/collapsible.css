@@ -1,0 +1,22 @@
+.collapsible .collapsible-header {
+    background-color: white;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    text-align: left;
+    width: 100%;
+    outline: none;
+    font-size: 16px;
+}
+
+.collapsible .collapsible-content {
+    padding: 0 10px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.collapsible .collapsible-content.open {
+    max-height: 500px; /* Adjust based on content height */
+    padding-left: 20px;
+}
