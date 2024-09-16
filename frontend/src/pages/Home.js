@@ -107,7 +107,13 @@ const Home = () => {
                 </div>
                 <div className='content-card'>
                     <Collapsible title={`Joined Courses (${joinedCourseList.length})`} defaultState={true}>
-                        {joinedCourseList.map(course => <CourseDetails key={course.courseId} course={course}/>)}
+                        {joinedCourseList.map(course =>
+                            <CourseDetails
+                                key={course.courseId}
+                                course={course}
+                                onDelete={() => setJoinedCourseList(joinedCourseList.filter(item => item.courseId != course.courseId))}
+                            />
+                        )}
                     </Collapsible>
                 </div>
             </div>
