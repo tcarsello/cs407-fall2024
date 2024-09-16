@@ -96,11 +96,17 @@ const Home = () => {
             <div className='home-content'>
                 <div className='content-card'>
                     <Collapsible title={`My Courses (${myCourseList.length})`} defaultState={true}>
-                        {myCourseList.map(course => <CourseDetails key={course.courseId} course={course}/>)}
+                        {myCourseList.map(course =>
+                            <CourseDetails
+                                key={course.courseId}
+                                course={course}
+                                onDelete={() => setMyCourseList(myCourseList.filter(item => item.courseId != course.courseId))}
+                            />
+                        )}
                     </Collapsible>
                 </div>
                 <div className='content-card'>
-                    <Collapsible title={'Joined Courses'} defaultState={true}>
+                    <Collapsible title={`Joined Courses (${joinedCourseList.length})`} defaultState={true}>
                         {joinedCourseList.map(course => <CourseDetails key={course.courseId} course={course}/>)}
                     </Collapsible>
                 </div>
