@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 
+import { Link } from 'react-router-dom'
+
 import ConfirmDialog from '../ConfirmDialog'
 
 import { GrTrash, GrClose } from 'react-icons/gr'
@@ -41,7 +43,9 @@ const CourseDetails = ({ course, onDelete }) => {
     return (
         <div className='course-details'>
             <div className='flex' style={{alignItems: 'center'}}>
-                <h2>{course.courseName}</h2>
+                <Link to={`/course/${course.courseId}`} style={{all: 'unset', flex: 1}}>
+                    <h2>{course.courseName}</h2>
+                </Link>
                 {course.coordinatorId == user.userId ?
                     <GrTrash style={{width: '50px'}} onClick={() => {setDeleteCoursePopupEnabled(true)}} />
                     : <GrClose style={{width: '50px'}} onClick={() => {setLeaveCoursePopupEnabled(true)}} />
