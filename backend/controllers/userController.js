@@ -6,6 +6,7 @@ const path = require('path')
 
 const sequelize = require('../database')
 const s3 = require('../objectstore')
+const { Sequelize } = require('sequelize')
 
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
@@ -227,10 +228,26 @@ const getInvites = async (req, res) => {
         })
         if (!user) throw "User does not exist"
 
-        const invites = await CourseInvite.findAll({
-            where: {
+        const queryString = `
+            SELECT
+                c.*,
+                ci.*
+            FROM
+                course c
+                INNER JOIN course_invite ci
+                    ON c."courseId"=ci."courseId"
+                INNER JOIN "user" u
+                    ON u.email=ci.email
+            WHERE
+                u.email=:email
+            ;
+        `
+        
+        const invites = await sequelize.query(queryString, {
+            replacements:{
                 email: user.email
-            }
+            },
+            type: Sequelize.QueryTypes.SELECT
         })
 
         res.status(200).json({ invites })

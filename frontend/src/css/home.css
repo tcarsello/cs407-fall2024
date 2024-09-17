@@ -34,3 +34,25 @@
     display: inline;
     flex: 1;
 }
+
+.invite-details {
+    padding: 10px;
+    border-radius: 8px;
+    align-items: center;
+}
+
+.invite-details:hover {
+    background-color: #f0f0f0;
+}
+
+.invite-details-header {
+    display: flex;
+    align-items: center;
+}
+
+.invite-details-header h2{
+    display: inline;
+    flex: 1;
+    color: #0056b3;
+    margin: 0;
+}

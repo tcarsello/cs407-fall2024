@@ -5,6 +5,7 @@ import '../css/home.css'
 import Collapsible from '../components/Collapsible'
 import PopupForm from '../components/PopupForm'
 import CourseDetails from '../components/course/CourseDetails'
+import InviteDetails from '../components/course/InviteDetails'
 
 const Home = () => {
 
@@ -12,6 +13,7 @@ const Home = () => {
 
     const [myCourseList, setMyCourseList] = useState([])
     const [joinedCourseList, setJoinedCourseList] = useState([])
+    const [inviteList, setInviteList] = useState([])
 
     const [createCourseEnabled, setCreateCourseEnabled] = useState(false)
     const [createCourseForm, setCreateCourseForm] = useState({
@@ -65,19 +67,31 @@ const Home = () => {
                 setMyCourseList(json.courses)
             })
         
-            fetch(`/api/user/${user.userId}/courses/joined`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
-                }
+        fetch(`/api/user/${user.userId}/courses/joined`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            }
+        })
+            .then(resp => resp.json())
+            .then(json => {
+                setJoinedCourseList(json.courses)
             })
-                .then(resp => resp.json())
-                .then(json => {
-                    setJoinedCourseList(json.courses)
-                })
+        
+        fetch(`/api/user/${user.userId}/invites`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            }
+        })
+            .then(resp => resp.json())
+            .then(json => {
+                setInviteList(json.invites)
+            })
 
-    }, [])
+    }, [user])
 
     return (
         <div className='page-container flex'>
@@ -100,7 +114,7 @@ const Home = () => {
                             <CourseDetails
                                 key={course.courseId}
                                 course={course}
-                                onDelete={() => setMyCourseList(myCourseList.filter(item => item.courseId != course.courseId))}
+                                onDelete={() => setMyCourseList(myCourseList.filter(item => item.courseId !== course.courseId))}
                             />
                         )}
                     </Collapsible>
@@ -111,7 +125,25 @@ const Home = () => {
                             <CourseDetails
                                 key={course.courseId}
                                 course={course}
-                                onDelete={() => setJoinedCourseList(joinedCourseList.filter(item => item.courseId != course.courseId))}
+                                onDelete={() => setJoinedCourseList(joinedCourseList.filter(item => item.courseId !== course.courseId))}
+                            />
+                        )}
+                    </Collapsible>
+                </div>
+
+                <div className='content-card'>
+                    <Collapsible title={`Course Invites (${inviteList.length})`} defaultState={true}>
+                        {inviteList.map((invite, idx) =>
+                            <InviteDetails
+                                key={idx}
+                                invite={invite}
+                                onAccept={() => {
+                                    setInviteList(inviteList.filter(item => item.courseId !== invite.courseId))
+                                    setJoinedCourseList(prev => [...prev, invite])
+                                }}
+                                onDecline={() => {
+                                    setInviteList(inviteList.filter(item => item.courseId !== invite.courseId))
+                                }}
                             />
                         )}
                     </Collapsible>

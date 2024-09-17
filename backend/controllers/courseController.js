@@ -56,6 +56,18 @@ const getCourse = async (req, res) => {
                     INNER JOIN "user" u
                         ON u."userId"=cm."userUserId"
                 
+                UNION
+
+                SELECT
+                    u."userId",
+                    c."courseId"
+                FROM
+                    course c
+                    INNER JOIN course_invite ci
+                        ON ci."courseId"=c."courseId"
+                    INNER JOIN "user" u
+                        ON u.email=ci.email
+                
                 ) unionq
             WHERE
                 unionq."userId"= :userId
@@ -198,6 +210,13 @@ const joinCourse = async (req, res) => {
 
         user.addCourse(course)
 
+        await CourseInvite.destroy({
+            where: {
+                courseId,
+                email: user.email
+            }
+        })
+
         res.status(200).json({ message: 'Joined course' })
 
     } catch (err) {
@@ -268,6 +287,32 @@ const removeUserFromCourse = async (req, res) => {
     }
 }
 
+const declineInvite = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const user = await User.findOne({
+            where: {
+                userId: req.user.userId
+            }
+        })
+
+        await CourseInvite.destroy({
+            where: {
+                courseId,
+                email: user.email
+            }
+        })
+
+        res.status(200).json({ message: "Invitation declined" })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -276,5 +321,6 @@ module.exports = {
     getCourseInvites,
     joinCourse,
     leaveCourse,
-    removeUserFromCourse
+    removeUserFromCourse,
+    declineInvite
 }

@@ -47,8 +47,8 @@ const CourseDetails = ({ course, onDelete }) => {
                     <h2>{course.courseName}</h2>
                 </Link>
                 {course.coordinatorId == user.userId ?
-                    <GrTrash style={{width: '50px'}} onClick={() => {setDeleteCoursePopupEnabled(true)}} />
-                    : <GrClose style={{width: '50px'}} onClick={() => {setLeaveCoursePopupEnabled(true)}} />
+                    <GrTrash size='25' onClick={() => {setDeleteCoursePopupEnabled(true)}} />
+                    : <GrClose size='25' onClick={() => {setLeaveCoursePopupEnabled(true)}} />
                 }
             </div>
             <span>{course.courseDescription}</span>
