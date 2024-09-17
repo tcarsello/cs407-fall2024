@@ -27,6 +27,11 @@ const User = sequelize.define('user', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    pfpFileType: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    }
 }, {
     tableName: 'user',
     timestamps: true,

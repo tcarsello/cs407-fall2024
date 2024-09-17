@@ -1,7 +1,12 @@
+require('dotenv').config()
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const Buffer = require('buffer').Buffer
+const path = require('path') 
 
 const sequelize = require('../database')
+const s3 = require('../objectstore')
+
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
 const CourseInvite = require('../models/courseInviteModel')
@@ -254,6 +259,88 @@ const getJoinedCourses = async (req, res) => {
     }
 }
 
+const uploadProfilePicture = async (req, res) => {
+    try {
+
+        const { userId } = req.params
+        const { mimeType, imageBase64 } = req.body
+
+        if (!mimeType) throw "Mime type must be provided"
+        if (!imageBase64)  throw 'Image base64 must be provided'
+
+        let fileExt = mimeType.split('/')[1].toLowerCase()
+
+        if (fileExt === 'jpg') fileExt = 'jpeg'
+        if (!['jpeg', 'png'].includes(fileExt)) throw "File extension must be jpeg or png"
+
+        const buffer = Buffer.from(imageBase64, 'base64')
+        
+        const params = {
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: `profile_pictures/${userId}_pfp.${fileExt}`,
+            Body: buffer,
+            ContentType: mimeType
+        }
+        const data = await s3.upload(params).promise()
+
+        await User.update(
+            {
+                pfpFileType: fileExt
+            },
+            {
+                where: {
+                    userId
+                }
+            }
+        )
+
+        res.status(200).json({
+            message: 'Profile picture uploaded successfully',
+            imageUrl: data.Location
+        })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err})
+    }
+}
+
+const getProfilePicture = async (req, res) => {
+    try {
+
+        const { userId } = req.params
+
+        const user = await User.findOne({
+            where: {
+                userId
+            }
+        })
+        if (!user) throw "User not found"
+
+        if (!user.pfpFileType) {
+
+            const defaultImagePath = path.join(__dirname, '../static/default-pfp.jpeg')
+            res.sendFile(defaultImagePath)
+            return
+        
+        }
+
+        const params = {
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: `profile_pictures/${userId}_pfp.${user.pfpFileType}`
+        }
+
+        const data = await s3.getObject(params).promise()
+
+        res.setHeader('Content-Type', data.ContentType || `image/${user.pfpFileType}`)
+        res.send(data.Body)
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
@@ -263,5 +350,7 @@ module.exports = {
     resetUserPassword,
     getCoordinatingCourses,
     getInvites,
-    getJoinedCourses
+    getJoinedCourses,
+    uploadProfilePicture,
+    getProfilePicture
 }

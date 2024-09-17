@@ -4,6 +4,8 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 
 const sequelize = require('./database')
+const s3 = require('./objectstore')
+
 const User = require('./models/userModel')
 const Course = require('./models/courseModel')
 const CourseInvite = require('./models/courseInviteModel')
