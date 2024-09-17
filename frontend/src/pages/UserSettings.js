@@ -2,7 +2,7 @@ import '../css/settings.css'
 import '../css/general.css'
 import '../css/login.css'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { useAuthContext } from '../hooks/UseAuthContext'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -26,7 +26,41 @@ const UserSettings = () => {
     const [passwordError, setPasswordError] = useState()
     const [passwordMsg, setPasswordMsg] = useState()
 
+    const [profilePictureUrl, setProfilePictureUrl] = useState('')
+    const [selectedFile, setSelectedFile] = useState()
+    const [isUploading, setIsUploading] = useState(false)
+    const [uploadError, setUploadError] = useState()
+    const [triggerEffect, setTriggerEffect] = useState(false)
+    const [fileBase64, setFileBase64] = useState()
+
     const [deleteDialogEnabled, setDeleteDialogEnabled] = useState(false)
+
+    useEffect(() => {
+        
+        const fetchProfilePicture = async () => {
+
+            try {
+
+                const response = await fetch(`/api/user/${user.userId}/picture`)
+
+                if (!response.ok) {
+                    console.error('Failed to fetch profile picture.')
+                    return
+                }
+
+                const blob = await response.blob()
+                const imageUrl = URL.createObjectURL(blob)
+                setProfilePictureUrl(imageUrl)
+
+            } catch (err) {
+                console.error('Error fetching profile picture:', err)
+            }
+
+        }
+
+        fetchProfilePicture()
+
+    } ,[user, triggerEffect])
 
     const handleAccountChange = (e) => {
         const { name, value } = e.target
@@ -98,6 +132,58 @@ const UserSettings = () => {
         setPasswordMsg('Password Changed!')
         localStorage.setItem('user', JSON.stringify(json))
         dispatch({type: 'LOGIN', payload: json})
+    }
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0]
+        setSelectedFile(file)
+
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1]
+            setFileBase64(base64)
+        }
+
+        if (file) {
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleUpload = async (e) => {
+        e.preventDefault()
+
+        if (!selectedFile) {
+            setUploadError('Please select a file before uploading')
+            return
+        }
+
+        setUploadError(null)
+        setIsUploading(true)
+
+        const bodyContent = {
+            mimeType: selectedFile.type,
+            imageBase64: fileBase64
+        }
+
+        const response = await fetch(`/api/user/${user.userId}/picture`, {
+            method: 'POST',
+            body: JSON.stringify(bodyContent),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            }
+        })
+
+        const json = await response.json()
+
+        if (!response.ok) {
+            setUploadError(json.error || 'Error uploading profile picture')
+        } else {
+            setTriggerEffect(prev => !prev)
+        }
+
+        setIsUploading(false)
+
     }
 
     const handleDeleteAccount = async () => {
@@ -196,6 +282,25 @@ const UserSettings = () => {
                     {passwordError ? <p className='form-error'>{passwordError}</p> : null}
                     {passwordMsg ? <p className='form-msg'>{passwordMsg}</p> : null}
                 </form>
+            </div>
+
+            <div className='settings-card'>
+                <h2>Profile Picture</h2>
+                <div className='flex' style={{alignItems: 'center'}}>
+                    <div className='settings-pfp-container'>
+                        {profilePictureUrl && <img src={profilePictureUrl} alt='Profile Picture'/>}
+                    </div>
+                    <div style={{paddingLeft: '15px'}}>
+                        <input
+                            className='standard-form-input'
+                            type='file'
+                            accept='image/*'
+                            onChange={handleFileChange}
+                        />
+                        <button className='standard-button' onClick={handleUpload}>{isUploading ? 'Uploading ...' : 'Upload Pofile Picture'}</button>
+                        {uploadError && <p className='form-error'>{uploadError}</p>}
+                    </div>
+                </div>
             </div>
 
             <div className='settings-card'>
