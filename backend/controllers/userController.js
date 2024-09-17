@@ -139,6 +139,7 @@ const updateUser = async (req, res) => {
 
         let passwordHash = undefined
         if (password) {
+            if (password.length < 6) throw 'Password must be at least 6 characters!'
             const salt = await genSalt()
             passwordHash = await bcrypt.hash(password, salt)
         }

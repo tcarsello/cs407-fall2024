@@ -58,7 +58,7 @@ const UserSettings = () => {
 
         const json = await response.json()
         if (!response.ok) {
-            setAccountError(response.error)
+            setAccountError('Invalid account details')
             setAccountMsg('')
             return
         }
@@ -89,7 +89,7 @@ const UserSettings = () => {
 
         const json = await response.json()
         if (!response.ok) {
-            setPasswordError(response.error)
+            setPasswordError(json.error)
             setPasswordMsg('')
             return
         }
