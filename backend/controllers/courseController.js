@@ -2,6 +2,9 @@ const Course = require('../models/courseModel')
 const User = require('../models/userModel')
 const CourseInvite = require('../models/courseInviteModel')
 
+const sequelize = require('../database')
+const { Sequelize } = require('sequelize')
+
 const createCourse = async (req, res) => {
     try {
 
@@ -28,13 +31,53 @@ const getCourse = async (req, res) => {
 
         const { courseId } = req.params
 
+        const queryString = `
+            SELECT
+                unionq."userId",
+                unionq."courseId"
+            FROM (
+                SELECT
+                    u."userId",
+                    c."courseId"
+                FROM
+                    course c
+                    INNER JOIN "user" u
+                        ON u."userId"=c."coordinatorId"
+                
+                UNION
+                
+                SELECT
+                    u."userId",
+                    c."courseId"
+                FROM
+                    course c
+                    INNER JOIN course_members cm
+                        ON c."courseId"=cm."courseCourseId"
+                    INNER JOIN "user" u
+                        ON u."userId"=cm."userUserId"
+                
+                ) unionq
+            WHERE
+                unionq."userId"= :userId
+                AND unionq."courseId"= :courseId
+            LIMIT 1;
+        `
+
+        const results = await sequelize.query(queryString, {
+            replacements:{
+                courseId,
+                userId: req.user.userId
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+        
+        if (results.length <= 0) throw 'Course not found for such user'
+
         const course = await Course.findOne({
             where: {
-                courseId,
-                coordinatorId: req.user.userId
+                courseId: results[0].courseId
             }
         })
-        if (!course) throw "Course not found for such user"
 
         res.status(200).json(course.dataValues)
 
