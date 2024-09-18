@@ -2,7 +2,8 @@ const express = require('express')
 const requireAuth = require('../middleware/requireAuth')
 const { createUser, loginUser, getUser, deleteUser, updateUser,
     resetUserPassword, getCoordinatingCourses, getInvites,
-    getJoinedCourses, uploadProfilePicture, getProfilePicture } = require('../controllers/userController')
+    getJoinedCourses, uploadProfilePicture, getProfilePicture,
+    getUserPublicInfo } = require('../controllers/userController')
 
 const router = express.Router()
 
@@ -17,6 +18,7 @@ router.post('/:userId/reset', requireAuth, resetUserPassword)
 router.post('/login', loginUser)
 router.post('/:userId/picture', requireAuth, uploadProfilePicture)
 
+router.get('/:userId/public', getUserPublicInfo)
 router.get('/:userId/courses/coordinating', requireAuth, getCoordinatingCourses) // Get all courses userId is coordinator of
 router.get('/:userId/courses/joined', requireAuth, getJoinedCourses) // Get all courses userId is a student of
 router.get('/:userId/invites', requireAuth, getInvites) // Get all invites send to userId's email

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { GrFormCheckmark, GrFormClose } from 'react-icons/gr'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 

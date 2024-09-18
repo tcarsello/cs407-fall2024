@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login'
 import Home from './pages/Home'
 import UserSettings from './pages/UserSettings'
-import CourseHome from './pages/CourseHome';
+import Course from './pages/Course';
 
 function App() {
 
@@ -33,7 +33,7 @@ function App() {
             />
             <Route
               path='/course/:courseId'
-              element={ user ? <CourseHome /> : <Navigate to='/login' /> }
+              element={ user ? <Course /> : <Navigate to='/login' /> }
             />
           </Routes>
         </div>

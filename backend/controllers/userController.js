@@ -358,6 +358,29 @@ const getProfilePicture = async (req, res) => {
     }
 }
 
+const getUserPublicInfo = async (req, res) => {
+    try {
+
+        const { userId } = req.params
+
+        const user = await User.findOne({
+            where: { userId }
+        })
+
+        if (!user) throw "User not found"
+
+        res.status(200).json({
+            userId: user.userId,
+            firstName: user.firstName, 
+            lastName: user.lastName
+        })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
@@ -369,5 +392,6 @@ module.exports = {
     getInvites,
     getJoinedCourses,
     uploadProfilePicture,
-    getProfilePicture
+    getProfilePicture,
+    getUserPublicInfo
 }

@@ -129,3 +129,11 @@ p.form-worked-msg {
     width: auto;
     align-self: flex-start;
 }
+
+.bg-accent {
+    background-color: #0056b3;
+}
+
+.color-light {
+    color: white;
+}

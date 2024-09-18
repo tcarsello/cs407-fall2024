@@ -46,7 +46,7 @@ const CourseDetails = ({ course, onDelete }) => {
                 <Link to={`/course/${course.courseId}`} style={{all: 'unset', flex: 1}}>
                     <h2>{course.courseName}</h2>
                 </Link>
-                {course.coordinatorId == user.userId ?
+                {course.coordinatorId === user.userId ?
                     <GrTrash size='25' onClick={() => {setDeleteCoursePopupEnabled(true)}} />
                     : <GrClose size='25' onClick={() => {setLeaveCoursePopupEnabled(true)}} />
                 }
