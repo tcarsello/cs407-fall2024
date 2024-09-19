@@ -12,6 +12,7 @@ const CourseInvite = require('./models/courseInviteModel')
 
 const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')
+const inviteRoutes = require('./routes/inviteRoutes')
 
 const app = express()
 
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 // API Routes
 app.use('/api/user', userRoutes)
 app.use('/api/course', courseRoutes)
+app.use('/api/invite', inviteRoutes)
 
 sequelize.authenticate()
     .then(() => {

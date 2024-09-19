@@ -35,14 +35,16 @@ const CourseHomeContent = () => {
 
     useEffect(() => {
 
-        try {
-            fetch(`/api/user/${course.coordinatorId}/public`, {
-                method: 'GET'
-            })
-                .then(response => response.json())
-                .then(json => setCoordinator(json))
-        } catch (err) {
-            console.log(err)
+        if (course) {
+            try {
+                fetch(`/api/user/${course.coordinatorId}/public`, {
+                    method: 'GET'
+                })
+                    .then(response => response.json())
+                    .then(json => setCoordinator(json))
+            } catch (err) {
+                console.log(err)
+            }
         }
 
     }, [course])

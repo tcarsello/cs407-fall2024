@@ -109,44 +109,50 @@ const Home = () => {
 
             <div className='home-content'>
                 <div className='content-card'>
-                    <Collapsible title={`My Courses (${myCourseList.length})`} defaultState={true}>
-                        {myCourseList.map(course =>
-                            <CourseDetails
-                                key={course.courseId}
-                                course={course}
-                                onDelete={() => setMyCourseList(myCourseList.filter(item => item.courseId !== course.courseId))}
-                            />
-                        )}
-                    </Collapsible>
+                    {myCourseList &&
+                      <Collapsible title={`My Courses (${myCourseList.length})`} defaultState={true}>
+                          {myCourseList.map(course =>
+                              <CourseDetails
+                                  key={course.courseId}
+                                  course={course}
+                                  onDelete={() => setMyCourseList(myCourseList.filter(item => item.courseId !== course.courseId))}
+                              />
+                          )}
+                      </Collapsible>
+                    }
                 </div>
                 <div className='content-card'>
-                    <Collapsible title={`Joined Courses (${joinedCourseList.length})`} defaultState={true}>
-                        {joinedCourseList.map(course =>
-                            <CourseDetails
-                                key={course.courseId}
-                                course={course}
-                                onDelete={() => setJoinedCourseList(joinedCourseList.filter(item => item.courseId !== course.courseId))}
-                            />
-                        )}
-                    </Collapsible>
+                    {joinedCourseList &&
+                        <Collapsible title={`Joined Courses (${joinedCourseList.length})`} defaultState={true}>
+                            {joinedCourseList.map(course =>
+                                <CourseDetails
+                                    key={course.courseId}
+                                    course={course}
+                                    onDelete={() => setJoinedCourseList(joinedCourseList.filter(item => item.courseId !== course.courseId))}
+                                />
+                            )}
+                        </Collapsible>
+                    }
                 </div>
 
                 <div className='content-card'>
-                    <Collapsible title={`Course Invites (${inviteList.length})`} defaultState={true}>
-                        {inviteList.map((invite, idx) =>
-                            <InviteDetails
-                                key={idx}
-                                invite={invite}
-                                onAccept={() => {
-                                    setInviteList(inviteList.filter(item => item.courseId !== invite.courseId))
-                                    setJoinedCourseList(prev => [...prev, invite])
-                                }}
-                                onDecline={() => {
-                                    setInviteList(inviteList.filter(item => item.courseId !== invite.courseId))
-                                }}
-                            />
-                        )}
-                    </Collapsible>
+                    {inviteList &&
+                        <Collapsible title={`Course Invites (${inviteList.length})`} defaultState={true}>
+                            {inviteList.map((invite, idx) =>
+                                <InviteDetails
+                                    key={idx}
+                                    invite={invite}
+                                    onAccept={() => {
+                                        setInviteList(inviteList.filter(item => item.courseId !== invite.courseId))
+                                        setJoinedCourseList(prev => [...prev, invite])
+                                    }}
+                                    onDecline={() => {
+                                        setInviteList(inviteList.filter(item => item.courseId !== invite.courseId))
+                                    }}
+                                />
+                            )}
+                        </Collapsible>
+                    }
                 </div>
             </div>
 
