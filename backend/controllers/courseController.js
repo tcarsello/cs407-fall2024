@@ -313,6 +313,54 @@ const declineInvite = async (req, res) => {
     }
 }
 
+const getMembers = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const queryString = `
+            SELECT
+                u."userId",
+                u."firstName",
+                u."lastName"
+            FROM
+                "user" u
+                INNER JOIN course_members cm
+                    ON cm."userUserId"=u."userId"
+                INNER JOIN course c
+                    ON c."courseId"=cm."courseCourseId"
+            WHERE
+                c."courseId"=:courseId
+            
+            UNION
+
+            SELECT
+                u."userId",
+                u."firstName",
+                u."lastName"
+            FROM
+                "user" u
+                INNER JOIN course c
+                    ON c."coordinatorId"=u."userId"
+            WHERE
+                c."courseId"=:courseId
+        `
+
+        const members = await sequelize.query(queryString, {
+            replacements: {
+                courseId
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ members })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -322,5 +370,6 @@ module.exports = {
     joinCourse,
     leaveCourse,
     removeUserFromCourse,
-    declineInvite
+    declineInvite,
+    getMembers
 }

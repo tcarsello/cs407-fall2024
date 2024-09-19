@@ -7,6 +7,7 @@ import Collapsible from "../Collapsible"
 import PopupForm from "../PopupForm"
 
 import InviteManager from './InviteManager'
+import MemberDetails from './MemberDetails'
 
 const CourseMembers = () => {
     
@@ -14,6 +15,7 @@ const CourseMembers = () => {
     const { course } = useCourseContext()
 
     const [inviteList, setInviteList] = useState([])
+    const [memberList, setMemberList] = useState([])
 
     const [inviteUserEnabled, setInviteUserEnabled] = useState(false)
     const [inviteUserError, setInviteUserError] = useState()
@@ -41,7 +43,28 @@ const CourseMembers = () => {
             }
         }
 
-        if (user && course) fetchInvites()
+        const fetchMembers = async () => {
+            try {
+
+                const response = await fetch(`/api/course/${course.courseId}/members`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                })
+                const json = await response.json()
+                setMemberList(json.members)
+
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+        if (user && course) {
+            fetchInvites()
+            fetchMembers()
+        }
 
     }, [user, course])
 
@@ -95,6 +118,22 @@ const CourseMembers = () => {
                     </Collapsible>
                 </div>
             }
+
+            <div className='content-card'>
+                <Collapsible
+                    title={`Course Members (${memberList ? memberList.length : 0})`}
+                    defaultState={true}
+                >
+                    {memberList &&
+                        memberList.map((member, index) =>
+                        <MemberDetails
+                            key={member.userId}
+                            member={member}
+                            onDelete={() => { setMemberList(memberList.filter(item => item.userId !== member.userId)) }}
+                        />)
+                    }
+                </Collapsible>
+            </div>
 
             <PopupForm
                 title='Invite a user'
