@@ -17,7 +17,7 @@ const inviteRoutes = require('./routes/inviteRoutes')
 const app = express()
 
 // Middleware
-app.use(express.json({ limit: '3mb'}))
+app.use(express.json({ limit: '3mb' }))
 app.use(express.urlencoded({ limit: '3mb', extended: true }))
 app.use(bodyParser.json())
 app.use(cors())
@@ -35,7 +35,7 @@ sequelize.authenticate()
     .then(() => {
         console.log('Database connection established')
 
-        sequelize.sync({force: false})
+        sequelize.sync({ force: false })
             .then(() => {
                 console.log('Database synchronization complete')
 

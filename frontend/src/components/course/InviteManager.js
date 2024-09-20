@@ -2,7 +2,7 @@ import { GrFormClose } from 'react-icons/gr'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 
 const InviteManager = ({ invite, onDelete }) => {
-    
+
     const { user } = useAuthContext()
 
     const handleCancel = () => {
@@ -28,13 +28,13 @@ const InviteManager = ({ invite, onDelete }) => {
         }
 
     }
-    
+
     return (
         <div className='invite-manager'>
-            <p style={{display: 'inline-block'}}>
+            <p style={{ display: 'inline-block' }}>
                 {invite.email}
             </p>
-            <GrFormClose size='25' style={{marginLeft: '10px'}} onClick={handleCancel}/>
+            <GrFormClose size='25' style={{ marginLeft: '10px' }} onClick={handleCancel} />
         </div>
     )
 }

@@ -10,7 +10,7 @@ import InviteManager from './InviteManager'
 import MemberDetails from './MemberDetails'
 
 const CourseMembers = () => {
-    
+
     const { user } = useAuthContext()
     const { course } = useCourseContext()
 
@@ -70,7 +70,7 @@ const CourseMembers = () => {
 
     const handleInviteUserFormChange = (e) => {
         const { name, value } = e.target
-        setInviteUserForm({...inviteUserForm, [name]: value})
+        setInviteUserForm({ ...inviteUserForm, [name]: value })
     }
 
     const handleInviteUserFormSubmit = async (e) => {
@@ -102,18 +102,18 @@ const CourseMembers = () => {
             {user.userId === course.coordinatorId &&
                 <div className='content-card'>
                     <h2 style={{ margin: 0 }}>User Invites</h2>
-                    <button className='standard-button' style={{marginBottom: '15px'}} onClick={() => setInviteUserEnabled(true)}>Invite Users</button>
+                    <button className='standard-button' style={{ marginBottom: '15px' }} onClick={() => setInviteUserEnabled(true)}>Invite Users</button>
                     <Collapsible
                         title={`Pending Invites (${inviteList ? inviteList.length : 0})`}
                     >
-                    
+
                         {inviteList &&
                             inviteList.map((invite, index) =>
-                            <InviteManager
-                                key={invite.email}
-                                invite={invite}
-                                onDelete={() => { setInviteList(inviteList.filter(item => item.email !== invite.email)) }}
-                            />)
+                                <InviteManager
+                                    key={invite.email}
+                                    invite={invite}
+                                    onDelete={() => { setInviteList(inviteList.filter(item => item.email !== invite.email)) }}
+                                />)
                         }
                     </Collapsible>
                 </div>
@@ -126,11 +126,11 @@ const CourseMembers = () => {
                 >
                     {memberList &&
                         memberList.map((member, index) =>
-                        <MemberDetails
-                            key={member.userId}
-                            member={member}
-                            onDelete={() => { setMemberList(memberList.filter(item => item.userId !== member.userId)) }}
-                        />)
+                            <MemberDetails
+                                key={member.userId}
+                                member={member}
+                                onDelete={() => { setMemberList(memberList.filter(item => item.userId !== member.userId)) }}
+                            />)
                     }
                 </Collapsible>
             </div>

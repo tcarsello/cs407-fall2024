@@ -4,10 +4,10 @@ import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
 const CourseSettings = () => {
-    
+
     const { user } = useAuthContext()
     const { course } = useCourseContext()
-    
+
     const [accessTypeSelection, setAccessTypeSelection] = useState('invite')
     const [accessCode, setAccessCode] = useState()
 
@@ -27,9 +27,9 @@ const CourseSettings = () => {
             method: 'PUT',
             body: JSON.stringify(bodyContent),
             headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`
-                    }
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            }
         })
         return response
     }
@@ -67,13 +67,13 @@ const CourseSettings = () => {
         } else {
             setGameSettingsFormError(json.error)
         }
-        
+
     }
 
     useEffect(() => {
 
         const fetchSettings = async () => {
-            
+
             try {
                 const response = await fetch(`/api/course/${course.courseId}/settings`, {
                     method: 'GET',
@@ -84,7 +84,7 @@ const CourseSettings = () => {
                 })
                 const json = await response.json()
                 setAccessCode(json.joinCode)
-                setGameSettingsForm({...gameSettingsForm, gameLimit: json.gameLimit})
+                setGameSettingsForm({ ...gameSettingsForm, gameLimit: json.gameLimit })
             } catch (err) {
                 console.error(err)
             }
@@ -130,9 +130,9 @@ const CourseSettings = () => {
                     onClick={handleAccessSelectionSubmit}
                 >Submit</button>
             </div>
-            
+
             <div className='content-card'>
-                <h2 style={{marginTop: 0}}>Game Settings</h2>
+                <h2 style={{ marginTop: 0 }}>Game Settings</h2>
                 <form className='standard-form' onSubmit={handleGameSettingsFormSubmit}>
                     <div>
                         <label>Student Game Limit</label>
@@ -149,7 +149,7 @@ const CourseSettings = () => {
                     {gameSettingsFormMsg && <p className='form-msg'>{gameSettingsFormMsg}</p>}
                 </form>
             </div>
-            
+
         </>
     )
 }

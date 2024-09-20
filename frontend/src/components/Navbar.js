@@ -33,11 +33,11 @@ const Navbar = () => {
                             className='unset-all'
                             style={{ marginLeft: '15px' }}
                         >
-                            <GrSettingsOption size={24}/>
+                            <GrSettingsOption size={24} />
                         </Link>
                         <button
                             className='standard-button'
-                            style={{marginLeft: '15px', marginTop: '0'}}
+                            style={{ marginLeft: '15px', marginTop: '0' }}
                             onClick={handleLogout}
                         >
                             Log Out

@@ -21,7 +21,7 @@ const Home = () => {
         courseDescription: ''
     })
     const [createCourseFormError, setCreateCourseFormError] = useState()
-    
+
     const [joinCourseEnabled, setJoinCourseEnabled] = useState(false)
     const [joinCourseForm, setJoinCourseForm] = useState({
         joinCode: ''
@@ -59,7 +59,7 @@ const Home = () => {
             setJoinCourseFormError(json.error)
         }
     }
-    
+
     const handleCreateCourseFormChange = (e) => {
         const { name, value } = e.target
         setCreateCourseForm({
@@ -105,7 +105,7 @@ const Home = () => {
             .then(json => {
                 setMyCourseList(json.courses)
             })
-        
+
         fetch(`/api/user/${user.userId}/courses/joined`, {
             method: 'GET',
             headers: {
@@ -117,7 +117,7 @@ const Home = () => {
             .then(json => {
                 setJoinedCourseList(json.courses)
             })
-        
+
         fetch(`/api/user/${user.userId}/invites`, {
             method: 'GET',
             headers: {
@@ -156,15 +156,15 @@ const Home = () => {
             <div className='home-content'>
                 <div className='content-card'>
                     {myCourseList &&
-                      <Collapsible title={`My Courses (${myCourseList.length})`} defaultState={true}>
-                          {myCourseList.map(course =>
-                              <CourseDetails
-                                  key={course.courseId}
-                                  course={course}
-                                  onDelete={() => setMyCourseList(myCourseList.filter(item => item.courseId !== course.courseId))}
-                              />
-                          )}
-                      </Collapsible>
+                        <Collapsible title={`My Courses (${myCourseList.length})`} defaultState={true}>
+                            {myCourseList.map(course =>
+                                <CourseDetails
+                                    key={course.courseId}
+                                    course={course}
+                                    onDelete={() => setMyCourseList(myCourseList.filter(item => item.courseId !== course.courseId))}
+                                />
+                            )}
+                        </Collapsible>
                     }
                 </div>
                 <div className='content-card'>

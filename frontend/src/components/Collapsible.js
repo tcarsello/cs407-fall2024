@@ -13,8 +13,8 @@ const Collapsible = ({ title, defaultState, children }) => {
     return (
         <div className="collapsible">
             <button onClick={toggleCollapse} className="collapsible-header">
-            <i className={`fas ${isOpen ? 'fa-chevron-down' : 'fa-chevron-right'}`} style={{ marginRight: '8px' }}></i>
-                <h2 style={{margin: 0, display: 'inline'}}>{title}</h2>
+                <i className={`fas ${isOpen ? 'fa-chevron-down' : 'fa-chevron-right'}`} style={{ marginRight: '8px' }}></i>
+                <h2 style={{ margin: 0, display: 'inline' }}>{title}</h2>
             </button>
             <div className={`collapsible-content ${isOpen ? 'open' : 'closed'}`}>
                 {isOpen && children}

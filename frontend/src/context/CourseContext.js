@@ -34,7 +34,7 @@ export const CourseProvider = ({ children }) => {
                 const json = await response.json()
                 setCourse(json)
 
-            } catch (err) {
+            } catch (err) {I
                 setError(err)
             } finally {
                 setLoading(false)

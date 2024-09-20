@@ -21,7 +21,7 @@ const Course = () => {
             <CourseHomeContent />
         </CourseProvider>
     )
-    
+
 }
 
 const CourseHomeContent = () => {
@@ -56,13 +56,13 @@ const CourseHomeContent = () => {
 
     const renderMainComponent = () => {
         switch (mainComponent) {
-            case 'Study': return <CourseStudy/>
-            case 'Games': return <CourseGames/>
-            case 'Discussion': return <CourseDiscussion/>
-            case 'Course Members': return <CourseMembers/>
-            case 'Settings': return <CourseSettings/>
+            case 'Study': return <CourseStudy />
+            case 'Games': return <CourseGames />
+            case 'Discussion': return <CourseDiscussion />
+            case 'Course Members': return <CourseMembers />
+            case 'Settings': return <CourseSettings />
             case 'Home':
-            default: return <CourseHome/>
+            default: return <CourseHome />
         }
     }
 
@@ -70,33 +70,33 @@ const CourseHomeContent = () => {
         <div className='page-container flex'>
             <div className='course-nav'>
                 <button className='course-nav-link' onClick={() => setMainComponent('Home')}>
-                    <GrHomeRounded color='white' size='35'/>
+                    <GrHomeRounded color='white' size='35' />
                 </button>
                 <button className='course-nav-link' onClick={() => setMainComponent('Study')}>
-                    <GrList color='white' size='35'/>
+                    <GrList color='white' size='35' />
                 </button>
                 <button className='course-nav-link' onClick={() => setMainComponent('Games')}><
-                    FaGamepad color='white' size='35'/>
+                    FaGamepad color='white' size='35' />
                 </button>
                 <button className='course-nav-link' onClick={() => setMainComponent('Discussion')}>
-                    <GrChat color='white' size='35'/>
+                    <GrChat color='white' size='35' />
                 </button>
                 <button className='course-nav-link' onClick={() => setMainComponent('Course Members')}>
-                    <GrContactInfo color='white' size='35'/>
+                    <GrContactInfo color='white' size='35' />
                 </button>
                 {user.userId === course.coordinatorId && <button className='course-nav-link' onClick={() => setMainComponent('Settings')}>
-                    <GrSettingsOption color='white' size='35'/>
+                    <GrSettingsOption color='white' size='35' />
                 </button>
                 }
             </div>
-            <div style={{flex: '1'}}>
+            <div style={{ flex: '1' }}>
                 <div className='page-container flex-col'>
                     <div className='flex' style={{ padding: '15px', alignItems: 'center' }}>
                         <div style={{ flex: 1 }}>
                             <h1 style={{ margin: 0 }}>{`${course.courseName} | ${mainComponent}`}</h1>
                             <span>{course.courseDescription}</span>
                         </div>
-                        <div className='bg-accent color-light' style={{padding: '10px', borderRadius: '10px'}}>
+                        <div className='bg-accent color-light' style={{ padding: '10px', borderRadius: '10px' }}>
                             <h3 style={{ margin: 0 }}>Course Coordinator</h3>
                             {coordinator && <span>{`${coordinator.firstName} ${coordinator.lastName}`}</span>}
                         </div>

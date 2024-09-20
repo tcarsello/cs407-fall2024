@@ -22,7 +22,7 @@ const requireAuth = async (req, res, next) => {
 
     } catch (err) {
         console.log('Request not authorized')
-        res.status(401).json({error: 'Unauthorized'})
+        res.status(401).json({ error: 'Unauthorized' })
     }
 
 }

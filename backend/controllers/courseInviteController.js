@@ -28,11 +28,11 @@ const createInvite = async (req, res) => {
         if (invite) throw 'Pending invite already exists for that user'
 
         try {
-           invite = await CourseInvite.create({
+            invite = await CourseInvite.create({
                 courseId,
                 email
             })
-        } catch (e) {}
+        } catch (e) { }
 
         res.status(200).json({ invite })
 

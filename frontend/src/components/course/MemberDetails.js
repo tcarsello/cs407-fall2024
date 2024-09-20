@@ -32,11 +32,11 @@ const MemberDetails = ({ member, onDelete }) => {
 
     return (
         <div className='member-manager'>
-            <p style={{display: 'inline-block'}}>
+            <p style={{ display: 'inline-block' }}>
                 {`${member.firstName} ${member.lastName}`}
             </p>
-            { user.userId === course.coordinatorId && member.userId !== course.coordinatorId &&
-                <GrFormClose size='25' style={{marginLeft: '10px'}} onClick={handleKick}/>
+            {user.userId === course.coordinatorId && member.userId !== course.coordinatorId &&
+                <GrFormClose size='25' style={{ marginLeft: '10px' }} onClick={handleKick} />
             }
         </div>
     )

@@ -36,7 +36,7 @@ const UserSettings = () => {
     const [deleteDialogEnabled, setDeleteDialogEnabled] = useState(false)
 
     useEffect(() => {
-        
+
         const fetchProfilePicture = async () => {
 
             try {
@@ -60,7 +60,7 @@ const UserSettings = () => {
 
         fetchProfilePicture()
 
-    } ,[user, triggerEffect])
+    }, [user, triggerEffect])
 
     const handleAccountChange = (e) => {
         const { name, value } = e.target
@@ -100,7 +100,7 @@ const UserSettings = () => {
         setAccountError('')
         setAccountMsg('Account details updated!')
         localStorage.setItem('user', JSON.stringify(json))
-        dispatch({type: 'LOGIN', payload: json})
+        dispatch({ type: 'LOGIN', payload: json })
 
     }
 
@@ -131,7 +131,7 @@ const UserSettings = () => {
         setPasswordError('')
         setPasswordMsg('Password Changed!')
         localStorage.setItem('user', JSON.stringify(json))
-        dispatch({type: 'LOGIN', payload: json})
+        dispatch({ type: 'LOGIN', payload: json })
     }
 
     const handleFileChange = (e) => {
@@ -222,7 +222,7 @@ const UserSettings = () => {
                         />
                     </div>
                     <div>
-                    <label>First Name</label>
+                        <label>First Name</label>
                         <input
                             className='standard-form-input'
                             type='text'
@@ -234,7 +234,7 @@ const UserSettings = () => {
                         />
                     </div>
                     <div>
-                    <label>Last Name</label>
+                        <label>Last Name</label>
                         <input
                             className='standard-form-input'
                             type='text'
@@ -286,11 +286,11 @@ const UserSettings = () => {
 
             <div className='settings-card'>
                 <h2>Profile Picture</h2>
-                <div className='flex' style={{alignItems: 'center'}}>
+                <div className='flex' style={{ alignItems: 'center' }}>
                     <div className='settings-pfp-container'>
-                        {profilePictureUrl && <img src={profilePictureUrl} alt='Profile Picture'/>}
+                        {profilePictureUrl && <img src={profilePictureUrl} alt='Profile Picture' />}
                     </div>
-                    <div style={{paddingLeft: '15px'}}>
+                    <div style={{ paddingLeft: '15px' }}>
                         <input
                             className='standard-form-input'
                             type='file'
@@ -305,14 +305,14 @@ const UserSettings = () => {
 
             <div className='settings-card'>
                 <h2>Delete Account</h2>
-                <p style={{margin: '0'}}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
+                <p style={{ margin: '0' }}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
                 <button onClick={() => setDeleteDialogEnabled(true)} className='standard-button'>Delete Account</button>
             </div>
 
             <ConfirmDialog
                 text='Are you sure you want to delete your account?'
                 isOpen={deleteDialogEnabled}
-                onClose={() => setDeleteDialogEnabled(false) }
+                onClose={() => setDeleteDialogEnabled(false)}
                 onConfirm={() => {
                     setDeleteDialogEnabled(false)
                     handleDeleteAccount()

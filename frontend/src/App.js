@@ -21,19 +21,19 @@ function App() {
           <Routes>
             <Route
               path='/'
-              element={ user ? <Home/> : <Navigate to='/login'/>}
+              element={user ? <Home /> : <Navigate to='/login' />}
             />
             <Route
               path='/login'
-              element={ user ? <Navigate to='/'/> : <Login /> }
+              element={user ? <Navigate to='/' /> : <Login />}
             />
             <Route
               path='settings'
-              element={ user ? <UserSettings /> : <Navigate to='/login' /> }
+              element={user ? <UserSettings /> : <Navigate to='/login' />}
             />
             <Route
               path='/course/:courseId'
-              element={ user ? <Course /> : <Navigate to='/login' /> }
+              element={user ? <Course /> : <Navigate to='/login' />}
             />
           </Routes>
         </div>

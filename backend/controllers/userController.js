@@ -2,7 +2,7 @@ require('dotenv').config()
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const Buffer = require('buffer').Buffer
-const path = require('path') 
+const path = require('path')
 
 const sequelize = require('../database')
 const s3 = require('../objectstore')
@@ -173,7 +173,7 @@ const updateUser = async (req, res) => {
 
         const token = createJWT(user.dataValues.userId)
 
-        res.status(200).json({...user.dataValues, token})
+        res.status(200).json({ ...user.dataValues, token })
 
     } catch (err) {
         console.error(err)
@@ -242,9 +242,9 @@ const getInvites = async (req, res) => {
                 u.email=:email
             ;
         `
-        
+
         const invites = await sequelize.query(queryString, {
-            replacements:{
+            replacements: {
                 email: user.email
             },
             type: Sequelize.QueryTypes.SELECT
@@ -283,7 +283,7 @@ const uploadProfilePicture = async (req, res) => {
         const { mimeType, imageBase64 } = req.body
 
         if (!mimeType) throw "Mime type must be provided"
-        if (!imageBase64)  throw 'Image base64 must be provided'
+        if (!imageBase64) throw 'Image base64 must be provided'
 
         let fileExt = mimeType.split('/')[1].toLowerCase()
 
@@ -291,7 +291,7 @@ const uploadProfilePicture = async (req, res) => {
         if (!['jpeg', 'png'].includes(fileExt)) throw "File extension must be jpeg or png"
 
         const buffer = Buffer.from(imageBase64, 'base64')
-        
+
         const params = {
             Bucket: process.env.AWS_S3_BUCKET_NAME,
             Key: `profile_pictures/${userId}_pfp.${fileExt}`,
@@ -318,7 +318,7 @@ const uploadProfilePicture = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(400).json({ error: err})
+        res.status(400).json({ error: err })
     }
 }
 
@@ -339,7 +339,7 @@ const getProfilePicture = async (req, res) => {
             const defaultImagePath = path.join(__dirname, '../static/default-pfp.jpeg')
             res.sendFile(defaultImagePath)
             return
-        
+
         }
 
         const params = {
@@ -371,7 +371,7 @@ const getUserPublicInfo = async (req, res) => {
 
         res.status(200).json({
             userId: user.userId,
-            firstName: user.firstName, 
+            firstName: user.firstName,
             lastName: user.lastName
         })
 

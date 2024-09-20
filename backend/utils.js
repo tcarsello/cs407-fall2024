@@ -20,7 +20,7 @@ const generateJoinCode = async () => {
             .toString('hex')
             .slice(0, codeLength)
             .toUpperCase()
-        
+
         course = await Course.findOne({
             where: {
                 joinCode: code

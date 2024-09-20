@@ -59,7 +59,7 @@ const Login = () => {
         setLoginError('')
 
         localStorage.setItem('user', JSON.stringify(json))
-        dispatch({type: 'LOGIN', payload: json})
+        dispatch({ type: 'LOGIN', payload: json })
 
     }
 
@@ -86,10 +86,10 @@ const Login = () => {
         }
 
         setRegisterError('')
-        
+
         localStorage.setItem('user', JSON.stringify(json))
-        dispatch({type: 'LOGIN', payload: json})
-        
+        dispatch({ type: 'LOGIN', payload: json })
+
     }
 
     return (

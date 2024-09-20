@@ -15,9 +15,9 @@ const sequelize = new Sequelize(
         logging: false,
         dialectOptions: {
             ssl: {
-              require: true,
-              rejectUnauthorized: true,
-              ca: fs.readFileSync(sslCert).toString()
+                require: true,
+                rejectUnauthorized: true,
+                ca: fs.readFileSync(sslCert).toString()
             }
         }
     }

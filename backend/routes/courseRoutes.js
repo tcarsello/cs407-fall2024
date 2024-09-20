@@ -21,7 +21,7 @@ router.post('/:courseId/decline', requireAuth, declineInvite)
 router.post('/:courseId/join', requireAuth, joinCourse)
 router.post('/:courseId/leave', requireAuth, leaveCourse)
 router.post('/:courseId/remove', requireAuth, removeUserFromCourse)
-
+I
 router.put('/:courseId/settings', requireAuth, putSettings)
 
 router.get('/:courseId/invites', requireAuth, getCourseInvites)

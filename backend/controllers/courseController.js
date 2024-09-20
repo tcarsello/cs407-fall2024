@@ -24,7 +24,7 @@ const createCourse = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(400).json({error: err})
+        res.status(400).json({ error: err })
     }
 }
 
@@ -78,13 +78,13 @@ const getCourse = async (req, res) => {
         `
 
         const results = await sequelize.query(queryString, {
-            replacements:{
+            replacements: {
                 courseId,
                 userId: req.user.userId
             },
             type: Sequelize.QueryTypes.SELECT
         })
-        
+
         if (results.length <= 0) throw 'Course not found for such user'
 
         const course = await Course.findOne({
@@ -97,7 +97,7 @@ const getCourse = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(400).json({error: err})
+        res.status(400).json({ error: err })
     }
 }
 
@@ -120,7 +120,7 @@ const deleteCourse = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(400).json({error: err})
+        res.status(400).json({ error: err })
     }
 }
 
@@ -150,7 +150,7 @@ const updateCourse = async (req, res) => {
 
     } catch (err) {
         console.error(err)
-        res.status(400).json({error: err})
+        res.status(400).json({ error: err })
     }
 }
 
@@ -239,7 +239,7 @@ const leaveCourse = async (req, res) => {
         })
         if (!user) throw "User not found"
 
-        const course = await Course.findOne({ where: { courseId } } )
+        const course = await Course.findOne({ where: { courseId } })
         if (!course) throw "Course not found"
 
         user.removeCourse(course)
@@ -437,7 +437,7 @@ const joinCourseByCode = async (req, res) => {
     try {
 
         const { joinCode } = req.body
-        
+
         const user = await User.findOne({
             where: {
                 userId: req.user.userId
