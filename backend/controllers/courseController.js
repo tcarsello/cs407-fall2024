@@ -1,8 +1,14 @@
+require('dotenv').config()
+
 const Course = require('../models/courseModel')
 const User = require('../models/userModel')
 const CourseInvite = require('../models/courseInviteModel')
 
+const Buffer = require('buffer').Buffer
+const path = require('path')
+
 const sequelize = require('../database')
+const s3 = require('../objectstore')
 const { Sequelize } = require('sequelize')
 
 const { generateJoinCode } = require('../utils')
@@ -463,6 +469,94 @@ const joinCourseByCode = async (req, res) => {
     }
 }
 
+const uploadCoursePicture = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+        const { mimeType, imageBase64 } = req.body
+
+        if (!mimeType) throw "Mime type must be provided"
+        if (!imageBase64) throw 'Image base64 must be provided'
+
+        const course = await Course.findOne({
+            where: {
+                courseId,
+                coordinatorId: req.user.userId
+            }
+        })
+        if (!course) throw "Course not found for this user"
+
+        let fileExt = mimeType.split('/')[1].toLowerCase()
+
+        if (fileExt === 'jpg') fileExt = 'jpeg'
+        if (!['jpeg', 'png'].includes(fileExt)) throw "File extension must be jpeg or png"
+
+        const buffer = Buffer.from(imageBase64, 'base64')
+
+        const params = {
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: `course_pictures/${courseId}_cp.${fileExt}`,
+            Body: buffer,
+            ContentType: mimeType
+        }
+        const data = await s3.upload(params).promise()
+
+        await Course.update(
+            {
+                pfpFileType: fileExt
+            },
+            {
+                where: {
+                    courseId
+                }
+            }
+        )
+
+        res.status(200).json({
+            message: 'Profile picture uploaded successfully',
+            imageUrl: data.Location
+        })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const getCoursePicture = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const course = await Course.findOne({
+            where: {
+                courseId
+            }
+        })
+        if (!course) throw "Course not found"
+
+        if (!course.pfpFileType) {
+
+            const defaultImagePath = path.join(__dirname, '../static/default-pfp.jpeg')
+            res.sendFile(defaultImagePath)
+            return
+
+        }
+
+        const params = {
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: `course_pictures/${courseId}_cp.${course.pfpFileType}`
+        }
+
+        const data = await s3.getObject(params).promise()
+
+        res.setHeader('Content-Type', data.ContentType || `image/${course.pfpFileType}`)
+        res.send(data.Body)
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -476,5 +570,7 @@ module.exports = {
     getMembers,
     putSettings,
     getSettingsAdmin,
-    joinCourseByCode
+    joinCourseByCode,
+    uploadCoursePicture,
+    getCoursePicture
 }

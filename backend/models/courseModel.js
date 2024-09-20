@@ -34,6 +34,11 @@ const Course = sequelize.define('course', {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 10
+    },
+    pfpFileType: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
     }
 }, {
     tableName: 'course',

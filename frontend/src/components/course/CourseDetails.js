@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 
 import { Link } from 'react-router-dom'
@@ -13,6 +13,7 @@ const CourseDetails = ({ course, onDelete }) => {
 
     const [deleteCoursePopupEnabled, setDeleteCoursePopupEnabled] = useState(false)
     const [leaveCoursePopupEnabled, setLeaveCoursePopupEnabled] = useState(false)
+    const [coursePictureUrl, setCoursePictureUrl] = useState()
 
     const handleDeleteCourse = async () => {
         const response = await fetch(`/api/course/${course.courseId}`, {
@@ -40,21 +41,53 @@ const CourseDetails = ({ course, onDelete }) => {
         }
     }
 
-    return (
-        <div className='course-details'>
-            <div className='flex' style={{ alignItems: 'center' }}>
-                <Link to={`/course/${course.courseId}`} style={{ all: 'unset', flex: 1 }}>
-                    <h2>{course.courseName}</h2>
-                </Link>
-                {course.coordinatorId === user.userId ?
-                    <GrTrash size='25' onClick={() => { setDeleteCoursePopupEnabled(true) }} />
-                    : <GrClose size='25' onClick={() => { setLeaveCoursePopupEnabled(true) }} />
+    useEffect(() => {
+
+        const fetchCourseImage = async () => {
+            try {
+
+                const response = await fetch(`/api/course/${course.courseId}/picture`)
+
+                if (!response.ok) {
+                    console.error('Failed to fetch profile picture.')
+                    return
                 }
+
+                const blob = await response.blob()
+                const imageUrl = URL.createObjectURL(blob)
+                setCoursePictureUrl(imageUrl)
+
+            } catch (err) {
+                console.err(err)
+            }
+        }
+
+        if (user && course) {
+            fetchCourseImage()
+        }
+
+    }, [])
+
+    return (
+        <div className='course-details flex'>
+            <div className='course-pfp-container'>
+                {coursePictureUrl && <img src={coursePictureUrl} alt='Profile Picture' />}
             </div>
-            <span>{course.courseDescription}</span>
-            <br />
-            <br />
-            <span style={{ color: 'grey', fontStyle: 'italic' }}>{`Active Games: 0 / ${course.gameLimit}`}</span>
+            <div style={{ flex: 1, marginLeft: '15px' }}>
+                <div className='flex' style={{ alignItems: 'center' }}>
+                    <Link to={`/course/${course.courseId}`} style={{ all: 'unset', flex: 1 }}>
+                        <h2>{course.courseName}</h2>
+                    </Link>
+                    {course.coordinatorId === user.userId ?
+                        <GrTrash size='25' onClick={() => { setDeleteCoursePopupEnabled(true) }} />
+                        : <GrClose size='25' onClick={() => { setLeaveCoursePopupEnabled(true) }} />
+                    }
+                </div>
+                <span>{course.courseDescription}</span>
+                <br />
+                <br />
+                <span style={{ color: 'grey', fontStyle: 'italic' }}>{`Active Games: 0 / ${course.gameLimit}`}</span>
+            </div>
 
             <ConfirmDialog
                 text='Are you sure you want to delete this course?'

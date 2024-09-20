@@ -17,6 +17,13 @@ const CourseSettings = () => {
     const [gameSettingsFormError, setGameSettingsFormError] = useState()
     const [gameSettingsFormMsg, setGameSettingsFormMsg] = useState()
 
+    const [coursePictureUrl, setCoursePictureUrl] = useState()
+    const [selectedFile, setSelectedFile] = useState()
+    const [isUploading, setIsUploading] = useState(false)
+    const [uploadError, setUploadError] = useState()
+    const [triggerEffect, setTriggerEffect] = useState(false)
+    const [fileBase64, setFileBase64] = useState()
+
     const putSettings = async () => {
         const bodyContent = {
             accessType: accessTypeSelection,
@@ -70,6 +77,62 @@ const CourseSettings = () => {
 
     }
 
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0]
+        setSelectedFile(file)
+
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1]
+            setFileBase64(base64)
+        }
+
+        if (file) {
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleUpload = async (e) => {
+        e.preventDefault()
+
+        if (!selectedFile) {
+            setUploadError('Please select a file before uploading')
+            return
+        }
+
+        setUploadError(null)
+        setIsUploading(true)
+
+        const bodyContent = {
+            mimeType: selectedFile.type,
+            imageBase64: fileBase64
+        }
+
+        const response = await fetch(`/api/course/${course.courseId}/picture`, {
+            method: 'POST',
+            body: JSON.stringify(bodyContent),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            }
+        })
+
+        try {
+            const json = await response.json()
+            if (!response.ok) {
+                setUploadError(json.error || 'Error uploading profile picture')
+            } else {
+                setTriggerEffect(prev => !prev)
+            }
+    
+            setIsUploading(false)
+        } catch (err) {
+            console.log(err)
+            setUploadError('Upload error')
+            setIsUploading(false)
+        }
+    }
+
     useEffect(() => {
 
         const fetchSettings = async () => {
@@ -84,6 +147,7 @@ const CourseSettings = () => {
                 })
                 const json = await response.json()
                 setAccessCode(json.joinCode)
+                if (json.joinCode) setAccessTypeSelection('code')
                 setGameSettingsForm({ ...gameSettingsForm, gameLimit: json.gameLimit })
             } catch (err) {
                 console.error(err)
@@ -91,11 +155,33 @@ const CourseSettings = () => {
 
         }
 
-        if (user && course) {
-            fetchSettings()
+        const fetchCoursePicture = async () => {
+
+            try {
+
+                const response = await fetch(`/api/course/${course.courseId}/picture`)
+
+                if (!response.ok) {
+                    console.error('Failed to fetch profile picture.')
+                    return
+                }
+
+                const blob = await response.blob()
+                const imageUrl = URL.createObjectURL(blob)
+                setCoursePictureUrl(imageUrl)
+
+            } catch (err) {
+                console.error('Error fetching profile picture:', err)
+            }
+
         }
 
-    }, [user, course])
+        if (user && course) {
+            fetchSettings()
+            fetchCoursePicture()
+        }
+
+    }, [user, course, triggerEffect])
 
     return (
         <>
@@ -148,6 +234,25 @@ const CourseSettings = () => {
                     {gameSettingsFormError && <p className='form-error'>{gameSettingsFormError}</p>}
                     {gameSettingsFormMsg && <p className='form-msg'>{gameSettingsFormMsg}</p>}
                 </form>
+            </div>
+
+            <div className='content-card'>
+                <h2>Course Picture</h2>
+                <div className='flex' style={{ alignItems: 'center' }}>
+                    <div className='settings-pfp-container'>
+                        {coursePictureUrl && <img src={coursePictureUrl} alt='Profile Picture' />}
+                    </div>
+                    <div style={{ paddingLeft: '15px' }}>
+                        <input
+                            className='standard-form-input'
+                            type='file'
+                            accept='image/*'
+                            onChange={handleFileChange}
+                        />
+                        <button className='standard-button' onClick={handleUpload}>{isUploading ? 'Uploading ...' : 'Upload Course Picture'}</button>
+                        {uploadError && <p className='form-error'>{uploadError}</p>}
+                    </div>
+                </div>
             </div>
 
         </>
