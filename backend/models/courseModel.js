@@ -24,6 +24,11 @@ const Course = sequelize.define('course', {
     courseDescription: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    joinCode: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
     }
 }, {
     tableName: 'course',

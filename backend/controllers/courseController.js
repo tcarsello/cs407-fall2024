@@ -5,6 +5,8 @@ const CourseInvite = require('../models/courseInviteModel')
 const sequelize = require('../database')
 const { Sequelize } = require('sequelize')
 
+const { generateJoinCode } = require('../utils')
+
 const createCourse = async (req, res) => {
     try {
 
@@ -361,6 +363,102 @@ const getMembers = async (req, res) => {
     }
 }
 
+const putSettings = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+        const { accessType } = req.body
+
+        console.log(accessType)
+
+        const course = await Course.findOne({
+            where: {
+                courseId,
+                coordinatorId: req.user.userId
+            }
+        })
+
+        if (!course) throw 'Course not found for this user'
+
+        let joinCode = null;
+        if (accessType === 'code') {
+            joinCode = await generateJoinCode()
+        }
+
+        await Course.update(
+            {
+                joinCode
+            },
+            {
+                where: {
+                    courseId,
+                    coordinatorId: req.user.userId
+                }
+            }
+        )
+
+        res.status(200).json({ joinCode })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const getSettingsAdmin = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const course = await Course.findOne({
+            where: {
+                courseId,
+                coordinatorId: req.user.userId
+            }
+        })
+
+        if (!course) throw 'Course not found for this user'
+
+        const settings = {
+            joinCode: course.joinCode
+        }
+
+        res.status(200).json(settings)
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const joinCourseByCode = async (req, res) => {
+    try {
+
+        const { joinCode } = req.body
+        
+        const user = await User.findOne({
+            where: {
+                userId: req.user.userId
+            }
+        })
+
+        if (!user) throw 'No user found'
+
+        const course = await Course.findOne({
+            where: {
+                joinCode
+            }
+        })
+
+        if (!course) throw 'Invalid code'
+
+        user.addCourse(course)
+
+        res.status(200).json(course)
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -371,5 +469,8 @@ module.exports = {
     leaveCourse,
     removeUserFromCourse,
     declineInvite,
-    getMembers
+    getMembers,
+    putSettings,
+    getSettingsAdmin,
+    joinCourseByCode
 }

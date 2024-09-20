@@ -21,6 +21,45 @@ const Home = () => {
         courseDescription: ''
     })
     const [createCourseFormError, setCreateCourseFormError] = useState()
+    
+    const [joinCourseEnabled, setJoinCourseEnabled] = useState(false)
+    const [joinCourseForm, setJoinCourseForm] = useState({
+        joinCode: ''
+    })
+    const [joinCourseFormError, setJoinCourseFormError] = useState()
+
+    const handleJoinCourseFormChange = (e) => {
+        const { name, value } = e.target
+        setJoinCourseForm({
+            ...joinCourseForm,
+            [name]: value
+        })
+    }
+
+    const handleJoinCourseFormSubmit = async (e) => {
+        e.preventDefault()
+
+        const response = await fetch(`/api/course/join`, {
+            method: 'POST',
+            body: JSON.stringify(joinCourseForm),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            }
+        })
+
+        const json = await response.json()
+        console.log(json)
+
+        if (response.ok) {
+            setJoinCourseFormError()
+            setJoinCourseEnabled(false)
+            setJoinedCourseList(prev => [...prev, json])
+        } else {
+            setJoinCourseFormError(json.error)
+        }
+    }
+    
     const handleCreateCourseFormChange = (e) => {
         const { name, value } = e.target
         setCreateCourseForm({
@@ -104,7 +143,14 @@ const Home = () => {
                 >
                     Create a Course
                 </button>
-                <button className='standard-button'>Join a Course</button>
+                <button
+                    className='standard-button'
+                    onClick={() => {
+                        setJoinCourseEnabled(true)
+                    }}
+                >
+                    Join a Course
+                </button>
             </div>
 
             <div className='home-content'>
@@ -185,6 +231,28 @@ const Home = () => {
                         placeholder='Course Description'
                         value={createCourseForm.courseDescription}
                         onChange={handleCreateCourseFormChange}
+                    />
+                </div>
+            </PopupForm>
+
+            <PopupForm
+                title='Join a Course'
+                isOpen={joinCourseEnabled}
+                onClose={() => {
+                    setJoinCourseEnabled(false)
+                    setJoinCourseFormError()
+                }}
+                onSubmit={handleJoinCourseFormSubmit}
+                errorText={joinCourseFormError}
+            >
+                <div>
+                    <label>Join Code</label>
+                    <input
+                        type='text'
+                        name='joinCode'
+                        placeholder='Course join code'
+                        value={joinCourseForm.joinCode}
+                        onChange={handleJoinCourseFormChange}
                     />
                 </div>
             </PopupForm>
