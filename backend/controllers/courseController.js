@@ -367,7 +367,7 @@ const putSettings = async (req, res) => {
     try {
 
         const { courseId } = req.params
-        const { accessType } = req.body
+        let { accessType, gameLimit } = req.body
 
         console.log(accessType)
 
@@ -385,9 +385,12 @@ const putSettings = async (req, res) => {
             joinCode = await generateJoinCode()
         }
 
+        if (!gameLimit) gameLimit = 10
+
         await Course.update(
             {
-                joinCode
+                joinCode,
+                gameLimit
             },
             {
                 where: {
@@ -400,7 +403,7 @@ const putSettings = async (req, res) => {
         res.status(200).json({ joinCode })
     } catch (err) {
         console.error(err)
-        res.status(400).json({ error: err })
+        res.status(400).json({ error: 'Invalid settings' })
     }
 }
 
@@ -419,7 +422,8 @@ const getSettingsAdmin = async (req, res) => {
         if (!course) throw 'Course not found for this user'
 
         const settings = {
-            joinCode: course.joinCode
+            joinCode: course.joinCode,
+            gameLimit: course.gameLimit,
         }
 
         res.status(200).json(settings)

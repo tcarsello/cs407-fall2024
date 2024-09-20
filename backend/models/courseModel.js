@@ -29,6 +29,11 @@ const Course = sequelize.define('course', {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null
+    },
+    gameLimit: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 10
     }
 }, {
     tableName: 'course',

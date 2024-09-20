@@ -52,6 +52,9 @@ const CourseDetails = ({ course, onDelete }) => {
                 }
             </div>
             <span>{course.courseDescription}</span>
+            <br />
+            <br />
+            <span style={{color: 'grey', fontStyle: 'italic'}}>{`Active Games: 0 / ${course.gameLimit}`}</span>
 
             <ConfirmDialog
                 text='Are you sure you want to delete this course?'

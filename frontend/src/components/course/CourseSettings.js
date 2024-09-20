@@ -11,16 +11,17 @@ const CourseSettings = () => {
     const [accessTypeSelection, setAccessTypeSelection] = useState('invite')
     const [accessCode, setAccessCode] = useState()
 
-    const handleAccessChange = (e) => {
-        setAccessTypeSelection(e.target.value)
-    }
+    const [gameSettingsForm, setGameSettingsForm] = useState({
+        gameLimit: '10'
+    })
+    const [gameSettingsFormError, setGameSettingsFormError] = useState()
+    const [gameSettingsFormMsg, setGameSettingsFormMsg] = useState()
 
-    const handleAccessSelectionSubmit = async () => {
-
+    const putSettings = async () => {
         const bodyContent = {
-            accessType: accessTypeSelection
+            accessType: accessTypeSelection,
+            gameLimit: gameSettingsForm.gameLimit,
         }
-
 
         const response = await fetch(`/api/course/${course.courseId}/settings`, {
             method: 'PUT',
@@ -30,11 +31,43 @@ const CourseSettings = () => {
                         'Authorization': `Bearer ${user.token}`
                     }
         })
+        return response
+    }
 
+    const handleAccessChange = (e) => {
+        setAccessTypeSelection(e.target.value)
+    }
+
+    const handleAccessSelectionSubmit = async () => {
+
+        const response = await putSettings()
         const json = await response.json()
 
         setAccessCode(json.joinCode)
 
+    }
+
+    const handleGameSettingsFormChange = (e) => {
+        const { name, value } = e.target
+        setGameSettingsForm({
+            ...gameSettingsForm,
+            [name]: value
+        })
+    }
+
+    const handleGameSettingsFormSubmit = async (e) => {
+        e.preventDefault()
+
+        const response = await putSettings()
+        const json = await response.json()
+
+        if (response.ok) {
+            setGameSettingsFormError()
+            setGameSettingsFormMsg('Updated!')
+        } else {
+            setGameSettingsFormError(json.error)
+        }
+        
     }
 
     useEffect(() => {
@@ -51,6 +84,7 @@ const CourseSettings = () => {
                 })
                 const json = await response.json()
                 setAccessCode(json.joinCode)
+                setGameSettingsForm({...gameSettingsForm, gameLimit: json.gameLimit})
             } catch (err) {
                 console.error(err)
             }
@@ -96,6 +130,26 @@ const CourseSettings = () => {
                     onClick={handleAccessSelectionSubmit}
                 >Submit</button>
             </div>
+            
+            <div className='content-card'>
+                <h2 style={{marginTop: 0}}>Game Settings</h2>
+                <form className='standard-form' onSubmit={handleGameSettingsFormSubmit}>
+                    <div>
+                        <label>Student Game Limit</label>
+                        <input
+                            type='text'
+                            name='gameLimit'
+                            value={gameSettingsForm.gameLimit}
+                            placeholder='Limit'
+                            onChange={handleGameSettingsFormChange}
+                        />
+                    </div>
+                    <button type='submit' className='standard-button'>Submit</button>
+                    {gameSettingsFormError && <p className='form-error'>{gameSettingsFormError}</p>}
+                    {gameSettingsFormMsg && <p className='form-msg'>{gameSettingsFormMsg}</p>}
+                </form>
+            </div>
+            
         </>
     )
 }
