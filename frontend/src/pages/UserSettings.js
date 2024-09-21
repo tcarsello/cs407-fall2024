@@ -306,7 +306,7 @@ const UserSettings = () => {
             <div className='settings-card'>
                 <h2>Delete Account</h2>
                 <p style={{ margin: '0' }}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
-                <button onClick={() => setDeleteDialogEnabled(true)} className='standard-button'>Delete Account</button>
+                <button onClick={() => setDeleteDialogEnabled(true)} className='standard-button' style={{ backgroundColor: 'crimson' }}>Delete Account </button>
             </div>
 
             <ConfirmDialog
