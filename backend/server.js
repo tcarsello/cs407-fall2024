@@ -18,6 +18,7 @@ const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')
 const inviteRoutes = require('./routes/inviteRoutes')
 const topicRoutes = require('./routes/topicRoutes')
+const termRoutes = require('./routes/termRoutes')
 
 const app = express()
 
@@ -36,6 +37,7 @@ app.use('/api/user', userRoutes)
 app.use('/api/course', courseRoutes)
 app.use('/api/invite', inviteRoutes)
 app.use('/api/topic', topicRoutes)
+app.use('/api/term', termRoutes)
 
 sequelize.authenticate()
     .then(() => {

@@ -1,6 +1,7 @@
 
 const Topic = require('../models/topicModel')
 const Course = require('../models/courseModel')
+const Term = require('../models/termModel')
 
 const createTopic = async (req, res) => {
     try {
@@ -112,9 +113,28 @@ const deleteTopic = async (req, res) => {
     }
 }
 
+const getTopicTerms = async (req, res) => {
+    try {
+
+        const { topicId } = req.params
+
+        const terms = await Term.findAll({
+            where: {
+                topicId
+            }
+        })
+
+        res.status(200).json({ terms })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createTopic,
     getTopic,
     updateTopic,
-    deleteTopic
+    deleteTopic,
+    getTopicTerms
 }
