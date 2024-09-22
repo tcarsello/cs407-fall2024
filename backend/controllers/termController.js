@@ -14,12 +14,29 @@ const validateAccess = async (termId, userId) => {
             term t
             INNER JOIN topic top ON t."topicId"=top."topicId"
             INNER JOIN course c ON top."courseId"=c."courseId"
-            LEFT JOIN "user" u ON u."userId"=c."coordinatorId"
-            LEFT JOIN course_members cm
-                ON cm."userUserId"=u."userId" AND cm."courseCourseId"=c."courseId"
+            INNER JOIN (
+                    SELECT
+                        cs."courseId",
+                        us."userId"
+                    FROM
+                        "user" us
+                        INNER JOIN course_members cms ON cms."userUserId"=us."userId" 
+                        INNER JOIN course cs ON cs."courseId"=cms."courseCourseId"
+                    
+                    UNION
+
+                    SELECT
+                        cs2."courseId",
+                        us2."userId"
+                    FROM
+                        "user" us2
+                        INNER JOIN course cs2 ON cs2."coordinatorId"=us2."userId"
+                ) subq
+                    ON (subq."courseId"=c."courseId")
         WHERE
             t."termId"=:termId
-            AND u."userId"=:userId
+            AND subq."userId"=:userId
+        ;
     `
     const results = await sequelize.query(queryString, {
         replacements: {
