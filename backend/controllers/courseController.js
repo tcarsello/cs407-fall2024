@@ -3,6 +3,7 @@ require('dotenv').config()
 const Course = require('../models/courseModel')
 const User = require('../models/userModel')
 const CourseInvite = require('../models/courseInviteModel')
+const Topic = require('../models/topicModel')
 
 const Buffer = require('buffer').Buffer
 const path = require('path')
@@ -557,6 +558,24 @@ const getCoursePicture = async (req, res) => {
     }
 }
 
+const getCourseTopics = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+        
+        const topics = await Topic.findAll({
+            where: {
+                courseId
+            }
+        })
+
+        res.status(200).json({ topics })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -572,5 +591,6 @@ module.exports = {
     getSettingsAdmin,
     joinCourseByCode,
     uploadCoursePicture,
-    getCoursePicture
+    getCoursePicture,
+    getCourseTopics
 }
