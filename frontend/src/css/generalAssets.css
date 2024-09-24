@@ -1,0 +1,198 @@
+html, body, #root, .App {
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.page-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+}
+
+p.form-error {
+    margin: 0;
+    margin-top: 10px;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+p.form-msg {
+    margin: 0;
+    margin-top: 10px;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+p.form-worked-msg {
+    margin-left: 20px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+.standard-button {
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    text-decoration: none;
+
+    opacity: 1;
+    transition: opacity 0.15s;
+}
+
+.standard-button:hover {
+    opacity: 0.85;
+}
+
+.unset-all {
+    all: unset;
+}
+
+.standard-form-input, .standard-form input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    
+}
+
+.dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialog-content {
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex {
+    display: flex
+}
+
+.content-card {
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.standard-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.standard-form div {
+    display: flex;
+    align-items: center;
+}
+
+.standard-form div label {
+    width: 200px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.standard-form button {
+    width: auto;
+    align-self: flex-start;
+}
+
+/* assets from settings */
+
+.settings-page-container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+
+    flex-direction: column;
+}
+
+.settings-card {
+    width: 60%;
+    max-width: 1200px;
+    padding: 20px;
+    margin-top: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    border-radius: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.settings-card h2 {
+    width: 100%;
+    border-bottom: 1px solid lightgrey;
+    padding-bottom: 5px;
+}
+
+.settings-card p {
+    width: 100%;
+    border-bottom: 1px solid lightgrey;
+    padding-bottom: 5px;
+}
+
+.settings-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.settings-card form div {
+    display: flex;
+    align-items: center;
+}
+
+.settings-card form div label {
+    width: 200px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.settings-card button {
+    width: auto;
+    align-self: flex-start;
+}
+
+.settings-pfp-container {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+}
+
+.settings-pfp-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block; 
+}

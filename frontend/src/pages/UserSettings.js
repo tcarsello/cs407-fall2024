@@ -1,9 +1,8 @@
-import '../css/settings.css'
-import '../css/general.css'
+import '../css/colors.css'
 import '../css/login.css'
 import '../css/slider.css'
 import '../css/spacers.css'
-
+import '../css/generalAssets.css'
 
 import { useState, useEffect } from 'react'
 
@@ -216,16 +215,36 @@ const UserSettings = () => {
         }
     }
 
-    return (
-        <div className='settings-page-container'>
+    const getClassNames = () => {
+        if (displayMode == 'light mode') {
+            return {
+                settingsCard : 'settings-card',
+                settingsPageContainer: 'settings-page-container',
+                standardFormInput: 'standard-form-input',
+                text: 'light-text',
+                button: 'standard-button light-button-scheme'
+            }
+        }
 
-            <div className='settings-card'>
-                <h2>Account Details</h2>
+        return {
+            settingsCard : 'settings-card foreground-dark',
+            settingsPageContainer: 'settings-page-container background-dark',
+            standardFormInput: 'standard-form-input emphasis-dark',
+            text: 'dark-text',
+            button: 'standard-button dark-button-scheme'
+        }
+    }
+
+    return (
+        <div className={getClassNames().settingsPageContainer}>
+
+            <div className={getClassNames().settingsCard}>
+                <h2 className={getClassNames().text}>Account Details</h2>
                 <form onSubmit={handleUpdateAccount}>
                     <div>
-                        <label>Email Address</label>
+                        <label className={getClassNames().text}>Email Address</label>
                         <input
-                            className='standard-form-input'
+                            className={getClassNames().standardFormInput}
                             type='email'
                             name='email'
                             placeholder='Email'
@@ -235,9 +254,9 @@ const UserSettings = () => {
                         />
                     </div>
                     <div>
-                        <label>First Name</label>
+                        <label className={getClassNames().text}>First Name</label>
                         <input
-                            className='standard-form-input'
+                            className={getClassNames().standardFormInput}
                             type='text'
                             name='firstName'
                             placeholder='First Name'
@@ -247,9 +266,9 @@ const UserSettings = () => {
                         />
                     </div>
                     <div>
-                        <label>Last Name</label>
+                        <label className={getClassNames().text}>Last Name</label>
                         <input
-                            className='standard-form-input'
+                            className={getClassNames().standardFormInput}
                             type='text'
                             name='lastName'
                             placeholder='Last Name'
@@ -258,19 +277,19 @@ const UserSettings = () => {
                             required
                         />
                     </div>
-                    <button className='standard-button'>Update Account</button>
+                    <button className={getClassNames().button}>Update Account</button>
                     {accountError ? <p className='form-error'>{accountError}</p> : null}
                     {accountMsg ? <p className='form-msg'>{accountMsg}</p> : null}
                 </form>
             </div>
 
-            <div className='settings-card'>
-                <h2>Change Password</h2>
+            <div className={getClassNames().settingsCard}>
+                <h2 className={getClassNames().text}>Change Password</h2>
                 <form onSubmit={handleChangePassword}>
                     <div>
-                        <label>New Password</label>
+                        <label className={getClassNames().text}>New Password</label>
                         <input
-                            className='standard-form-input'
+                            className={getClassNames().standardFormInput}
                             type='password'
                             name='password'
                             placeholder='New Password'
@@ -280,9 +299,9 @@ const UserSettings = () => {
                         />
                     </div>
                     <div>
-                        <label>Confirm Password</label>
+                        <label className={getClassNames().text}>Confirm Password</label>
                         <input
-                            className='standard-form-input'
+                            className={getClassNames().standardFormInput}
                             type='password'
                             name='confirmPassword'
                             placeholder='Confirm New Password'
@@ -291,47 +310,47 @@ const UserSettings = () => {
                             required
                         />
                     </div>
-                    <button className='standard-button'>Change Password</button>
+                    <button className={getClassNames().button}>Change Password</button>
                     {passwordError ? <p className='form-error'>{passwordError}</p> : null}
                     {passwordMsg ? <p className='form-msg'>{passwordMsg}</p> : null}
                 </form>
             </div>
 
-            <div className='settings-card'>
-                <h2>Profile Picture</h2>
+            <div className={getClassNames().settingsCard}>
+                <h2 className={getClassNames().text}>Profile Picture</h2>
                 <div className='flex' style={{ alignItems: 'center' }}>
                     <div className='settings-pfp-container'>
                         {profilePictureUrl && <img src={profilePictureUrl} alt='Profile Picture' />}
                     </div>
                     <div style={{ paddingLeft: '15px' }}>
                         <input
-                            className='standard-form-input'
+                            className={getClassNames().standardFormInput}
                             type='file'
                             accept='image/*'
                             onChange={handleFileChange}
                         />
-                        <button className='standard-button' onClick={handleUpload}>{isUploading ? 'Uploading ...' : 'Upload Pofile Picture'}</button>
+                        <button className={getClassNames().button} onClick={handleUpload}>{isUploading ? 'Uploading ...' : 'Upload Pofile Picture'}</button>
                         {uploadError && <p className='form-error'>{uploadError}</p>}
                     </div>
                 </div>
             </div>
 
-            <div className='settings-card'>
-                <h2>Display Settings</h2>
-                <p style={{ margin: '0' }}>Modify your display.</p>
+            <div className={getClassNames().settingsCard}>
+                <h2 className={getClassNames().text}>Display Settings</h2>
+                <p className={getClassNames().text} style={{ margin: '0' }}>Modify your display.</p>
                 <div className='vspacer-med'></div>
                 <label class="switch">
                     <input type="checkbox" defaultChecked={displayMode == 'dark mode'} onChange={(e) => handleDisplayModeChange(e)}/>
                     <span class="slider round"></span>
                 </label>
-                <p>{displayMode}</p>
+                <p className={getClassNames().text}>{displayMode}</p>
             </div>
 
-            <div className='settings-card'>
-                <h2>Delete Account</h2>
+            <div className={getClassNames().settingsCard}>
+                <h2 className={getClassNames().text}>Delete Account</h2>
                 <div></div>
-                <p style={{ margin: '0' }}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
-                <button onClick={() => setDeleteDialogEnabled(true)} className='standard-button' style={{ backgroundColor: 'crimson' }}>Delete Account </button>
+                <p className={getClassNames().text} style={{ margin: '0' }}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
+                <button onClick={() => setDeleteDialogEnabled(true)} className={getClassNames().button} style={{ backgroundColor: 'crimson' }}>Delete Account </button>
             </div>
 
             <ConfirmDialog
