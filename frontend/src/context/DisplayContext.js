@@ -16,28 +16,39 @@ export const DisplayContextProvider = ({ children }) => {
     useEffect(() => {
 
         const getClassNames = () => {
+
             if (user) {
+                if (user.lightMode) {
+                    return {
+                        settingsCard : 'settings-card',
+                        settingsPageContainer: 'settings-page-container',
+                        standardFormInput: 'standard-form-input',
+                        text: 'light-text',
+                        button: 'standard-button light-button-scheme'
+                    }
+                }
+        
                 return {
-                    settingsCard : 'settings-card',
-                    settingsPageContainer: 'settings-page-container',
-                    standardFormInput: 'standard-form-input',
-                    text: 'light-text',
-                    button: 'standard-button light-button-scheme'
+                    settingsCard : 'settings-card foreground-dark',
+                    settingsPageContainer: 'settings-page-container background-dark',
+                    standardFormInput: 'standard-form-input emphasis-dark',
+                    text: 'dark-text',
+                    button: 'standard-button dark-button-scheme'
                 }
             }
-    
+
             return {
-                settingsCard : 'settings-card foreground-dark',
-                settingsPageContainer: 'settings-page-container background-dark',
-                standardFormInput: 'standard-form-input emphasis-dark',
-                text: 'dark-text',
-                button: 'standard-button dark-button-scheme'
+                settingsCard : 'settings-card',
+                settingsPageContainer: 'settings-page-container',
+                standardFormInput: 'standard-form-input',
+                text: 'light-text',
+                button: 'standard-button light-button-scheme'
             }
         }
 
         setClassNames(getClassNames())
 
-    }, [])
+    }, [user])
 
     return (
         <DisplayContext.Provider value={{classNames}}>
