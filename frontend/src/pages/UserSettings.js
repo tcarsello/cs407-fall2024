@@ -1,6 +1,9 @@
 import '../css/settings.css'
 import '../css/general.css'
 import '../css/login.css'
+import '../css/slider.css'
+import '../css/spacers.css'
+
 
 import { useState, useEffect } from 'react'
 
@@ -34,6 +37,8 @@ const UserSettings = () => {
     const [fileBase64, setFileBase64] = useState()
 
     const [deleteDialogEnabled, setDeleteDialogEnabled] = useState(false)
+
+    const [displayMode, setDisplayMode] = useState('light mode')
 
     useEffect(() => {
 
@@ -203,6 +208,14 @@ const UserSettings = () => {
 
     }
 
+    const handleDisplayModeChange = async (e) => {
+        if (displayMode == 'light mode') {
+            setDisplayMode('dark mode')
+        } else {
+            setDisplayMode('light mode')
+        }
+    }
+
     return (
         <div className='settings-page-container'>
 
@@ -304,7 +317,19 @@ const UserSettings = () => {
             </div>
 
             <div className='settings-card'>
+                <h2>Display Settings</h2>
+                <p style={{ margin: '0' }}>Modify your display.</p>
+                <div className='vspacer-med'></div>
+                <label class="switch">
+                    <input type="checkbox" defaultChecked={displayMode == 'dark mode'} onChange={(e) => handleDisplayModeChange(e)}/>
+                    <span class="slider round"></span>
+                </label>
+                <p>{displayMode}</p>
+            </div>
+
+            <div className='settings-card'>
                 <h2>Delete Account</h2>
+                <div></div>
                 <p style={{ margin: '0' }}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
                 <button onClick={() => setDeleteDialogEnabled(true)} className='standard-button' style={{ backgroundColor: 'crimson' }}>Delete Account </button>
             </div>
