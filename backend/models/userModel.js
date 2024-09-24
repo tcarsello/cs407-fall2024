@@ -31,6 +31,11 @@ const User = sequelize.define('user', {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null
+    },
+    lightMode: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
     }
 }, {
     tableName: 'user',
