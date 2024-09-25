@@ -151,6 +151,13 @@ const CourseStudy = () => {
             <h2>Create Study Terms</h2>
             <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
                 <Box display="flex" flexDirection="column" gap={2}>
+                <TextField
+                        label="Topic Name"
+                        value={newTopic.topicName}
+                        onChange={handleTopicChange}
+                        required
+                        fullWidth
+                    />
                     <Box display="flex" alignItems="center" gap={2}>
                         <TextField
                             label="Term"
