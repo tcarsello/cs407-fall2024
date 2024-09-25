@@ -70,6 +70,9 @@ const createTerm = async (req, res) => {
 
         if (!course) throw 'Course not found'
 
+        if (!termName) throw 'Must include term name'
+        if (!termDefinition) throw 'Must include term definition'
+
         const term = await Term.create({
             topicId,
             termName,
@@ -106,7 +109,7 @@ const updateTerm = async (req, res) => {
     try {
 
         const { termId } = req.params
-        const { termName, termDefinition } = req.body
+        const { termName, termDefinition, topicId } = req.body
 
         const access = await validateAccess(termId, req.user.userId)
         if (!access) throw 'No access'
@@ -114,7 +117,8 @@ const updateTerm = async (req, res) => {
         await Term.update(
             {
                 termName,
-                termDefinition
+                termDefinition,
+                topicId
             },
             {
                 where: {

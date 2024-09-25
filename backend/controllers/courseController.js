@@ -598,6 +598,40 @@ const createTerm = async (req, res) => {
     }
 };
 
+const getCourseTerms = async (req, res) => {
+
+    const { courseId } = req.params;
+
+    try {
+
+        const queryString = `
+            SELECT
+                t.*
+            FROM term t
+                INNER JOIN topic ON topic."topicId"=t."topicId"
+                INNER JOIN course c ON c."courseId"=topic."courseId"
+            WHERE
+                c."courseId"=:courseId
+            ORDER BY
+                t."termId"
+            ;
+        `
+        const terms = await sequelize.query(queryString, {
+            replacements: {
+                courseId
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ terms })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -615,5 +649,6 @@ module.exports = {
     uploadCoursePicture,
     getCoursePicture,
     getCourseTopics,
-    createTerm
+    createTerm,
+    getCourseTerms
 }

@@ -4,10 +4,12 @@ import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
 import PopupForm from '../PopupForm'
+import Collapsible from '../Collapsible'
+import TermComponent from './TermComponent'
 
 import { GrFormClose, GrEdit } from 'react-icons/gr'
 
-const TopicComponent = ({ topics, setTopics }) => {
+const TopicComponent = ({ topics, setTopics, refresh }) => {
 
     const { user } = useAuthContext()
     const { course } = useCourseContext()
@@ -37,7 +39,7 @@ const TopicComponent = ({ topics, setTopics }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`,
                 }
-            })
+            }).then(resp => refresh())
 
         } catch (err) { console.error(err) }
 
@@ -127,13 +129,14 @@ const TopicComponent = ({ topics, setTopics }) => {
 
             setEditTopicFormError()
             setTopics(prev => prev.map(item => {
-                if (item.topicId != selectedTopic.topicId) return item
+                if (item.topicId !== selectedTopic.topicId) return item
                 return {
                     ...item,
                     topicName: editTopicForm.topicName
                 }
             }))
             setEditTopicEnabled(false)
+            refresh()
 
         } catch (err) {
             console.error(err)
@@ -210,12 +213,152 @@ const TopicComponent = ({ topics, setTopics }) => {
 
 }
 
+const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
+    
+    const { user } = useAuthContext()
+    const { course } = useCourseContext()
+    
+    const [createTermFormEnabled, setCreateTermFormEnabled] = useState(false)
+    const [createTermForm, setCreateTermForm] = useState({
+        topicName: '',
+        termName: '',
+        termDefinition: ''
+    })
+    const [createTermFormError, setCreateTermFormError] = useState()
+    
+    const handleCreateTermFormChange = (e) => {
+        const { name, value } = e.target
+        setCreateTermForm({
+            ...createTermForm,
+            [name]: value
+        })
+    }
+
+    const handleCreateTerm = async (e) => {
+        e.preventDefault()
+        try {
+
+            const topic = topics.find(topic => topic.topicName === createTermForm.topicName)
+            if (!topic) {
+                setCreateTermFormError('No such topic')
+                return
+            }
+
+            const bodyContent = {
+                ...createTermForm,
+                topicId: topic.topicId
+            }
+
+            const response = await fetch(`/api/term/`, {
+                method: 'POST',
+                body: JSON.stringify(bodyContent),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                setCreateTermFormError(json.error || 'Failed to create term')
+                return
+            }
+
+            setCreateTermFormError()
+            setCreateTermForm({
+                topicId: '',
+                termName: '',
+                termDefinition: ''
+            })
+            setCreateTermFormEnabled(false)
+            setTerms(prev => [...prev, json.term])
+
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    return (
+        <div className='content-card'>
+            <h2>Study Terms</h2>
+            {user.userId === course.coordinatorId && 
+                <div>
+                    <button className='standard-button' onClick={() => setCreateTermFormEnabled(true)}>Create Term</button>
+                </div>
+            }
+            <Collapsible
+                title={`View terms (${terms ? terms.length : 0})`}
+                defaultState={false}
+            >
+                {terms &&
+                    terms.map(term =>
+                        <TermComponent
+                            key={term.termId}
+                            term={term}
+                            topics={topics}
+                            onDelete={() => {setTerms(prev => prev.filter(item => item.termId !== term.termId))}}
+                            onEdit={refresh}
+                        />
+                    )
+                }
+            </Collapsible>
+
+            <PopupForm
+                title='Create a New Term'
+                isOpen={createTermFormEnabled}
+                onClose={() => {
+                    setCreateTermFormEnabled(false)
+                    setCreateTermFormError()
+                }}
+                onSubmit={handleCreateTerm}
+                errorText={createTermFormError}
+            >
+                <div>
+                    <label>Topic Name:</label>
+                    <input
+                        type='text'
+                        name='topicName'
+                        placeholder="Name of this term's topic"
+                        value={createTermForm.topicName}
+                        onChange={handleCreateTermFormChange}
+                    />
+                </div>
+                <div>
+                    <label>Term:</label>
+                    <input
+                        type='text'
+                        name='termName'
+                        placeholder="Name of the term"
+                        value={createTermForm.termName}
+                        onChange={handleCreateTermFormChange}
+                    />
+                </div>
+                <div>
+                    <label>Definition:</label>
+                    <input
+                        type='text'
+                        name='termDefinition'
+                        placeholder="Term's Definition"
+                        value={createTermForm.termDefinition}
+                        onChange={handleCreateTermFormChange}
+                    />
+                </div>
+            </PopupForm>
+        </div>
+    )
+}
+
 const CourseStudy = () => {
     
     const { user } = useAuthContext()
     const { course } = useCourseContext()
     
     const [topicList, setTopicList] = useState([])
+    const [termList, setTermList] = useState([])
+    const [trigger, setTrigger] = useState(false)
+
+    const triggerEffect = () => { setTrigger(!trigger) }
 
     useEffect(() => {
 
@@ -240,18 +383,38 @@ const CourseStudy = () => {
 
         }
 
-        if (user && course) {
-            fetchTopics()
+        const fetchTerms = async () => {
+
+            try {
+
+                const response = await fetch(`/api/course/${course.courseId}/terms`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`,
+                    }
+                })
+
+                const json = await response.json()
+                if (json.terms) setTermList(json.terms)
+
+            } catch (err) {
+                console.error(err)
+            }
+
         }
 
-    }, [user, course])
+        if (user && course) {
+            fetchTopics()
+            fetchTerms()
+        }
+
+    }, [user, course, trigger])
 
     return (
         <div>
-            <TopicComponent topics={topicList} setTopics={setTopicList}/>
-            {user.userId === course.coordinatorId &&
-                <></>
-            }
+            <TopicComponent topics={topicList} setTopics={setTopicList} refresh={triggerEffect}/>
+            <TermsComponent terms={termList} setTerms={setTermList} topics={topicList} refresh={triggerEffect}/>
         </div>
     )
 }

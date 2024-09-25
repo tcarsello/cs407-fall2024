@@ -4,7 +4,8 @@ const { createCourse, getCourse, deleteCourse, updateCourse,
     getCourseInvites, joinCourse, leaveCourse,
     removeUserFromCourse, declineInvite, getMembers,
     putSettings, getSettingsAdmin, joinCourseByCode,
-    uploadCoursePicture, getCoursePicture, getCourseTopics, createTerm } = require('../controllers/courseController')
+    uploadCoursePicture, getCoursePicture, getCourseTopics, createTerm,
+    getCourseTerms } = require('../controllers/courseController')
 const { createInvite } = require('../controllers/courseInviteController')
 
 const router = express.Router()
@@ -31,5 +32,6 @@ router.get('/:courseId/members', requireAuth, getMembers)
 router.get('/:courseId/settings', requireAuth, getSettingsAdmin)
 router.get('/:courseId/picture', getCoursePicture) // No auth required
 router.get('/:courseId/topics', requireAuth, getCourseTopics)
+router.get('/:courseId/terms', requireAuth, getCourseTerms)
 
 module.exports = router
