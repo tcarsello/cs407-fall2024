@@ -17,6 +17,8 @@ const createTopic = async (req, res) => {
 
         if (!course) throw 'Course not found for this user'
 
+        if (!topicName) throw 'Must enter a topic name'
+
         const topic = await Topic.create({
             courseId,
             topicName

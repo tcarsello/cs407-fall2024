@@ -1,226 +1,259 @@
-import React, { useState, useEffect } from 'react';
-import { useCourseContext } from "../../context/CourseContext";
-import { useAuthContext } from "../../hooks/UseAuthContext";
-import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
-import { DragHandle as DragIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { useState, useEffect } from 'react'
 
-const CourseStudyManager = () => {
-    const [isStudyTermVisible, setIsStudyTermVisible] = useState(false);
-    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+import { useCourseContext } from "../../context/CourseContext"
+import { useAuthContext } from "../../hooks/UseAuthContext"
 
-    const handleCreateStudyTerm = () => {
-        setIsStudyTermVisible(true);
-    };
+import PopupForm from '../PopupForm'
 
-    const handleCancel = () => {
-        setShowCancelConfirmation(true);
-    };
+import { GrFormClose, GrEdit } from 'react-icons/gr'
 
-    const handleCancelConfirm = () => {
-        setIsStudyTermVisible(false);
-        setShowCancelConfirmation(false);
-    };
+const TopicComponent = ({ topics, setTopics }) => {
 
-    const handleCancelClose = () => {
-        setShowCancelConfirmation(false);
-    };
+    const { user } = useAuthContext()
+    const { course } = useCourseContext()
+
+    const [createTopicEnabled, setCreateTopicEnabled] = useState(false)
+    const [createTopicForm, setCreateTopicForm] = useState({
+        topicName: ''
+    })
+    const [createTopicFormError, setCreateTopicFormError] = useState()
+
+    const [selectedTopic, setSelectedTopic] = useState()
+    const [editTopicEnabled, setEditTopicEnabled] = useState(false)
+    const [editTopicForm, setEditTopicForm] = useState({
+        topicName: ''
+    })
+    const [editTopicFormError, setEditTopicFormError] = useState()
+
+    const handleDeleteTopics = async (topicId) => {
+
+        setTopics(topics.filter(item => item.topicId !== topicId))
+
+        try {
+
+            fetch(`/api/topic/${topicId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+        } catch (err) { console.error(err) }
+
+    }
+
+    const handleCreateTopicFormChange = (e) => {
+        const { name, value } = e.target
+        setCreateTopicForm({
+            ...createTopicForm,
+            [name]: value
+        })
+    }
+
+    const handleCreateTopic = async (e) => {
+        e.preventDefault()
+
+        try {
+
+            const bodyContent = {
+                ...createTopicForm,
+                courseId: course.courseId
+            }
+            const response = await fetch(`/api/topic/`, {
+                method: 'POST',
+                body: JSON.stringify(bodyContent),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                setCreateTopicFormError(json.error || 'Failed to create topic')
+                return
+            }
+
+            setCreateTopicFormError()
+            setTopics([...topics, json.topic])
+            setCreateTopicEnabled(false)
+            setCreateTopicForm({
+                topicName: ''
+            })
+
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const handleEditTopicClick = (topic) => {
+        setSelectedTopic(topic)
+        setEditTopicForm({
+            topicName: topic.topicName
+        })
+        setEditTopicEnabled(true)
+    }
+
+    const handleEditTopicFormChange = (e) => {
+        const { name, value } = e.target
+        setEditTopicForm({
+            ...editTopicForm,
+            [name]: value
+        })
+    }
+
+    const handleEditTopic = async (e) => {
+        e.preventDefault()
+
+        try {
+
+            const response = await fetch(`/api/topic/${selectedTopic.topicId}/`, {
+                method: 'PATCH',
+                body: JSON.stringify(editTopicForm),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            const json = await response.json()
+
+            if (!response) {
+                setEditTopicFormError(json.error || 'Failed to update topic')
+                return
+            }
+
+            setEditTopicFormError()
+            setTopics(prev => prev.map(item => {
+                if (item.topicId != selectedTopic.topicId) return item
+                return {
+                    ...item,
+                    topicName: editTopicForm.topicName
+                }
+            }))
+            setEditTopicEnabled(false)
+
+        } catch (err) {
+            console.error(err)
+        }
+
+    }
 
     return (
-        <div className="content-card">
-            <h2>Study Terms</h2>
-            {!isStudyTermVisible && (
-                <Button variant="contained" color="primary" onClick={handleCreateStudyTerm}>
-                    Create New Study Terms
-                </Button>
-            )}
-            {isStudyTermVisible && (
+        <div className='content-card'>
+            <h2>Course Topics</h2>
+            {topics &&
+                topics.map(topic => {
+                    return (
+                        <div key={topic.topicId} className='member-manager'>
+                            <p style={{ display: 'inline-block' }}>
+                                {topic.topicName}
+                            </p>
+                            {user.userId === course.coordinatorId &&
+                                <>
+                                    <GrEdit size='20' style={{ marginLeft: '10px' }} onClick={() => handleEditTopicClick(topic)}/>
+                                    <GrFormClose size='25' style={{ marginLeft: '5px' }} onClick={() => {handleDeleteTopics(topic.topicId)}} />
+                                </>
+                            }
+                        </div>
+                    )
+                })
+            }
+            {user.userId === course.coordinatorId && <div>
+                <button className='standard-button' onClick={() => setCreateTopicEnabled(true)}>Create Topic</button>
+            </div>}
+
+            <PopupForm
+                title='Create a New Topic'
+                isOpen={createTopicEnabled}
+                onClose={() => {
+                    setCreateTopicEnabled(false)
+                    setCreateTopicFormError()
+                }}
+                onSubmit={handleCreateTopic}
+                errorText={createTopicFormError}
+            >
                 <div>
-                    <CourseStudy />
-                    <Button variant="outlined" onClick={handleCancel}>
-                        Cancel
-                    </Button>
+                    <label>Topic Name:</label>
+                    <input
+                        type='text'
+                        name='topicName'
+                        placeholder='Name of the new topic'
+                        value={createTopicForm.topicName}
+                        onChange={handleCreateTopicFormChange}
+                    />
                 </div>
-            )}
-            <Dialog open={showCancelConfirmation} onClose={handleCancelClose}>
-                <DialogTitle>Cancel Study Term Creation</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to cancel? Any unsaved changes will be lost.
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCancelClose}color="primar y">
-                        No, Keep Editing
-                    </Button>
-                    <Button onClick={handleCancelConfirm}>
-                        Yes, Cancel
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            </PopupForm>
+
+            <PopupForm
+                title='Update Topic'
+                isOpen={editTopicEnabled}
+                onClose={() => setEditTopicEnabled(false)}
+                onSubmit={handleEditTopic}
+                errorText={editTopicFormError}
+            >
+                <div>
+                    <label>Topic Name:</label>
+                    <input
+                        type='text'
+                        name='topicName'
+                        placeholder='Name of the new topic'
+                        value={editTopicForm.topicName}
+                        onChange={handleEditTopicFormChange}
+                    />
+                </div>
+            </PopupForm>
         </div>
-    );
-};
+    )
+
+}
 
 const CourseStudy = () => {
-    const { course } = useCourseContext();
-    const { user } = useAuthContext();
-
-    const [topics, setTopics] = useState([]);
-    const [newTopic, setNewTopic] = useState({
-        topicName: '',
-    });
-
-    const [newTerm, setNewTerm] = useState({
-        termName: '',
-        termDefinition: '',
-    });
+    
+    const { user } = useAuthContext()
+    const { course } = useCourseContext()
+    
+    const [topicList, setTopicList] = useState([])
 
     useEffect(() => {
+
         const fetchTopics = async () => {
+
             try {
+
                 const response = await fetch(`/api/course/${course.courseId}/topics`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${user.token}`,
-                    },
-                });
-                const data = await response.json();
-                setTopics(data.topics);
-            } catch (error) {
-                console.error('Error fetching topics:', error);
+                    }
+                })
+
+                const json = await response.json()
+                if (json.topics) setTopicList(json.topics)
+
+            } catch (err) {
+                console.error(err)
             }
-        };
 
-        if (course.courseId) {
-            fetchTopics();
         }
-    }, [course.courseId, user.token]);
 
-    const handleTopicChange = (e) => {
-        setNewTopic({ ...newTopic, topicName: e.target.value });
-    };
-
-    const handleTermChange = (e) => {
-        setNewTerm({ ...newTerm, termName: e.target.value });
-    };
-
-    const handleDefinitionChange = (e) => {
-        setNewTerm({ ...newTerm, termDefinition: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        try {
-            const topicResponse = await fetch(`/api/course/${course.courseId}/topics`, {
-                method: 'POST',
-                body: JSON.stringify(newTopic),
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`,
-                },
-            });
-
-            const createdTopic = await topicResponse.json();
-
-            const termResponse = await fetch(`/api/course/${course.courseId}/topics/${createdTopic.topicId}/terms`, {
-                method: 'POST',
-                body: JSON.stringify(newTerm),
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`,
-                },
-            });
-            
-            if (!termResponse.ok) {
-                throw new Error('Failed to create term');
-            }
-    
-            const createdTerm = await termResponse.json();
-
-            setTopics([...topics, { ...createdTopic, terms: [createdTerm] }]);
-            setNewTopic({ topicName: '' });
-            setNewTerm({ termName: '', termDefinition: '' });
-
-        } catch (error) {
-            console.error('Error creating topic and term:', error);
+        if (user && course) {
+            fetchTopics()
         }
-    };
 
-    const handleDelete = async (termId) => {
-            // TODO: Logic to handle term deletion
-        };
+    }, [user, course])
 
     return (
-        <div className="content-card">
-            <h2>Create Study Terms</h2>
-            <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
-                <Box display="flex" flexDirection="column" gap={2}>
-                <TextField
-                        label="Topic Name"
-                        value={newTopic.topicName}
-                        onChange={handleTopicChange}
-                        required
-                        fullWidth
-                    />
-                    <Box display="flex" alignItems="center" gap={2}>
-                        <TextField
-                            label="Term"
-                            value={newTerm.term}
-                            onChange={handleTermChange}
-                            required
-                            fullWidth
-                        />
-                        <Box display="flex" alignItems="center" gap={1}>
-                            <IconButton disabled>
-                                <DragIcon />
-                            </IconButton>
-                            <IconButton onClick={() => handleDelete(-1)}>
-                                <DeleteIcon />
-                            </IconButton>
-                        </Box>
-                    </Box>
-                    <TextField
-                        label="Definition"
-                        value={newTerm.definition}
-                        onChange={handleDefinitionChange}
-                        multiline
-                        rows={4}
-                        required
-                        fullWidth
-                    />
-                    <Button variant="contained" color="primary" type="submit">
-                        Add Term
-                    </Button>
-                </Box>
-            </form>
-
-            <Box display="flex" flexDirection="column" gap={2}>
-                {topics.map((topic) => (
-                    <Box key={topic.topicId} className="tdkdyew">
-                        <h3>{topic.topicName}</h3>
-                        {topic.terms?.map((term, index) => (
-                            <Box key={index} className="tdkdyew" data-term-luid={`term-${index}`}>
-                                <Box className="TermRow t1ewc4qf">
-                                    <Box className="TermText bidlgnh bcuxhjr">{term.termName}</Box>
-                                    <Box className="TermText bidlgnh bvisa2s">
-                                        {term.termDefinition}
-                                    </Box>
-                                    <Box className="TermContent has-richTextToolbar">
-                                        <IconButton disabled>
-                                            <DragIcon />
-                                        </IconButton>
-                                        <IconButton onClick={() => handleDelete(term.termId)}>
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </Box>
-                                </Box>
-                            </Box>
-                        ))}
-                    </Box>
-                ))}
-            </Box>
+        <div>
+            <TopicComponent topics={topicList} setTopics={setTopicList}/>
+            {user.userId === course.coordinatorId &&
+                <></>
+            }
         </div>
-    );
-};
+    )
+}
 
-export default CourseStudyManager;
+export default CourseStudy
