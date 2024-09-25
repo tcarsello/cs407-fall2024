@@ -28,6 +28,6 @@ const Question = sequelize.define('question', {
     tableName: 'question'
 })
 
-Question.belongsTo(Topic, { foreignKey: 'topicId' })
+Question.belongsTo(Topic, { foreignKey: 'topicId', onDelete: 'CASCADE' })
 
 module.exports = Question

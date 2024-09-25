@@ -8,10 +8,13 @@ import { useState, useEffect } from 'react'
 
 import { useAuthContext } from '../hooks/UseAuthContext'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { useDisplayContext } from '../context/DisplayContext'
 
 const UserSettings = () => {
 
     const { user, dispatch } = useAuthContext()
+    const {classNames} = useDisplayContext()
+
 
     const [accountForm, setAccountForm] = useState({
         email: user.email,

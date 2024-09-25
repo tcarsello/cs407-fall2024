@@ -30,6 +30,6 @@ const Term = sequelize.define('term', {
     timestamps: true
 })
 
-Term.belongsTo(Topic, { foreignKey: 'topicId' })
+Term.belongsTo(Topic, { foreignKey: 'topicId', onDelete: 'CASCADE' })
 
 module.exports = Term
