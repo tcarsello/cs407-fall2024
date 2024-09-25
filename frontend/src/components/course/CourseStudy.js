@@ -130,7 +130,11 @@ const CourseStudy = () => {
                     'Authorization': `Bearer ${user.token}`,
                 },
             });
-
+            
+            if (!termResponse.ok) {
+                throw new Error('Failed to create term');
+            }
+    
             const createdTerm = await termResponse.json();
 
             setTopics([...topics, { ...createdTopic, terms: [createdTerm] }]);
