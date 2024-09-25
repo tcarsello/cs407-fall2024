@@ -12,6 +12,7 @@ const Topic = sequelize.define('topic', {
     courseId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        
         references: {
             model: Course,
             key: 'courseId'

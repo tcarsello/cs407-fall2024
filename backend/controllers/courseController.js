@@ -4,6 +4,7 @@ const Course = require('../models/courseModel')
 const User = require('../models/userModel')
 const CourseInvite = require('../models/courseInviteModel')
 const Topic = require('../models/topicModel')
+const Term = require('../models/termModel');
 
 const Buffer = require('buffer').Buffer
 const path = require('path')
@@ -575,6 +576,27 @@ const getCourseTopics = async (req, res) => {
         res.status(400).json({ error: err })
     }
 }
+const createTerm = async (req, res) => {
+    const { courseId, topicId } = req.params;
+    const { termName, termDefinition } = req.body;
+
+    try {
+        const topic = await Topic.findOne({ where: { topicId, courseId } });
+        if (!topic) {
+            return res.status(404).json({ error: 'Topic not found for this course' });
+        }
+
+        const newTerm = await Term.create({
+            topicId: topic.topicId,
+            termName,
+            termDefinition
+        });
+
+        res.status(201).json(newTerm);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to create the term' });
+    }
+};
 
 module.exports = {
     createCourse,
@@ -592,5 +614,6 @@ module.exports = {
     joinCourseByCode,
     uploadCoursePicture,
     getCoursePicture,
-    getCourseTopics
+    getCourseTopics,
+    createTerm
 }
