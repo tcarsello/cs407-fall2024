@@ -12,7 +12,7 @@ const QuestionDetails = ({ question, topics, onDelete }) => {
 
     const [deleteQuestionDialogEnabled, setDeleteQuestionDialogEnabled] = useState(false)
 
-    const topicName = topics.find(topic => topic.topicId === question.topicId).topicName || 'No Topic'
+    const topicName = topics.find(topic => topic.topicId === question.topicId)?.topicName || 'No Topic'
     
     useEffect(() => {
 
