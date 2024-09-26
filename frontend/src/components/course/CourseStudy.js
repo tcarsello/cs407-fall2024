@@ -281,7 +281,7 @@ const FlashcardView = ({ terms }) => {
                     height: isFullScreen ? '60vh' : '250px',
                     transition: 'transform 0.3s ease-in-out',
                     transform: `rotateY(${isFlipped ? '180deg' : '0deg'})`,
-                    transformStyle: 'preserve-3d',
+                    transformStyle: 'preserve-3d'
                 }}
             >
                 <FlashcardContent
@@ -425,6 +425,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
                             variant="contained" 
                             color="primary" 
                             onClick={() => setActiveForm(activeForm ? null : 'createTerm')}
+                            style={{ position: 'unset' }}
                             sx={{ mr: 1 }}
                         >
                             {activeForm === 'createTerm' ? 'Cancel' : 'Create Term'}
@@ -433,6 +434,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
                     <Button 
                         variant={viewMode === 'list' ? 'contained' : 'outlined'} 
                         onClick={() => setViewMode('list')}
+                        style={{ position: 'unset' }}
                         sx={{ mr: 1 }}
                     >
                         List View
@@ -440,6 +442,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
                     <Button 
                         variant={viewMode === 'flashcard' ? 'contained' : 'outlined'} 
                         onClick={() => setViewMode('flashcard')}
+                        style={{ position: 'unset' }}
                     >
                         Flashcard View
                     </Button>
