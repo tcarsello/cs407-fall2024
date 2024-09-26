@@ -115,12 +115,12 @@ p.form-worked-msg {
     gap: 15px;
 }
 
-.standard-form div {
+.standard-form div, .standard-form-div {
     display: flex;
     align-items: center;
 }
 
-.standard-form div label {
+.standard-form div label, .standard-form-div label {
     width: 200px;
     text-align: left;
     font-weight: bold;

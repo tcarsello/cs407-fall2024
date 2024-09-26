@@ -3,11 +3,12 @@ import { useState } from 'react'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/collapsible.css'
 
-const Collapsible = ({ title, defaultState, children }) => {
+const Collapsible = ({ title, defaultState, children, onCollapse }) => {
     const [isOpen, setIsOpen] = useState(defaultState);
 
     const toggleCollapse = () => {
         setIsOpen(!isOpen);
+        if (onCollapse) onCollapse()
     };
 
     return (

@@ -288,7 +288,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                 </div>
             }
             <Collapsible
-                title={`View terms (${terms ? terms.length : 0})`}
+                title={`View Terms (${terms ? terms.length : 0})`}
                 defaultState={false}
             >
                 {terms &&
@@ -349,6 +349,182 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
     )
 }
 
+const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
+
+    const { user } = useAuthContext()
+    const { course } = useCourseContext()
+
+    const [questionTopicName, setTopicName] = useState('')
+    const [questionText, setQuestionText] = useState('')
+    const [questionImageFile, setQuestionImageFile] = useState()
+    const [questionImageBase64, setQuestionImageBase64] = useState()
+    const [createQuestionFormError, setCreateQuestionFormError] = useState()
+    const [answerList, setAnswerList] = useState([])
+
+    if (user.userId !== course.coordinatorId) return null
+
+    const resetCreateQuestionForm = () => {
+        setTopicName('')
+        setQuestionText('')
+        setQuestionImageFile()
+        setQuestionImageBase64()
+        setCreateQuestionFormError()
+        setAnswerList([])
+    }
+
+    const createQuestionSubmit = async (e) => {
+        e.preventDefault()
+
+        try {
+
+            const topic = topics.find(topic => topic.topicName === questionTopicName)
+            if (!topic) {
+                setCreateQuestionFormError('No such topic')
+                return
+            }
+
+            const bodyContent = {
+                text: questionText,
+                topicId: topic.topicId,
+                imageMimeType: questionImageFile?.type,
+                imageBase64: questionImageBase64,
+                answerList
+            }
+
+            const response = await fetch(`/api/question/`, {
+                method: 'POST',
+                body: JSON.stringify(bodyContent),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            const json = await response.json()
+            if (!response.ok) {
+                setCreateQuestionFormError(json.error || 'Failed to create question')
+                return
+            }
+
+            setCreateQuestionFormError()
+            setQuestions(prev => [...prev, json.question])
+
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0]
+        setQuestionImageFile(file)
+
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1]
+            setQuestionImageBase64(base64)
+        }
+
+        if (file) {
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const addAnswerChoice = () => {
+        setAnswerList(prev => [...prev, { text: '', isCorrect: false }])
+    }
+
+    const handleAnswerChange = (index, e) => {
+        const { name, value, type, checked } = e.target;
+        setAnswerList(prev => 
+            prev.map((answer, i) => 
+                i === index 
+                    ? { ...answer, [name]: type === 'checkbox' ? checked : value } 
+                    : answer
+            )
+        );
+    }
+
+    return (
+        <div className='content-card'>
+            <h2>Questions</h2>
+            <Collapsible
+                title='Create Question'
+                defaultState={false}
+                onCollapse={resetCreateQuestionForm}
+            >
+                <form className='standard-form' onSubmit={createQuestionSubmit}>
+                    <div>
+                        <label>Topic Name</label>
+                        <input
+                            type='text'
+                            name='questionTopicName'
+                            placeholder='New question topic name'
+                            value={questionTopicName}
+                            onChange={(e) => setTopicName(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label>Question Text</label>
+                        <input
+                            type='text'
+                            name='questionText'
+                            placeholder='Question?'
+                            value={questionText}
+                            onChange={(e) => setQuestionText(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label>Associated Image</label>
+                        <input
+                            type='file'
+                            accept='image/*'
+                            onChange={handleFileChange}
+                        />
+                    </div>
+                    <div style={{all: 'unset'}}>
+                        <h4>{`Answer Choices (${answerList.length})`}</h4>
+                        <button className='standard-button' onClick={addAnswerChoice}>Add Answer Choice</button>
+                        {answerList.map((answer, index) => 
+                            <div key={index} className='standard-form-div'>
+                                <div>
+                                    <label>{`Choice ${index + 1}`}</label>
+                                    <input
+                                        type='checkbox'
+                                        name='isCorrect'
+                                        value={answer.isCorrect}
+                                        onChange={e => handleAnswerChange(index, e)}
+                                    />
+                                </div>
+                                <input
+                                    type='text'
+                                    name='text'
+                                    value={answer.text}
+                                    placeholder='Answer option text'
+                                    onChange={e => handleAnswerChange(index, e)}
+                                    required
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <button type='submit' className='standard-button'>Create Question</button>
+                    {createQuestionFormError && <p className='form-error'>{createQuestionFormError}</p>}
+                </form>
+            </Collapsible>
+            <Collapsible
+                title={`View Questions (${questions ? questions.length : 0})`}
+                defaultState={false}
+            >
+                {questions &&
+                    questions.map(question =>
+                        <p key={question.questionId}>{question.questionId}</p>
+                    )
+                }
+            </Collapsible>
+        </div>
+    )
+
+}
+
 const CourseStudy = () => {
     
     const { user } = useAuthContext()
@@ -356,6 +532,7 @@ const CourseStudy = () => {
     
     const [topicList, setTopicList] = useState([])
     const [termList, setTermList] = useState([])
+    const [questionList, setQuestionList] = useState([])
     const [trigger, setTrigger] = useState(false)
 
     const triggerEffect = () => { setTrigger(!trigger) }
@@ -404,9 +581,31 @@ const CourseStudy = () => {
 
         }
 
+        const fetchQuestions = async () => {
+
+            try {
+
+                const response = await fetch(`/api/course/${course.courseId}/questions`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`,
+                    }
+                })
+
+                const json = await response.json()
+                if (json.questions) setQuestionList(json.questions)
+
+            } catch (err) {
+                console.error(err)
+            }
+
+        }
+
         if (user && course) {
             fetchTopics()
             fetchTerms()
+            fetchQuestions()
         }
 
     }, [user, course, trigger])
@@ -415,6 +614,7 @@ const CourseStudy = () => {
         <div>
             <TopicComponent topics={topicList} setTopics={setTopicList} refresh={triggerEffect}/>
             <TermsComponent terms={termList} setTerms={setTermList} topics={topicList} refresh={triggerEffect}/>
+            <QuestionsComponent questions={questionList} setQuestions={setQuestionList} refresh={triggerEffect} topics={topicList}/>
         </div>
     )
 }

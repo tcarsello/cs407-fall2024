@@ -31,7 +31,7 @@ const Answer = sequelize.define('answer', {
     timestamps: true
 })
 
-Answer.belongsTo(Question, { foreignKey: 'questionId' })
+Answer.belongsTo(Question, { foreignKey: 'questionId', onDelete: 'CASCADE' })
 Question.hasMany(Answer, { foreignKey: 'questionId' })
 
 module.exports = Answer

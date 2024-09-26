@@ -4,7 +4,8 @@ const Course = require('../models/courseModel')
 const User = require('../models/userModel')
 const CourseInvite = require('../models/courseInviteModel')
 const Topic = require('../models/topicModel')
-const Term = require('../models/termModel');
+const Term = require('../models/termModel')
+const Question = require('../models/questionModel')
 
 const Buffer = require('buffer').Buffer
 const path = require('path')
@@ -632,6 +633,37 @@ const getCourseTerms = async (req, res) => {
 
 }
 
+const getCourseQuestions = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const queryString = `
+            SELECT
+                q.*
+            FROM
+                question q
+                INNER JOIN topic t ON t."topicId"=q."topicId"
+                INNER JOIN course c ON c."courseId"=t."courseId"
+            WHERE
+                c."courseId" = :courseId
+            ;
+        `
+        const questions = await sequelize.query(queryString, {
+            replacements: {
+                courseId
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ questions })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -650,5 +682,6 @@ module.exports = {
     getCoursePicture,
     getCourseTopics,
     createTerm,
-    getCourseTerms
+    getCourseTerms,
+    getCourseQuestions
 }
