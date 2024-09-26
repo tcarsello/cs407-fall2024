@@ -83,9 +83,43 @@ const updateQuestion = async (req, res) => {
 }
 
 const deleteQuestion = async (req, res) => {
+
     try {
 
-        res.status(200).json()
+        const { questionId } = req.params
+
+        const question = await Question.findOne({ where: { questionId} })
+        if (!question) throw 'Question not found'
+
+        const valid = await validateCoordinator(req.user.userId, question.topicId)
+        if (!valid) throw 'No access to this topic'
+
+        await Question.destroy({
+            where: {
+                questionId
+            }
+        })
+
+        res.status(200).json({ message: 'Question removed' })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const getQuestionAnswers = async (req, res) => {
+    try {
+
+        const { questionId } = req.params
+
+        const answers = await Answer.findAll({
+            where: {
+                questionId
+            }
+        })
+
+        res.status(200).json({answers})
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
@@ -96,5 +130,6 @@ module.exports = {
     createQuestion,
     getQuestion,
     updateQuestion,
-    deleteQuestion
+    deleteQuestion,
+    getQuestionAnswers
 }
