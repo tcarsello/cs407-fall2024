@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react'
 import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
+import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
+import { DragHandle as DragIcon, Delete as DeleteIcon } from '@mui/icons-material';
+
 import PopupForm from '../PopupForm'
 import Collapsible from '../Collapsible'
 import TermComponent from './TermComponent'
@@ -225,6 +228,8 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
         termDefinition: ''
     })
     const [createTermFormError, setCreateTermFormError] = useState()
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+
     
     const handleCreateTermFormChange = (e) => {
         const { name, value } = e.target
@@ -279,6 +284,15 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
         }
     }
 
+    const handleCancel = () => {
+        setShowCancelConfirmation(true);
+    };
+
+    const handleCancelConfirm = () => {
+        setCreateTermFormEnabled(false)
+        setShowCancelConfirmation(false);
+    };
+
     return (
         <div className='content-card'>
             <h2>Study Terms</h2>
@@ -304,47 +318,64 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                 }
             </Collapsible>
 
-            <PopupForm
-                title='Create a New Term'
-                isOpen={createTermFormEnabled}
-                onClose={() => {
-                    setCreateTermFormEnabled(false)
-                    setCreateTermFormError()
-                }}
-                onSubmit={handleCreateTerm}
-                errorText={createTermFormError}
-            >
+            {createTermFormEnabled && (
                 <div>
-                    <label>Topic Name:</label>
-                    <input
-                        type='text'
-                        name='topicName'
-                        placeholder="Name of this term's topic"
-                        value={createTermForm.topicName}
-                        onChange={handleCreateTermFormChange}
-                    />
+                    <h2>Create Study Terms</h2>
+                    <form onSubmit={handleCreateTerm} style={{ marginBottom: '20px' }}>
+                        <Box display="flex" flexDirection="column" gap={2}>
+                        <TextField
+                                label="Name of this term's topic"
+                                name="topicName"
+                                value={createTermForm.topicName}
+                                onChange={handleCreateTermFormChange}
+                                required
+                                fullWidth
+                            />
+                            <Box display="flex" alignItems="center" gap={2}>
+                                <TextField
+                                    label="Term"
+                                    name="termName"
+                                    value={createTermForm.termName}
+                                    onChange={handleCreateTermFormChange}
+                                    required
+                                    fullWidth
+                                />
+                            </Box>
+                            <TextField
+                                label="Definition"
+                                name="termDefinition"
+                                value={createTermForm.termDefinition}
+                                onChange={handleCreateTermFormChange}
+                                multiline
+                                rows={4}
+                                required
+                                fullWidth
+                            />
+                            <Button variant="contained" color="primary" type="submit">
+                                Add Term
+                            </Button>
+                        </Box>
+                    </form>
+                    {createTermFormError && <p className='form-error'>{createTermFormError}</p>}
+                    <Button variant="outlined" onClick={handleCancel}>
+                        Cancel
+                    </Button>
                 </div>
-                <div>
-                    <label>Term:</label>
-                    <input
-                        type='text'
-                        name='termName'
-                        placeholder="Name of the term"
-                        value={createTermForm.termName}
-                        onChange={handleCreateTermFormChange}
-                    />
-                </div>
-                <div>
-                    <label>Definition:</label>
-                    <input
-                        type='text'
-                        name='termDefinition'
-                        placeholder="Term's Definition"
-                        value={createTermForm.termDefinition}
-                        onChange={handleCreateTermFormChange}
-                    />
-                </div>
-            </PopupForm>
+            )}
+            <Dialog open={showCancelConfirmation} onClose={handleCancelConfirm}>
+                <DialogTitle>Cancel Study Term Creation</DialogTitle>
+                <DialogContent>
+                    Are you sure you want to cancel? Any unsaved changes will be lost.
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowCancelConfirmation(false)} color="primary">
+                        No, Keep Editing
+                        </Button>
+                    <Button onClick={handleCancelConfirm}>
+                        Yes, Cancel
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     )
 }
