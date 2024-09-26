@@ -1,0 +1,27 @@
+.vspacer-xxsmall {
+    padding-top: 2px;
+}
+
+.vspacer-xsmall {
+    padding-top: 4px;
+}
+
+.vspacer-small {
+    padding-top: 6px;
+}
+
+.vspacer-med {
+    padding-top: 9px;
+}
+
+.vspacer-large {
+    padding-top: 12px;
+}
+
+.vspacer-xlarge {
+    padding-top: 28px;
+}
+
+.vspacer-xxlarge {
+    padding-top: 32px;
+}

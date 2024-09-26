@@ -1,0 +1,69 @@
+/* general background definitions for dark mode */
+
+.background-dark {
+    background-color: #11001c;
+}
+
+.foreground-dark {
+    background-color: #290025;
+}
+
+.neutral-dark {
+    background-color: #35012c;
+}
+
+.overlay-dark {
+    background-color: #3a015c;
+}
+
+.emphasis-dark {
+    background-color: #4f0147;
+}
+
+.dark-text {
+    color: azure;
+}
+
+.dark-hazard {
+    background-color: #e07a5f;
+}
+
+.dark-button-scheme {
+    background-color: #774936;
+    color: white;
+}
+
+/* general background definitions for light mode */
+
+.background-light {
+    background-color: #f1faee;
+}
+
+.foreground-light {
+    background-color: #a8dadc;
+}
+
+.neutral-light {
+    background-color: #457b9d;
+}
+
+.overlay-light {
+    background-color: #e5e5e5;
+}
+
+.emphasis-light {
+    background-color: #fca311;
+}
+
+.light-text {
+    color: #1d3557;
+}
+
+.light-hazard {
+    background-color: #e63946;
+}
+
+.light-button-scheme {
+    background-color: #0056b3;
+    color: white;
+}
