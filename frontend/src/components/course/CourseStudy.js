@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 import { FlashcardContainer, FlashcardContent } from '../../styles/FlashcardStyles';
 
 import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, Grow, IconButton, Typography } from '@mui/material';
-import { ChevronLeft, ChevronRight, Flip } from '@mui/icons-material';
+import { ChevronLeft, ChevronRight, Flip, Fullscreen, FullscreenExit } from '@mui/icons-material';
 
 import PopupForm from '../PopupForm'
 import Collapsible from '../Collapsible'
@@ -221,6 +221,9 @@ const TopicComponent = ({ topics, setTopics, refresh }) => {
 const FlashcardView = ({ terms }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const flashcardRef = useRef(null);
+
 
     const handleNext = () => {
         setIsFlipped(false);
@@ -240,19 +243,47 @@ const FlashcardView = ({ terms }) => {
         setIsFlipped(!isFlipped);
     };
 
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            flashcardRef.current.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    useEffect(() => {
+        const handleFullScreenChange = () => {
+            setIsFullScreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullScreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    }, []);
+
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
-            <Grow in={true}>
-                <FlashcardContainer onClick={handleFlip}>
-                    <FlashcardContent isFlipped={!isFlipped}>
-                        <Typography variant="h5">{terms[currentIndex].termName}</Typography>
-                    </FlashcardContent>
-                    <FlashcardContent isFlipped={isFlipped}>
-                        <Typography variant="body1">{terms[currentIndex].termDefinition}</Typography>
-                    </FlashcardContent>
-                </FlashcardContainer>
-            </Grow>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <Box 
+            ref={flashcardRef}
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: isFullScreen ? '100vh' : 'auto',
+                width: '100%',
+                bgcolor: 'background.paper',
+            }}
+        >
+            <FlashcardContainer onClick={handleFlip} sx={{ width: isFullScreen ? '80vw' : '400px', height: isFullScreen ? '60vh' : '250px' }}>
+                <FlashcardContent isFlipped={!isFlipped}>
+                    <Typography variant={isFullScreen ? "h3" : "h5"}>{terms[currentIndex].termName}</Typography>
+                </FlashcardContent>
+                <FlashcardContent isFlipped={isFlipped}>
+                    <Typography variant={isFullScreen ? "h4" : "body1"}>{terms[currentIndex].termDefinition}</Typography>
+                </FlashcardContent>
+            </FlashcardContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
                 <IconButton onClick={handlePrevious} color="primary">
                     <ChevronLeft />
                 </IconButton>
@@ -261,6 +292,9 @@ const FlashcardView = ({ terms }) => {
                 </IconButton>
                 <IconButton onClick={handleNext} color="primary">
                     <ChevronRight />
+                </IconButton>
+                <IconButton onClick={toggleFullScreen} color="primary">
+                    {isFullScreen ? <FullscreenExit /> : <Fullscreen />}
                 </IconButton>
             </Box>
             <Typography variant="body2" sx={{ mt: 1 }}>
