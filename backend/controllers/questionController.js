@@ -1,3 +1,4 @@
+require('dotenv').config()
 
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
@@ -7,6 +8,9 @@ const Answer = require('../models/answerModel')
 
 const sequelize = require('../database')
 const { Sequelize } = require('sequelize')
+const s3 = require('../objectstore')
+
+const Buffer = require('buffer').Buffer
 
 const validateCoordinator = async (userId, topicId) => {
 
@@ -34,6 +38,35 @@ const validateCoordinator = async (userId, topicId) => {
 
 }
 
+const uploadQuestionImage = async (questionId, imageBase64, imageMimeType) => {
+
+    let fileExt = imageMimeType.split('/')[1]
+    if (fileExt === 'jpg') fileExt = 'jpeg'
+    if (!['png', 'jpeg'].includes(fileExt)) throw 'Invalid image type (png or jpeg accepted)'
+
+    const buffer = Buffer.from(imageBase64, 'base64')
+
+    const params = {
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Key: `question_pictures/${questionId}.${fileExt}`,
+        Body: buffer,
+        ContentType: imageMimeType
+    }
+    const data = await s3.upload(params).promise()
+
+    await Question.update(
+        {
+            imageURI: data.Location
+        },
+        {
+            where: {
+                questionId
+            }
+        }
+    )
+
+}
+
 const createQuestion = async (req, res) => {
     try {
 
@@ -52,6 +85,17 @@ const createQuestion = async (req, res) => {
             topicId
         })
 
+        if (!question) throw 'Failed to create question'
+
+        // Upload image if exists
+        if (imageBase64 && imageMimeType) {
+
+            uploadQuestionImage(question.questionId, imageBase64, imageMimeType).catch(err => {
+                console.error('Question image upload failed: ', err)
+            })
+
+        }
+
         // Make answers
         await Promise.all(answerList.map(answer => Answer.create({ ...answer, questionId: question.questionId })))
 
@@ -65,7 +109,22 @@ const createQuestion = async (req, res) => {
 const getQuestion = async (req, res) => {
     try {
 
-        res.status(200).json()
+        const { questionId } = req.params
+
+        const question = await Question.findOne({
+            where: { questionId }
+        })
+
+        if (!question) throw 'Question not found'
+
+        res.status(200).json({
+            question: {
+                questionId: question.questionId,
+                topicId: question.topicId,
+                text: question.text,
+            },
+            hasImage: question.imageURI ? true : false
+        })
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })
@@ -126,10 +185,47 @@ const getQuestionAnswers = async (req, res) => {
     }
 }
 
+const getQuestionPicture = async (req, res) => {
+
+    try {
+
+        const { questionId } = req.params
+
+        const question = await Question.findOne({
+            where: { questionId }
+        })
+
+        if (!question) throw 'Question not found'
+        if (!question.imageURI) {
+            res.status(404).json()
+            return
+        }
+
+        const bucketName = question.imageURI.split('.s3.amazonaws.com')[0].split('https://')[1];
+        const key = question.imageURI.split('.s3.amazonaws.com/')[1];
+
+        // Parameters for getObject
+        const params = {
+            Bucket: bucketName,
+            Key: key
+        };
+
+        const data = await s3.getObject(params).promise();
+
+        res.setHeader('Content-Type', data.ContentType)
+        res.send(data.Body)
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+
+} 
+
 module.exports = {
     createQuestion,
     getQuestion,
     updateQuestion,
     deleteQuestion,
-    getQuestionAnswers
+    getQuestionAnswers,
+    getQuestionPicture,
 }

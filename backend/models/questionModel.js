@@ -21,7 +21,8 @@ const Question = sequelize.define('question', {
         type: DataTypes.TEXT
     },
     imageURI: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        defaultValue: null
     },
 }, {
     timestamps: true,
