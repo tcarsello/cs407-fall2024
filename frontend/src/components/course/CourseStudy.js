@@ -5,7 +5,7 @@ import { useAuthContext } from "../../hooks/UseAuthContext"
 import { FlashcardContainer, FlashcardContent } from '../../styles/FlashcardStyles';
 
 import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, Grow, IconButton, Typography } from '@mui/material';
-import { ChevronLeft, ChevronRight, Flip, Fullscreen, FullscreenExit } from '@mui/icons-material';
+import { ChevronLeft, ChevronRight, Flip, Fullscreen, FullscreenExit, SignalCellularNullOutlined } from '@mui/icons-material';
 
 import PopupForm from '../PopupForm'
 import Collapsible from '../Collapsible'
@@ -14,19 +14,17 @@ import QuestionDetails from './QuestionDetails'
 
 import { GrFormClose, GrEdit } from 'react-icons/gr'
 
-const TopicComponent = ({ topics, setTopics, refresh }) => {
+const TopicComponent = ({ topics, setTopics, refresh, activeForm, setActiveForm }) => {
 
     const { user } = useAuthContext()
     const { course } = useCourseContext()
 
-    const [createTopicEnabled, setCreateTopicEnabled] = useState(false)
     const [createTopicForm, setCreateTopicForm] = useState({
         topicName: ''
     })
     const [createTopicFormError, setCreateTopicFormError] = useState()
 
     const [selectedTopic, setSelectedTopic] = useState()
-    const [editTopicEnabled, setEditTopicEnabled] = useState(false)
     const [editTopicForm, setEditTopicForm] = useState({
         topicName: ''
     })
@@ -85,7 +83,7 @@ const TopicComponent = ({ topics, setTopics, refresh }) => {
 
             setCreateTopicFormError()
             setTopics([...topics, json.topic])
-            setCreateTopicEnabled(false)
+            setActiveForm(null)
             setCreateTopicForm({
                 topicName: ''
             })
@@ -100,7 +98,7 @@ const TopicComponent = ({ topics, setTopics, refresh }) => {
         setEditTopicForm({
             topicName: topic.topicName
         })
-        setEditTopicEnabled(true)
+        setActiveForm('editTopic')
     }
 
     const handleEditTopicFormChange = (e) => {
@@ -140,7 +138,7 @@ const TopicComponent = ({ topics, setTopics, refresh }) => {
                     topicName: editTopicForm.topicName
                 }
             }))
-            setEditTopicEnabled(false)
+            setActiveForm(null)
             refresh()
 
         } catch (err) {
@@ -170,14 +168,14 @@ const TopicComponent = ({ topics, setTopics, refresh }) => {
                 })
             }
             {user.userId === course.coordinatorId && <div>
-                <button className='standard-button' onClick={() => setCreateTopicEnabled(true)}>Create Topic</button>
+                <button className='standard-button' onClick={() => setActiveForm('createTopic')}>Create Topic</button>
             </div>}
 
             <PopupForm
                 title='Create a New Topic'
-                isOpen={createTopicEnabled}
+                isOpen={activeForm === 'createTopic'}
                 onClose={() => {
-                    setCreateTopicEnabled(false)
+                    setActiveForm(null)
                     setCreateTopicFormError()
                 }}
                 onSubmit={handleCreateTopic}
@@ -197,8 +195,8 @@ const TopicComponent = ({ topics, setTopics, refresh }) => {
 
             <PopupForm
                 title='Update Topic'
-                isOpen={editTopicEnabled}
-                onClose={() => setEditTopicEnabled(false)}
+                isOpen={activeForm === 'editTopic'}
+                onClose={() => setActiveForm(null)}
                 onSubmit={handleEditTopic}
                 errorText={editTopicFormError}
             >
@@ -304,13 +302,12 @@ const FlashcardView = ({ terms }) => {
     );
 };
 
-const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
+const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiveForm }) => {
     
     const { user } = useAuthContext()
     const { course } = useCourseContext()
     
     const [viewMode, setViewMode] = useState('list');
-    const [createTermFormEnabled, setCreateTermFormEnabled] = useState(false)
     const [createTermForm, setCreateTermForm] = useState({
         topicName: '',
         termName: '',
@@ -365,7 +362,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                 termName: '',
                 termDefinition: ''
             })
-            setCreateTermFormEnabled(false)
+            setActiveForm(null)
             setTerms(prev => [...prev, json.term])
 
         } catch (err) {
@@ -378,7 +375,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
     };
 
     const handleCancelConfirm = () => {
-        setCreateTermFormEnabled(false)
+        setActiveForm(null)
         setShowCancelConfirmation(false);
     };
 
@@ -391,10 +388,10 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                         <Button 
                             variant="contained" 
                             color="primary" 
-                            onClick={() => setCreateTermFormEnabled(!createTermFormEnabled)}
+                            onClick={() => setActiveForm(activeForm ? null : 'createTerm')}
                             sx={{ mr: 1 }}
                         >
-                            {createTermFormEnabled ? 'Cancel' : 'Create Term'}
+                            {activeForm === 'createTerm' ? 'Cancel' : 'Create Term'}
                         </Button>
                     )}
                     <Button 
@@ -413,7 +410,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                 </Box>
             </Box>
 
-            {createTermFormEnabled && (
+            {activeForm === 'createTerm' && (
                 <Box sx={{ mb: 4, p: 2, border: '1px solid #e0e0e0', borderRadius: '4px' }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>Create New Term</Typography>
                     <form onSubmit={handleCreateTerm}>
@@ -470,7 +467,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                 </DialogActions>
             </Dialog>
 
-            {viewMode === 'list' ? (
+            {viewMode === 'list' || activeForm ? (
                 <Box>
                     {terms && terms.map(term =>
                         <TermComponent
@@ -489,7 +486,7 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
     )
 }
 
-const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
+const QuestionsComponent = ({ questions, setQuestions, topics, refresh, activeForm, setActiveForm }) => {
 
     const { user } = useAuthContext()
     const { course } = useCourseContext()
@@ -680,6 +677,8 @@ const CourseStudy = () => {
     const [questionList, setQuestionList] = useState([])
     const [trigger, setTrigger] = useState(false)
 
+    const [activeForm, setActiveForm] = useState(null)
+
     const triggerEffect = () => { setTrigger(!trigger) }
 
     useEffect(() => {
@@ -757,9 +756,29 @@ const CourseStudy = () => {
 
     return (
         <div>
-            <TopicComponent topics={topicList} setTopics={setTopicList} refresh={triggerEffect}/>
-            <TermsComponent terms={termList} setTerms={setTermList} topics={topicList} refresh={triggerEffect}/>
-            <QuestionsComponent questions={questionList} setQuestions={setQuestionList} refresh={triggerEffect} topics={topicList}/>
+            <TopicComponent
+                topics={topicList}
+                setTopics={setTopicList}
+                refresh={triggerEffect}
+                activeForm={activeForm}
+                setActiveForm={setActiveForm}
+            />
+            <TermsComponent
+                terms={termList}
+                setTerms={setTermList}
+                topics={topicList}
+                refresh={triggerEffect}
+                activeForm={activeForm}
+                setActiveForm={setActiveForm}
+            />
+            <QuestionsComponent
+                questions={questionList}
+                setQuestions={setQuestionList}
+                refresh={triggerEffect}
+                topics={topicList}
+                activeForm={activeForm}
+                setActiveForm={setActiveForm}
+            />
         </div>
     )
 }
