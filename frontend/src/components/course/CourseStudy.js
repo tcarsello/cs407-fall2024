@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 
 import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
+import { FlashcardContainer, FlashcardContent } from '../../styles/FlashcardStyles';
 
-import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
-import { DragHandle as DragIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, Grow, IconButton, Typography } from '@mui/material';
+import { ChevronLeft, ChevronRight, Flip } from '@mui/icons-material';
 
 import PopupForm from '../PopupForm'
 import Collapsible from '../Collapsible'
@@ -217,11 +218,64 @@ const TopicComponent = ({ topics, setTopics, refresh }) => {
 
 }
 
+const FlashcardView = ({ terms }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isFlipped, setIsFlipped] = useState(false);
+
+    const handleNext = () => {
+        setIsFlipped(false);
+        setTimeout(() => {
+            setCurrentIndex((prevIndex) => (prevIndex + 1) % terms.length);
+        }, 300);
+    };
+
+    const handlePrevious = () => {
+        setIsFlipped(false);
+        setTimeout(() => {
+            setCurrentIndex((prevIndex) => (prevIndex - 1 + terms.length) % terms.length);
+        }, 300);
+    };
+
+    const handleFlip = () => {
+        setIsFlipped(!isFlipped);
+    };
+
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
+            <Grow in={true}>
+                <FlashcardContainer onClick={handleFlip}>
+                    <FlashcardContent isFlipped={!isFlipped}>
+                        <Typography variant="h5">{terms[currentIndex].termName}</Typography>
+                    </FlashcardContent>
+                    <FlashcardContent isFlipped={isFlipped}>
+                        <Typography variant="body1">{terms[currentIndex].termDefinition}</Typography>
+                    </FlashcardContent>
+                </FlashcardContainer>
+            </Grow>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <IconButton onClick={handlePrevious} color="primary">
+                    <ChevronLeft />
+                </IconButton>
+                <IconButton onClick={handleFlip} color="primary">
+                    <Flip />
+                </IconButton>
+                <IconButton onClick={handleNext} color="primary">
+                    <ChevronRight />
+                </IconButton>
+            </Box>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+                {currentIndex + 1} / {terms.length}
+            </Typography>
+        </Box>
+    );
+};
+
 const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
     
     const { user } = useAuthContext()
     const { course } = useCourseContext()
     
+    const [viewMode, setViewMode] = useState('list');
     const [createTermFormEnabled, setCreateTermFormEnabled] = useState(false)
     const [createTermForm, setCreateTermForm] = useState({
         topicName: '',
@@ -295,36 +349,42 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
     };
 
     return (
-        <div className='content-card'>
-            <h2>Study Terms</h2>
-            {user.userId === course.coordinatorId && 
-                <div>
-                    <button className='standard-button' onClick={() => setCreateTermFormEnabled(true)}>Create Term</button>
-                </div>
-            }
-            <Collapsible
-                title={`View Terms (${terms ? terms.length : 0})`}
-                defaultState={false}
-            >
-                {terms &&
-                    terms.map(term =>
-                        <TermComponent
-                            key={term.termId}
-                            term={term}
-                            topics={topics}
-                            onDelete={() => {setTerms(prev => prev.filter(item => item.termId !== term.termId))}}
-                            onEdit={refresh}
-                        />
-                    )
-                }
-            </Collapsible>
+        <Box className='content-card'>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h5">Study Terms</Typography>
+                <Box>
+                    {user.userId === course.coordinatorId && (
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            onClick={() => setCreateTermFormEnabled(!createTermFormEnabled)}
+                            sx={{ mr: 1 }}
+                        >
+                            {createTermFormEnabled ? 'Cancel' : 'Create Term'}
+                        </Button>
+                    )}
+                    <Button 
+                        variant={viewMode === 'list' ? 'contained' : 'outlined'} 
+                        onClick={() => setViewMode('list')}
+                        sx={{ mr: 1 }}
+                    >
+                        List View
+                    </Button>
+                    <Button 
+                        variant={viewMode === 'flashcard' ? 'contained' : 'outlined'} 
+                        onClick={() => setViewMode('flashcard')}
+                    >
+                        Flashcard View
+                    </Button>
+                </Box>
+            </Box>
 
             {createTermFormEnabled && (
-                <div>
-                    <h2>Create Study Terms</h2>
-                    <form onSubmit={handleCreateTerm} style={{ marginBottom: '20px' }}>
+                <Box sx={{ mb: 4, p: 2, border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+                    <Typography variant="h6" sx={{ mb: 2 }}>Create New Term</Typography>
+                    <form onSubmit={handleCreateTerm}>
                         <Box display="flex" flexDirection="column" gap={2}>
-                        <TextField
+                            <TextField
                                 label="Name of this term's topic"
                                 name="topicName"
                                 value={createTermForm.topicName}
@@ -332,16 +392,14 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                                 required
                                 fullWidth
                             />
-                            <Box display="flex" alignItems="center" gap={2}>
-                                <TextField
-                                    label="Term"
-                                    name="termName"
-                                    value={createTermForm.termName}
-                                    onChange={handleCreateTermFormChange}
-                                    required
-                                    fullWidth
-                                />
-                            </Box>
+                            <TextField
+                                label="Term"
+                                name="termName"
+                                value={createTermForm.termName}
+                                onChange={handleCreateTermFormChange}
+                                required
+                                fullWidth
+                            />
                             <TextField
                                 label="Definition"
                                 name="termDefinition"
@@ -352,16 +410,16 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                                 required
                                 fullWidth
                             />
-                            <Button variant="contained" color="primary" type="submit">
-                                Add Term
-                            </Button>
+                        </Box>
+                        {createTermFormError && (
+                            <Typography color="error" sx={{ mt: 2 }}>{createTermFormError}</Typography>
+                        )}
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button onClick={handleCancel} sx={{ mr: 1 }}>Cancel</Button>
+                            <Button type="submit" variant="contained" color="primary">Add Term</Button>
                         </Box>
                     </form>
-                    {createTermFormError && <p className='form-error'>{createTermFormError}</p>}
-                    <Button variant="outlined" onClick={handleCancel}>
-                        Cancel
-                    </Button>
-                </div>
+                </Box>
             )}
             <Dialog open={showCancelConfirmation} onClose={handleCancelConfirm}>
                 <DialogTitle>Cancel Study Term Creation</DialogTitle>
@@ -377,7 +435,23 @@ const TermsComponent = ({ terms, setTerms, topics, refresh }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+
+            {viewMode === 'list' ? (
+                <Box>
+                    {terms && terms.map(term =>
+                        <TermComponent
+                            key={term.termId}
+                            term={term}
+                            topics={topics}
+                            onDelete={() => {setTerms(prev => prev.filter(item => item.termId !== term.termId))}}
+                            onEdit={refresh}
+                        />
+                    )}
+                </Box>
+            ) : (
+                <FlashcardView terms={terms} />
+            )}
+        </Box>
     )
 }
 
