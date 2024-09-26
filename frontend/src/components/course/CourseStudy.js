@@ -6,6 +6,7 @@ import { useAuthContext } from "../../hooks/UseAuthContext"
 import PopupForm from '../PopupForm'
 import Collapsible from '../Collapsible'
 import TermComponent from './TermComponent'
+import QuestionDetails from './QuestionDetails'
 
 import { GrFormClose, GrEdit } from 'react-icons/gr'
 
@@ -516,7 +517,12 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
             >
                 {questions &&
                     questions.map(question =>
-                        <p key={question.questionId}>{question.questionId}</p>
+                        <QuestionDetails
+                            key={question.questionId}
+                            question={question}
+                            topics={topics}
+                            onDelete={() => { setQuestions(questions.filter(q => q.questionId !== question.questionId)) }}
+                        />
                     )
                 }
             </Collapsible>
