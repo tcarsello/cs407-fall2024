@@ -14,6 +14,7 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh, activeFo
 
     const [questionTopicName, setTopicName] = useState('')
     const [questionText, setQuestionText] = useState('')
+    const [questionDifficulty, setQuestionDifficulty] = useState('regular')
     const [questionImageFile, setQuestionImageFile] = useState()
     const [questionImageBase64, setQuestionImageBase64] = useState()
     const [createQuestionFormError, setCreateQuestionFormError] = useState()
@@ -46,7 +47,8 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh, activeFo
                 topicId: topic.topicId,
                 imageMimeType: questionImageFile?.type,
                 imageBase64: questionImageBase64,
-                answerList
+                difficulty: questionDifficulty,
+                answerList,
             }
 
             const response = await fetch(`/api/question/`, {
@@ -139,6 +141,37 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh, activeFo
                             onChange={handleFileChange}
                         />
                     </div>
+                    <div>
+                        <label style={{ textAlign: 'center'}}>
+                            Easy
+                            <input
+                                type='radio'
+                                value='easy'
+                                checked={questionDifficulty === 'easy'}
+                                onChange={(e) => setQuestionDifficulty(e.target.value)}
+                            />
+                        </label>
+                        <label style={{ textAlign: 'center'}}>
+                            Regular
+                            <input
+                                type='radio'
+                                value='regular'
+                                checked={questionDifficulty === 'regular'}
+                                onChange={(e) => setQuestionDifficulty(e.target.value)}
+                            />
+                        </label>
+                        <label style={{ textAlign: 'center'}}>
+                            Hard
+                            <input
+                                type='radio'
+                                value='hard'
+                                checked={questionDifficulty === 'hard'}
+                                onChange={(e) => setQuestionDifficulty(e.target.value)}
+                            />
+                        </label>
+
+                    </div>
+
                     <div style={{all: 'unset'}}>
                         <h4>{`Answer Choices (${answerList.length})`}</h4>
                         <button className='standard-button' onClick={addAnswerChoice}>Add Answer Choice</button>

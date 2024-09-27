@@ -70,7 +70,7 @@ const uploadQuestionImage = async (questionId, imageBase64, imageMimeType) => {
 const createQuestion = async (req, res) => {
     try {
 
-        const { topicId, text, imageBase64, imageMimeType, answerList } = req.body
+        const { topicId, text, difficulty, imageBase64, imageMimeType, answerList } = req.body
 
         if (!(text || (imageBase64 && imageMimeType))) throw 'Question text and/or image must be provided'
         if (!answerList || answerList.length < 1) throw 'Answer choices must be provided'
@@ -82,7 +82,8 @@ const createQuestion = async (req, res) => {
 
         const question = await Question.create({
             text,
-            topicId
+            topicId,
+            difficulty
         })
 
         if (!question) throw 'Failed to create question'
@@ -122,6 +123,7 @@ const getQuestion = async (req, res) => {
                 questionId: question.questionId,
                 topicId: question.topicId,
                 text: question.text,
+                difficulty: question.difficulty,
             },
             hasImage: question.imageURI ? true : false
         })

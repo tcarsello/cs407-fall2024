@@ -24,6 +24,11 @@ const Question = sequelize.define('question', {
         type: DataTypes.STRING,
         defaultValue: null
     },
+    difficulty: {
+        type: DataTypes.ENUM('easy', 'regular', 'hard' ),
+        defaultValue: 'regular',
+        allowNull: false
+    },
 }, {
     timestamps: true,
     tableName: 'question'

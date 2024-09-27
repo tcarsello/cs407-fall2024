@@ -92,7 +92,7 @@ const QuestionDetails = ({ question, topics, onDelete }) => {
         <div className='flex' style={{borderBottom: '1px solid lightgrey'}}>
             <div style={{ flex: 1 }}>
                 <h3 style={{ marginBottom: 0 }}>{question.text}</h3>
-                <p style={{ margin: 0, color: 'grey', fontStyle: 'italic' }}>{topicName}</p>
+                <p style={{ margin: 0, color: 'grey', fontStyle: 'italic' }}>{topicName} ({question.difficulty.toUpperCase()})</p>
                 { pictureUrl && <img src={pictureUrl}  style={{ width: '50%'}} alt='Question Picture' />}
                 <ul>
                     {answerList && answerList.map(answer => 
