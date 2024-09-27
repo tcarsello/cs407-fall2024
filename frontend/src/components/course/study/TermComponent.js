@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import { useCourseContext } from "../../context/CourseContext"
-import { useAuthContext } from "../../hooks/UseAuthContext"
+import { useCourseContext } from "../../../context/CourseContext"
+import { useAuthContext } from "../../../hooks/UseAuthContext"
 
 import { GrFormClose, GrEdit } from 'react-icons/gr'
-import PopupForm from '../PopupForm'
+import PopupForm from '../../PopupForm'
 
 const TermComponent = ({ term, topics, onDelete, onEdit }) => {
 

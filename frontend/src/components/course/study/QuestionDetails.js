@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useAuthContext } from '../../hooks/UseAuthContext'
+import { useAuthContext } from '../../../hooks/UseAuthContext'
 import { GrFormClose, GrEdit } from 'react-icons/gr'
 
-import ConfirmDialog from '../ConfirmDialog'
+import ConfirmDialog from '../../ConfirmDialog'
 
 const QuestionDetails = ({ question, topics, onDelete }) => {
     
