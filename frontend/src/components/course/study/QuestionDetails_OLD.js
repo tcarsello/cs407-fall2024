@@ -8,8 +8,7 @@ const QuestionDetails = ({ question, topics, onDelete }) => {
     
     const { user } = useAuthContext()
 
-	const [answerList, setAnswerList] = useState([])
-    const [pictureUrl, setPictureUrl] = useState()
+    const [answerList, setAnswerList] = useState([])
 
     const [deleteQuestionDialogEnabled, setDeleteQuestionDialogEnabled] = useState(false)
 
@@ -38,34 +37,7 @@ const QuestionDetails = ({ question, topics, onDelete }) => {
             }
         }
 
-        const fetchPicture = async () => {
-
-            try {
-
-                const response = await fetch(`/api/question/${question.questionId}/picture`, {
-                    method: 'GET',
-                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`,
-                    }
-                })
-
-                if (response.ok) {
-                    const blob = await response.blob()
-                    const imageUrl = URL.createObjectURL(blob)
-                    setPictureUrl(imageUrl)
-
-
-                }
-
-            } catch (err) {
-                console.error(err)
-            }
-
-        }
-
         fetchAnswers()
-        fetchPicture()
 
     }, [question, user])
 
@@ -73,7 +45,7 @@ const QuestionDetails = ({ question, topics, onDelete }) => {
 
         try {
 
-            await fetch(`/api/question/${question.questionId}`, {
+            const repsonse = await fetch(`/api/question/${question.questionId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -93,14 +65,12 @@ const QuestionDetails = ({ question, topics, onDelete }) => {
             <div style={{ flex: 1 }}>
                 <h3 style={{ marginBottom: 0 }}>{question.text}</h3>
                 <p style={{ margin: 0, color: 'grey', fontStyle: 'italic' }}>{topicName}</p>
-                { pictureUrl && <img src={pictureUrl}  style={{ width: '50%'}} alt='Question Picture' />}
                 <ul>
                     {answerList && answerList.map(answer => 
                         <li key={answer.answerId} style={{ fontWeight: answer.isCorrect ? 'bold' : 'normal' }}>{answer.text}</li>
                     )}
                 </ul>
             </div>
-
             <div className='flex-col' style={{ justifyContent: 'space-around' }}>
                 <GrFormClose size='25' style={{ marginLeft: '5px' }} onClick={() => setDeleteQuestionDialogEnabled(true)} />
                 <GrEdit size='20' style={{ marginLeft: '10px' }} onClick={() => {}}/>
