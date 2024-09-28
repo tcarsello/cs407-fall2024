@@ -127,6 +127,11 @@ const QuestionDetails = ({ question, topics, onDelete, refresh }) => {
                 return
             }
 
+            newAnswers.forEach(a => {
+                if (!a.text || a.text === '') setFormError("Cannot have blank answers")
+                return
+            })
+
             const bodyContent = {
                 text: formData.text,
                 topicId: topic.topicId,
