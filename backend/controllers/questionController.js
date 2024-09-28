@@ -136,7 +136,41 @@ const getQuestion = async (req, res) => {
 const updateQuestion = async (req, res) => {
     try {
 
-        res.status(200).json()
+        const { questionId } = req.params
+        const { topicId, text, difficulty, answerList } = req.body
+
+        if (!text) throw 'Question text and/or image must be provided'
+        if (!answerList || answerList.length < 1) throw 'Answer choices must be provided'
+
+        if (!answerList.find(answer => answer.isCorrect)) throw 'Answer list must have a correct answer'
+
+        const valid = await validateCoordinator(req.user.userId, topicId)
+        if (!valid) throw 'No access to this topic'
+
+        await Question.update(
+            {
+                topicId,
+                text,
+                difficulty
+            },
+            {
+                where: {
+                    questionId
+                }
+            }
+        )
+
+        // Make answers
+        await sequelize.query('DELETE FROM answer WHERE "questionId"=:questionId', {
+            replacements: {
+                questionId
+            },
+            type: Sequelize.QueryTypes.DELETE
+        })
+        await Promise.all(answerList.map(answer => Answer.create({ ...answer, questionId })))
+
+        res.status(200).json({ messsage: 'Question updated' })
+
     } catch (err) {
         console.error(err)
         res.status(400).json({ error: err })

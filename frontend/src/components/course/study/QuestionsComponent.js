@@ -210,7 +210,9 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh, activeFo
                         <QuestionDetails
                             key={question.questionId}
                             question={question}
+                            hasImage={question.hasImage}
                             topics={topics}
+                            refresh={refresh}
                             onDelete={() => { setQuestions(questions.filter(q => q.questionId !== question.questionId)) }}
                         />
                     )
