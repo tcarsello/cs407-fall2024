@@ -1,6 +1,6 @@
 const express = require('express')
 const requireAuth = require('../middleware/requireAuth')
-const { createUser, loginUser, getUser, deleteUser, updateUser,
+const { createUser, forgotPassword, loginUser, getUser, deleteUser, updateUser,
     resetUserPassword, getCoordinatingCourses, getInvites,
     getJoinedCourses, uploadProfilePicture, getProfilePicture,
     getUserPublicInfo } = require('../controllers/userController')
@@ -16,6 +16,7 @@ router.delete('/:userId', requireAuth, deleteUser)
 // User actions
 router.post('/:userId/reset', requireAuth, resetUserPassword)
 router.post('/login', loginUser)
+router.post('/forgot-password', forgotPassword)
 router.post('/:userId/picture', requireAuth, uploadProfilePicture)
 
 router.get('/:userId/public', getUserPublicInfo)
