@@ -256,7 +256,11 @@ const verifyToken = async (req, res) => {
 		res.status(200).json({ message: "Token verified" });
 	} catch (err) {
 		console.error(err);
-		res.status(400).json({ error: err });
+		if (err.message) {
+			res.status(400).json({ error: "Invalid One Time Code" });
+		} else {
+			res.status(400).json({ error: err });
+		}
 	}
 };
 
@@ -310,7 +314,11 @@ const resetUserPassword = async (req, res) => {
 		res.status(200).json({ ...user.dataValues, token: new_token });
 	} catch (err) {
 		console.error(err);
-		res.status(400).json({ error: err });
+        if (err.message) {
+            res.status(400).json({ error: "Invalid One Time Code" });
+        } else {
+            res.status(400).json({ error: err });
+        }
 	}
 };
 
