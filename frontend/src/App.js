@@ -39,7 +39,7 @@ function App() {
             />
             <Route
               path='forgot-password'
-              element={user ? <Home /> : <ForgotPassword />}
+              element={user ? <Navigate to='/' /> : <ForgotPassword />}
             />
             <Route
               path='*'
