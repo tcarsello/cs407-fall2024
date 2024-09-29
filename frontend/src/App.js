@@ -8,6 +8,8 @@ import Login from './pages/Login'
 import Home from './pages/Home'
 import UserSettings from './pages/UserSettings'
 import Course from './pages/Course';
+import NotFound from './pages/NotFound'
+import ForgotPassword from './pages/ForgotPassword';
 
 function App() {
 
@@ -34,6 +36,14 @@ function App() {
             <Route
               path='/course/:courseId'
               element={user ? <Course /> : <Navigate to='/login' />}
+            />
+            <Route
+              path='forgot-password'
+              element={user ? <Home /> : <ForgotPassword />}
+            />
+            <Route
+              path='*'
+              element={<NotFound />}
             />
           </Routes>
         </div>

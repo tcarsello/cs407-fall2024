@@ -114,6 +114,9 @@ const Login = () => {
                             onChange={handleLoginChange}
                             required
                         />
+                        <div className="forgot-password">
+							<a href="/forgot-password">Forgot Password?</a>
+						</div>
                         <button type='submit' className='standard-button'>Log In</button>
                         {loginError ? <p className='form-error'>{loginError}</p> : null}
                     </form>

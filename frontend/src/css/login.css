@@ -43,3 +43,13 @@
     border: 1px solid lightgrey;
     box-sizing: border-box;
 }
+
+.forgot-password {
+	margin-top: 10px;
+	padding-left: 1px;
+}
+
+.forgot-password a {
+	font-family: "Arial";
+	font-size: 14px;
+}
