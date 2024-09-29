@@ -44,7 +44,7 @@ const ForgotPassword = () => {
 		<div className="forgot-password-page-container">
 			<div className="forgot-password-container">
 				<div className="forgot-password-form-container">
-					<h2>Reset Password</h2>
+					<h2>Recover Account</h2>
 					<form className="forgot-password-form" onSubmit={handleForgotSubmit}>
 						<input
 							type="email"
@@ -55,7 +55,7 @@ const ForgotPassword = () => {
 							required
 						/>
 						<button type="submit" className="standard-button">
-							Request Password Reset
+							Send Recover Request
 						</button>
 						{forgotError ? <p className="form-error">{forgotError}</p> : null}
 						{successMessage ? <p className="form-worked-message">{successMessage}</p> : null}

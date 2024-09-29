@@ -85,15 +85,17 @@ const forgotPassword = async (req, res) => {
 		});
 
 		// TODO: Make link correct if hosted anywhere other than localhost
-		const link = `http://localhost:3000/reset-password/${token}`;
+		const link = `http://localhost:3000/one-time-code/`;
 		const mailOptions = {
 			from: process.env.EMAIL,
 			to: email,
-			subject: "Course Clash - Reset Password",
-			html: `<h1>Course Clash Password Reset</h1>
-            <p>Hello ${user.firstName}. Please click the following link to reset your Course Clash password:</p>
+			subject: "Course Clash - Account Recovery",
+			html: `<h1>Course Clash Account Recovery</h1>
+            <p>Hello ${user.firstName}. Your one time code is:</p>
+            <h3>${token}</h3>
+            <p>Please enter your one time code on the following page to recover your account:</p>
             <a href="${link}">${link}</a>
-            <p>The link will expire in 15 minutes.</p>`,
+            <p>The code will expire in 15 minutes.</p>`,
 		};
 
 		transporter.sendMail(mailOptions, (err, info) => {
@@ -106,7 +108,7 @@ const forgotPassword = async (req, res) => {
 		});
 	} catch (err) {
 		console.error(err);
-		res.status(400).json({ error: JSON.stringify(err) });
+		res.status(400).json({ error: err });
 	}
 };
 
@@ -232,16 +234,85 @@ const updateUser = async (req, res) => {
     }
 }
 
+const verifyToken = async (req, res) => {
+	try {
+		const { token } = req.body;
+
+        if (!token) throw "Invalid One Time Code";
+
+		const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+		if (!decodedToken) throw "Invalid One Time Code";
+
+		const userId = decodedToken._id;
+
+		const user = await User.findOne({
+			where: {
+				userId,
+			},
+		});
+		if (!user) throw "User not found";
+
+		res.status(200).json({ message: "Token verified" });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
 const resetUserPassword = async (req, res) => {
-    try {
+	try {
+		const { token, password } = req.body;
 
-        res.status(200).json()
+        if (!token) throw "Invalid One Time Code";
 
-    } catch (err) {
-        console.error(err)
-        res.status(400).json({ error: err })
-    }
-}
+		const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+		if (!decodedToken) throw "Invalid One Time Code";
+
+		const userId = decodedToken._id;
+
+		if (!password) throw "Password must be provided";
+		if (password.length < 6) throw "Password must be at least 6 characters!";
+		let user = await User.findOne({
+			where: {
+				userId,
+			},
+		});
+		if (!user) throw "User not found";
+        console.log(user);
+
+		const salt = await genSalt();
+		const passwordHash = await bcrypt.hash(password, salt);
+
+        // Does not seem to work
+		if (passwordHash === user.dataValues.passwordHash) throw "Password must be different";
+
+		await User.update(
+			{
+				passwordHash,
+			},
+			{
+				where: {
+					userId,
+				},
+			}
+		);
+		user = await User.findOne({
+			where: {
+				userId,
+			},
+		});
+		if (!user) throw "User not found";
+
+		const new_token = createJWT(user.dataValues.userId);
+
+		res.status(200).json({ ...user.dataValues, token: new_token });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
 
 const getCoordinatingCourses = async (req, res) => {
     try {
@@ -434,10 +505,12 @@ const getUserPublicInfo = async (req, res) => {
 
 module.exports = {
     createUser,
+    forgotPassword,
     loginUser,
     getUser,
     deleteUser,
     updateUser,
+    verifyToken,
     resetUserPassword,
     getCoordinatingCourses,
     getInvites,
