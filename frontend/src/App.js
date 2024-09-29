@@ -10,6 +10,7 @@ import UserSettings from './pages/UserSettings'
 import Course from './pages/Course';
 import NotFound from './pages/NotFound'
 import ForgotPassword from './pages/ForgotPassword';
+import OneTimeCode from './pages/OneTimeCode';
 
 function App() {
 
@@ -39,7 +40,11 @@ function App() {
             />
             <Route
               path='forgot-password'
-              element={user ? <Home /> : <ForgotPassword />}
+              element={user ? <Navigate to='/' /> : <ForgotPassword />}
+            />
+            <Route
+              path='one-time-code'
+              element={user ? <Navigate to='/' /> : <OneTimeCode />}
             />
             <Route
               path='*'
