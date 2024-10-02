@@ -12,9 +12,6 @@ import {
   Radio,
   Checkbox,
   IconButton,
-  Card,
-  CardContent,
-  CardActions,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -31,6 +28,7 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
   const [questionText, setQuestionText] = useState('');
   const [questionDifficulty, setQuestionDifficulty] = useState('regular');
   const [questionImageFile, setQuestionImageFile] = useState();
+  const [questionImagePreview, setQuestionImagePreview] = useState();
   const [questionImageBase64, setQuestionImageBase64] = useState();
   const [createQuestionFormError, setCreateQuestionFormError] = useState();
   const [answerList, setAnswerList] = useState([]);
@@ -41,8 +39,9 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
     setTopicName('');
     setQuestionText('');
     setQuestionDifficulty('regular');
-    setQuestionImageFile();
-    setQuestionImageBase64();
+    setQuestionImageFile(null);
+    setQuestionImagePreview(null);
+    setQuestionImageBase64(null);
     setCreateQuestionFormError();
     setAnswerList([]);
   };
@@ -91,15 +90,17 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setQuestionImageFile(file);
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result.split(',')[1];
-      setQuestionImageBase64(base64);
-    };
-
     if (file) {
+      setQuestionImageFile(file);
+
+      const previewUrl = URL.createObjectURL(file);
+      setQuestionImagePreview(previewUrl);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result.split(',')[1];
+        setQuestionImageBase64(base64);
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -143,28 +144,53 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
               multiline
               rows={2}
             />
-            <Button
-              variant="contained"
-              component="label"
-              startIcon={<PhotoCamera />}
-              sx={{
-                padding: '6px 16px',
-                fontSize: '0.8125rem',
-                minWidth: 'auto',
-                alignSelf: 'flex-start'
-              }}
-            >
-              Upload Photo
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </Button>
-            {questionImageFile && (
-              <Typography variant="body2">{questionImageFile.name}</Typography>
+            
+            <Box>
+              <Button
+                variant="contained"
+                component="label"
+                startIcon={<PhotoCamera />}
+                sx={{
+                  padding: '6px 16px',
+                  fontSize: '0.8125rem',
+                  minWidth: 'auto',
+                }}
+              >
+                Upload Photo
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Button>
+              {questionImageFile && (
+                <Typography variant="body2" sx={{ ml: 2 }}>
+                  {questionImageFile.name}
+                </Typography>
+              )}
+            </Box>
+
+            {questionImagePreview && (
+              <Box sx={{
+                mt: 2,
+                width: '300px',
+                height: '200px',
+                overflow: 'scroll',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                bgcolor: 'grey.200',
+                borderRadius: '4px',
+              }}>
+                <img 
+                  src={questionImagePreview} 
+                  alt="Question image preview" 
+                  style={{ width: '100%', height: 'auto', objectFit: 'contain' }} 
+                />
+              </Box>
             )}
+            
             <FormControl component="fieldset">
               <FormLabel component="legend">Question Difficulty</FormLabel>
               <RadioGroup
