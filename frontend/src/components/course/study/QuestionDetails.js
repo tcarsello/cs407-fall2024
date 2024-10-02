@@ -4,9 +4,11 @@ import {
   Box,
   Typography,
   TextField,
-  Select,
-  MenuItem,
+  RadioGroup,
+  Radio,
   Checkbox,
+  FormControl,
+  FormLabel,
   IconButton,
   Button,
   Card,
@@ -190,25 +192,50 @@ const QuestionDetails = ({ question, hasImage, topics, onDelete, refresh }) => {
             variant={isEditing ? "outlined" : "filled"}
             sx={{ mb: 2 }}
           />
-
-          <Select
-            fullWidth
-            label="Difficulty"
-            name="difficulty"
-            value={formData.difficulty}
-            onChange={handleFormChange}
-            disabled={!isEditing}
-            variant={isEditing ? "outlined" : "filled"}
-            sx={{ mb: 2 }}
-          >
-            <MenuItem value="easy">Easy</MenuItem>
-            <MenuItem value="regular">Regular</MenuItem>
-            <MenuItem value="hard">Hard</MenuItem>
-          </Select>
+        
+            <FormControl 
+                disabled={!isEditing}
+                //variant={isEditing ? "outlined" : "filled"}
+                component="fieldset"
+                sx={{ mb: 2 }}
+            >  
+              <FormLabel component="legend">Question Difficulty</FormLabel>
+              <RadioGroup
+                row
+                name='difficulty'
+                value={formData.difficulty}
+                onChange={handleFormChange}
+              >
+                <FormControlLabel value="easy" control={<Radio />} label="Easy" />
+                <FormControlLabel value="regular" control={<Radio />} label="Regular" />
+                <FormControlLabel value="hard" control={<Radio />} label="Hard" />
+              </RadioGroup>
+            </FormControl>
 
           {pictureUrl && (
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-              <img style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }} src={pictureUrl} alt='Question Picture' />
+            <Box
+              sx={{
+                mb: 2,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%',
+                height: '200px',
+                bgcolor: 'grey.200',
+                borderRadius: '4px',
+                overflow: 'scroll',
+              }}
+            >
+              <img
+                src={pictureUrl}
+                alt="Question"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center',
+                }}
+              />
             </Box>
           )}
 
