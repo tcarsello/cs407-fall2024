@@ -51,6 +51,23 @@ const FlashcardView = ({ terms }) => {
         return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
     }, []);
 
+    if (!terms || terms.length === 0) {
+        return (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '250px',
+              width: '100%',
+              bgcolor: 'background.paper',
+            }}
+          >
+            <Typography variant="h6">No flashcards available.</Typography>
+          </Box>
+        );
+      }
+
     return (
         <Box 
             ref={flashcardRef}
