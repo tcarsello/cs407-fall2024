@@ -234,7 +234,17 @@ const UserSettings = () => {
             }
         })
 
+        const json = await response.json()
+
+        if (!response.ok) {
+            setAccountError('Invalid account details')
+            setAccountMsg('')
+            return
+        }
+
         user.lightMode = !user.lightMode
+        localStorage.setItem('user', JSON.stringify(json))
+        dispatch({ type: 'LOGIN', payload: json })
 
     }
 
