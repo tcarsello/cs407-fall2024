@@ -22,7 +22,9 @@ export const DisplayContextProvider = ({ children }) => {
                     button: 'standard-button light-button-scheme',
                     topNavBrand: 'top-nav-brand light-text',
                     topNav: 'top-nav overlay-light',
-                    topNavLinks: 'top-nav-links light-text'
+                    topNavLinks: 'top-nav-links light-text',
+                    pageContainer: 'page-container flex background-light',
+                    contentCard : 'content-card overlay-light'
                 }
             }
     
@@ -34,7 +36,9 @@ export const DisplayContextProvider = ({ children }) => {
                 button: 'standard-button dark-button-scheme',
                 topNavBrand: 'top-nav-brand dark-text',
                 topNav: 'top-nav overlay-dark',
-                topNavLinks: 'top-nav-links dark-text'
+                topNavLinks: 'top-nav-links dark-text',
+                pageContainer: 'page-container flex background-dark',
+                contentCard : 'content-card foreground-dark'
             }
         }
 
@@ -46,7 +50,9 @@ export const DisplayContextProvider = ({ children }) => {
             button: 'standard-button light-button-scheme',
             topNavBrand: 'top-nav-brand light-text',
             topNav: 'top-nav overlay-light',
-            topNavLinks: 'top-nav-links light-text'
+            topNavLinks: 'top-nav-links light-text',
+            pageContainer: 'page-container flex background-light',
+            contentCard : 'content-card overlay-light'
         }
     }
 

@@ -1,5 +1,3 @@
-//import '../css/navbar.css'
-//import '../css/general.css'
 import '../css/colors.css'
 import '../css/generalAssets.css'
 

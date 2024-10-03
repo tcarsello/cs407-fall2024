@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '../hooks/UseAuthContext'
 
-import '../css/home.css'
+//import '../css/home.css'
+import '../css/generalAssets.css'
 import Collapsible from '../components/Collapsible'
 import PopupForm from '../components/PopupForm'
 import CourseDetails from '../components/course/CourseDetails'
 import InviteDetails from '../components/course/InviteDetails'
+
+import { useDisplayContext } from '../context/DisplayContext'
 
 const Home = () => {
 
@@ -27,6 +30,19 @@ const Home = () => {
         joinCode: ''
     })
     const [joinCourseFormError, setJoinCourseFormError] = useState()
+
+    const {getClassNames} = useDisplayContext()
+
+    const [classNames, setClassNames] = useState(getClassNames('lightMode'))
+
+
+    useEffect(() => {
+        if (user && !user.lightMode) {
+            setClassNames(getClassNames('darkMode'))
+        } else if (user && user.lightMode) {
+            setClassNames(getClassNames('lightMode'))
+        }
+    }, [user])
 
     const handleJoinCourseFormChange = (e) => {
         const { name, value } = e.target
@@ -133,10 +149,10 @@ const Home = () => {
     }, [user])
 
     return (
-        <div className='page-container flex'>
+        <div className={classNames.pageContainer}>
             <div className='home-lnav flex-col'>
                 <button
-                    className='standard-button'
+                    className={classNames.button}
                     onClick={() => {
                         setCreateCourseEnabled(true)
                     }}
@@ -144,7 +160,7 @@ const Home = () => {
                     Create a Course
                 </button>
                 <button
-                    className='standard-button'
+                    className={classNames.button}
                     onClick={() => {
                         setJoinCourseEnabled(true)
                     }}
