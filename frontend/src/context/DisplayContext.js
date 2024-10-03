@@ -19,7 +19,10 @@ export const DisplayContextProvider = ({ children }) => {
                     settingsPageContainer: 'settings-page-container',
                     standardFormInput: 'standard-form-input',
                     text: 'light-text',
-                    button: 'standard-button light-button-scheme'
+                    button: 'standard-button light-button-scheme',
+                    topNavBrand: 'top-nav-brand light-text',
+                    topNav: 'top-nav overlay-light',
+                    topNavLinks: 'top-nav-links light-text'
                 }
             }
     
@@ -28,7 +31,10 @@ export const DisplayContextProvider = ({ children }) => {
                 settingsPageContainer: 'settings-page-container background-dark',
                 standardFormInput: 'standard-form-input emphasis-dark',
                 text: 'dark-text',
-                button: 'standard-button dark-button-scheme'
+                button: 'standard-button dark-button-scheme',
+                topNavBrand: 'top-nav-brand dark-text',
+                topNav: 'top-nav overlay-dark',
+                topNavLinks: 'top-nav-links dark-text'
             }
         }
 
@@ -37,7 +43,10 @@ export const DisplayContextProvider = ({ children }) => {
             settingsPageContainer: 'settings-page-container',
             standardFormInput: 'standard-form-input',
             text: 'light-text',
-            button: 'standard-button light-button-scheme'
+            button: 'standard-button light-button-scheme',
+            topNavBrand: 'top-nav-brand light-text',
+            topNav: 'top-nav overlay-light',
+            topNavLinks: 'top-nav-links light-text'
         }
     }
 

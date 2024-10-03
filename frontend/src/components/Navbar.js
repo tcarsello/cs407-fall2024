@@ -1,15 +1,34 @@
-import '../css/navbar.css'
-import '../css/general.css'
+//import '../css/navbar.css'
+//import '../css/general.css'
+import '../css/colors.css'
+import '../css/generalAssets.css'
 
 import { Link } from 'react-router-dom'
 
+import { useState, useEffect } from 'react'
+
 import { useAuthContext } from '../hooks/UseAuthContext'
 
+import { useDisplayContext } from '../context/DisplayContext'
+
 import { GrSettingsOption } from 'react-icons/gr'
+
 
 const Navbar = () => {
 
     const { user, dispatch } = useAuthContext()
+    const {getClassNames} = useDisplayContext()
+
+    const [classNames, setClassNames] = useState(getClassNames('lightMode'))
+
+    useEffect(() => {
+        if (user && !user.lightMode) {
+            setClassNames(getClassNames('darkMode'))
+        } else if (user && user.lightMode) {
+            setClassNames(getClassNames('lightMode'))
+        }
+    }, [user])
+
 
     const handleLogout = async () => {
         localStorage.removeItem('user')
@@ -17,14 +36,14 @@ const Navbar = () => {
     }
 
     return (
-        <nav className='top-nav'>
+        <nav className={classNames.topNav}>
             <Link
-                className='top-nav-brand'
+                className={classNames.topNavBrand}
                 to='/'
             >
                 Course Clash
             </Link>
-            <div className='top-nav-links'>
+            <div className={classNames.topNavLinks}>
                 {user ?
                     <>
                         <span>{`${user.firstName} ${user.lastName} <${user.email}>`}</span>
@@ -36,7 +55,7 @@ const Navbar = () => {
                             <GrSettingsOption size={24} />
                         </Link>
                         <button
-                            className='standard-button'
+                            className={classNames.button}
                             style={{ marginLeft: '15px', marginTop: '0' }}
                             onClick={handleLogout}
                         >
@@ -45,7 +64,7 @@ const Navbar = () => {
                     </>
                     :
                     <>
-                        <Link className='standard-button' to='login'>Log In / Register</Link>
+                        <Link className={classNames.button} to='login'>Log In / Register</Link>
                     </>
                 }
             </div>
