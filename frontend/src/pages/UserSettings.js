@@ -59,6 +59,11 @@ const UserSettings = () => {
                 const blob = await response.blob()
                 const imageUrl = URL.createObjectURL(blob)
                 setProfilePictureUrl(imageUrl)
+                
+                if (!user.lightMode) {
+                    setClassNames(getClassNames('darkMode'))
+                    setDisplayMode('dark mode')
+                }
 
             } catch (err) {
                 console.error('Error fetching profile picture:', err)
@@ -228,6 +233,8 @@ const UserSettings = () => {
                 'Authorization': `Bearer ${user.token}`
             }
         })
+
+        user.lightMode = !user.lightMode
 
     }
 
