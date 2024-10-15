@@ -13,6 +13,11 @@ require('./models/topicModel')
 require('./models/termModel')
 require('./models/questionModel')
 require('./models/answerModel')
+require('./models/postModel')
+require('./models/replyModel')
+require('./models/postUpvoteModel')
+require('./models/replyUpvoteModel')
+
 
 const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')
