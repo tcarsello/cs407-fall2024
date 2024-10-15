@@ -26,6 +26,7 @@ const topicRoutes = require('./routes/topicRoutes')
 const termRoutes = require('./routes/termRoutes')
 const questionRoutes = require('./routes/questionRoutes')
 const answerRoutes = require('./routes/answerRoutes')
+const postRoutes = require('./routes/postRoutes')
 
 const app = express()
 
@@ -47,6 +48,7 @@ app.use('/api/topic', topicRoutes)
 app.use('/api/term', termRoutes)
 app.use('/api/question', questionRoutes)
 app.use('/api/answer', answerRoutes)
+app.use('/api/post', postRoutes)
 
 sequelize.authenticate()
     .then(() => {
