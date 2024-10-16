@@ -8,7 +8,7 @@ const createReply = async (req, res) => {
         
         const { postId, userId, body } = req.body
 
-        if (!postId) throw 'No postId not provided'
+        if (!postId) throw 'No postId provided'
         if (!userId) throw 'No user provided'
         if (!body) throw 'No post body provided'
 

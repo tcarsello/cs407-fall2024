@@ -7,7 +7,7 @@ const createPost = async (req, res) => {
         
         const { courseId, userId, title, body } = req.body
 
-        if (!courseId) throw 'No courseId not provided'
+        if (!courseId) throw 'No courseId provided'
         if (!userId) throw 'No user provided'
         if (!title) throw 'Not title provided'
         if (!body) throw 'No post body provided'

@@ -1,0 +1,87 @@
+const Post = require('../models/postModel')
+const User = require('../models/userModel')
+const PostUpvote = require('../models/postUpvoteModel')
+
+
+const createPostUpvote = async (req, res) => {
+    try {
+        
+        const { postId, userId } = req.body
+
+        if (!postId) throw 'No postId not provided'
+        if (!userId) throw 'No user provided'
+
+        const post = await Post.findOne({
+            where: {
+                postId
+            }
+        })
+
+        if (!post) throw 'Post not found for this postId'
+
+        const user = await User.findOne({
+            where: {
+                userId
+            }
+        })
+
+        if (!user) throw 'User not found for this userId'
+
+        const upvote = await PostUpvote.create({
+            postId,
+            userId,
+        })
+
+        res.status(200).json({ upvote })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const getPostUpvote = async (req, res) => {
+    try {     
+
+        const { postId, userId } = req.body
+
+        if (!postId) throw 'No postId provided'
+        if (!userId) throw 'No user provided'
+
+        const postUpvote = await PostUpvote.findOne({
+            where: { postId, userId }
+        })
+
+        res.status(200).json({ postUpvote })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+const deletePostUpvote = async (req, res) => {
+    try {
+         
+        const { postId, userId } = req.body
+
+        if (!postId) throw 'No postId not provided'
+        if (!userId) throw 'No user provided'
+
+        await PostUpvote.destroy({
+            where: {
+                postId,
+                userId
+            }
+        })
+
+        res.status(200).json({ message: 'Post upvote deleted' })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
+module.exports = {
+    createPostUpvote,
+    getPostUpvote,
+    deletePostUpvote
+}
