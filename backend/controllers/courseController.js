@@ -6,6 +6,7 @@ const CourseInvite = require('../models/courseInviteModel')
 const Topic = require('../models/topicModel')
 const Term = require('../models/termModel')
 const Question = require('../models/questionModel')
+const Post = require('../models/postModel')
 
 const Buffer = require('buffer').Buffer
 const path = require('path')
@@ -664,6 +665,41 @@ const getCourseQuestions = async (req, res) => {
     }
 }
 
+const getCoursePosts = async (req, res) => {
+
+    try {
+
+        const { courseId } = req.params 
+
+        const queryString = `
+            SELECT
+                p.*,
+                u."firstName",
+                u."lastName"
+            FROM
+                post p
+                INNER JOIN "user" u ON u."userId"=p."userId"
+            WHERE
+                p."courseId"=:courseId
+            ORDER BY
+                p."createdAt" DESC
+            ;
+        `
+
+        const posts = await sequelize.query(queryString, {
+            replacements: {
+                courseId
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ posts })
+    } catch (err) {
+        res.status(err).json({error: err})
+    }
+
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -683,5 +719,6 @@ module.exports = {
     getCourseTopics,
     createTerm,
     getCourseTerms,
-    getCourseQuestions
+    getCourseQuestions,
+    getCoursePosts
 }
