@@ -5,7 +5,7 @@ const Course = require('../models/courseModel')
 const createPost = async (req, res) => {
     try {
         
-        const { courseId, userId, title, body } = req.body
+        const { courseId, userId, title, body, tag } = req.body
 
         if (!courseId) throw 'No courseId provided'
         if (!userId) throw 'No user provided'
@@ -32,7 +32,8 @@ const createPost = async (req, res) => {
             userId,
             courseId,
             title,
-            body
+            body,
+            tag
         })
 
         res.status(200).json({ post })

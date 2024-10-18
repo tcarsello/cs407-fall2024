@@ -17,7 +17,8 @@ const CourseDiscussion = () => {
     const [ createPostFormError, setCreatePostFormError ] = useState()
     const [ createPostForm, setCreatePostForm ] = useState({
         postTitle: '',
-        postBody: ''
+        postBody: '',
+        postTag: 'General',
     })
 
     const [ postList, setPostList ] = useState([])
@@ -75,7 +76,8 @@ const CourseDiscussion = () => {
             userId: user.userId,
             courseId: course.courseId,
             title: createPostForm.postTitle,
-            body: createPostForm.postBody
+            body: createPostForm.postBody,
+            tag: createPostForm.postTag
         }
 
         try {
@@ -100,7 +102,8 @@ const CourseDiscussion = () => {
             setPostList(prev => [{...json.post, ...user }, ...prev])
             setCreatePostForm({
                 postTitle: '',
-                postBody: ''
+                postBody: '',
+                postTag: 'General',
             })
 
 
@@ -139,7 +142,8 @@ const CourseDiscussion = () => {
                     setCreatePostFormError()
                     setCreatePostForm({
                         postTitle: '',
-                        postBody: ''
+                        postBody: '',
+                        postTag: 'General',
                     })
                 }}
                 onSubmit={handleCreatePostFormSubmit}
@@ -166,6 +170,19 @@ const CourseDiscussion = () => {
                         onChange={handleCreatePostFormChange}
                     />
                 </div>
+                <div>
+                    <label>Tag</label>
+                    <select
+                        name='postTag'
+                        value={createPostForm.postTag}
+                        onChange={handleCreatePostFormChange}
+                    >
+                        <option value='General'>General</option>
+                        <option value='Question'>Question</option>
+                        <option value='PSA'>PSA</option>
+                    </select>
+                </div>
+
             </PopupForm>
     </div>
     )

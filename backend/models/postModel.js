@@ -34,6 +34,11 @@ const Post = sequelize.define('post', {
         type: DataTypes.TEXT,
         allowNull: false
     },
+    tag: {
+        type: DataTypes.ENUM('General', 'Question', 'PSA' ),
+        allowNull: false,
+        defaultValue: 'General'
+    }
 }, {
     tableName: 'post',
     timestamps: true

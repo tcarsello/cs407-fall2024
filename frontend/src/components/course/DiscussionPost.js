@@ -38,7 +38,7 @@ const DiscussionPost = ({ post, onDelete }) => {
     return (
         <div className='content-card flex'>
             <div style={{ display: 'inline-block', flex: 1}}>
-                <h2 style={{ margin: 0 }}>{post.title}</h2> 
+                <h2 style={{ margin: 0 }}>[{post.tag}] {post.title}</h2> 
                 <span>Author: {post.firstName} {post.lastName}</span>
                 <br />
                 <span>Date: {formattedDate}</span>

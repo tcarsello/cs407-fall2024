@@ -63,7 +63,7 @@ p.form-worked-msg {
     all: unset;
 }
 
-.standard-form-input, .standard-form input {
+.standard-form-input, .standard-form input, .standard-form select {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
