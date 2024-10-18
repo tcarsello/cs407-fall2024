@@ -123,7 +123,13 @@ const CourseDiscussion = () => {
         + New Dicussion Post
         </button>
 
-        {postList && postList.map((post) => <DiscussionPost key={post.postId} post={post}/>)}
+        {postList && postList.map((post) =>
+            <DiscussionPost
+                key={post.postId}
+                post={post}
+                onDelete={() => setPostList(postList.filter(p => (p.postId != post.postId)))}
+            />
+        )}
 
         <PopupForm
                 title='Create a discussion post'
