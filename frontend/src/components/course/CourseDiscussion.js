@@ -5,7 +5,7 @@ import { useAuthContext } from '../../hooks/UseAuthContext'
 import PopupForm from  '../../components/PopupForm'
 import { useCourseContext } from '../../context/CourseContext'
 
-import DiscussionPost from './DiscussionPost'
+import DiscussionPost from './discussion/DiscussionPost'
 
 const CourseDiscussion = () => {
     const {getClassNames} = useDisplayContext()

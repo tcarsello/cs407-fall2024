@@ -1,6 +1,10 @@
 const Post = require('../models/postModel')
+const Reply = require('../models/replyModel')
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
+
+const sequelize = require('../database')
+const { Sequelize } = require('sequelize')
 
 const createPost = async (req, res) => {
     try {
@@ -108,9 +112,47 @@ const deletePost = async (req, res) => {
     }
 }
 
+const getReplies = async (req, res) => {
+
+    try {
+
+        const { postId } = req.params
+
+        const queryString = `
+            SELECT
+                r.*,
+                u."firstName",
+                u."lastName"
+            FROM
+                reply r
+                INNER JOIN "user" u ON u."userId"=r."userId"
+            WHERE
+                r."postId"=:postId
+            ORDER BY
+                r."createdAt" DESC
+            ;
+        `
+
+        const replies = await sequelize.query(queryString, {
+            replacements: {
+                postId
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({ replies })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+
+}
+
 module.exports = {
     createPost,
     getPost,
     updatePost,
-    deletePost
+    deletePost,
+    getReplies,
 }
