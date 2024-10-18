@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { GrTrash } from 'react-icons/gr'
+import { GrTrash, GrCaretUp } from 'react-icons/gr'
 
 import { useAuthContext } from '../../../hooks/UseAuthContext';
 import { useCourseContext } from '../../../context/CourseContext'
@@ -15,6 +15,9 @@ const DiscussionPost = ({ post, onDelete }) => {
 
     const [replyText, setReplyText] = useState('')
     const [replyList, setReplyList] = useState([])
+
+    const [upvotes, setUpvotes] = useState(parseInt(post.upvotes))
+    const [hasUpvoted, setHasUpvoted] = useState(post.hasUpvoted)
 
     const date = new Date(post.createdAt);
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -102,42 +105,84 @@ const DiscussionPost = ({ post, onDelete }) => {
 
     }
 
+    const handleUpvote = () => {
+
+        try {
+
+            if (hasUpvoted) {
+
+                fetch(`/api/post/${post.postId}/unupvote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`,
+                    }
+                })
+
+                setHasUpvoted(prev => (!prev))
+                setUpvotes(prev => (prev-1))
+
+            } else {
+
+                fetch(`/api/post/${post.postId}/upvote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`,
+                    }
+                })
+
+                setHasUpvoted(prev => (!prev))
+                setUpvotes(prev => (prev+1))
+                
+            }
+        } catch (err) {
+            console.error(err)
+        }
+
+    }
+
     return (
-        <div className='content-card'>
-            <div className='flex' style={{ paddingBottom: '15px', borderBottom: '1px solid lightgrey' }}>
-                <div style={{ display: 'inline-block', flex: 1}}>
-                    <h2 style={{ margin: 0 }}>[{post.tag}] {post.title}</h2> 
-                    <span>Author: {post.firstName} {post.lastName}</span>
-                    <br />
-                    <span>Date: {formattedDate}</span>
-                </div>
-                {canDelete && <GrTrash size='25' onClick={handleDelete} />}
+        <div className='content-card flex'>
+            <div className='flex-col' style={{ alignItems: 'center', marginRight: '15px', color: hasUpvoted ? 'orange' : '' }}>
+                <GrCaretUp size='25' onClick={handleUpvote}/>
+                <h3>{upvotes}</h3>
             </div>
+            <div style={{ flex: 1 }}>
+                <div className='flex' style={{ paddingBottom: '15px', borderBottom: '1px solid lightgrey' }}>
+                    <div style={{ display: 'inline-block', flex: 1}}>
+                        <h2 style={{ margin: 0 }}>[{post.tag}] {post.title}</h2> 
+                        <span>Author: {post.firstName} {post.lastName}</span>
+                        <br />
+                        <span>Date: {formattedDate}</span>
+                    </div>
+                    {canDelete && <GrTrash size='25' onClick={handleDelete} />}
+                </div>
 
-            <p style={{ marginBottom: 0 }}>{post.body}</p>
+                <p style={{ marginBottom: 0 }}>{post.body}</p>
 
-            <Collapsible title={`Replies (${replyList ? replyList.length : 0})`} defaultState={false}>
-                <form onSubmit={handleReply} style={{ display: 'flex' }} >
-                    <input
-                        style={{ flex: 1, marginRight: '15px' }}
-                        type='text'
-                        name='replyText'
-                        placeholder='Write a reply to this post.'
-                        value={replyText}
-                        onChange={e => setReplyText(e.target.value)}
-                    />
-                    <button type='submit' className='standard-button'>Reply</button>
-                </form>
-                <br />
+                <Collapsible title={`Replies (${replyList ? replyList.length : 0})`} defaultState={false}>
+                    <form onSubmit={handleReply} style={{ display: 'flex' }} >
+                        <input
+                            style={{ flex: 1, marginRight: '15px' }}
+                            type='text'
+                            name='replyText'
+                            placeholder='Write a reply to this post.'
+                            value={replyText}
+                            onChange={e => setReplyText(e.target.value)}
+                        />
+                        <button type='submit' className='standard-button'>Reply</button>
+                    </form>
+                    <br />
 
-                {replyList && replyList.map(reply =>
-                    <ReplyComponent
-                        key={reply.replyId}
-                        reply={reply}
-                    />
-                )}
-            </Collapsible>
-            
+                    {replyList && replyList.map(reply =>
+                        <ReplyComponent
+                            key={reply.replyId}
+                            reply={reply}
+                        />
+                    )}
+                </Collapsible>
+           </div> 
         </div>
     )
 }

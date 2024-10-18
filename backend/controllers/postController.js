@@ -2,6 +2,7 @@ const Post = require('../models/postModel')
 const Reply = require('../models/replyModel')
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
+const PostUpvote = require('../models/postUpvoteModel')
 
 const sequelize = require('../database')
 const { Sequelize } = require('sequelize')
@@ -149,10 +150,63 @@ const getReplies = async (req, res) => {
 
 }
 
+const upvotePost = async (req, res) => {
+
+    const { postId } = req.params
+
+    try {
+
+        const upvote = await PostUpvote.findOne({
+            where: {
+                postId,
+                userId: req.user.userId
+            }
+        }) 
+        if (upvote) {
+            res.status(200).json({new: false})
+        } else {
+
+            await PostUpvote.create({
+                postId,
+                userId: req.user.userId
+            })
+
+            res.status(200).json({new: true})
+        }
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+
+}
+
+const unupvotePost = async (req, res) => {
+
+    const { postId } = req.params
+
+    try {
+
+        await PostUpvote.destroy({
+            where: {
+                postId,
+                userId: req.user.userId
+            }
+        })
+
+        res.status(200).json({})
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+
+}
+
 module.exports = {
     createPost,
     getPost,
     updatePost,
     deletePost,
     getReplies,
+    upvotePost,
+    unupvotePost,
 }

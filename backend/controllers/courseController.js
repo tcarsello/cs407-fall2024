@@ -7,6 +7,7 @@ const Topic = require('../models/topicModel')
 const Term = require('../models/termModel')
 const Question = require('../models/questionModel')
 const Post = require('../models/postModel')
+const PostUpvote = require('../models/postUpvoteModel')
 
 const Buffer = require('buffer').Buffer
 const path = require('path')
@@ -671,14 +672,25 @@ const getCoursePosts = async (req, res) => {
 
         const { courseId } = req.params 
 
-        const queryString = `
+        const queryString2 = `
             SELECT
                 p.*,
                 u."firstName",
-                u."lastName"
+                u."lastName",
+                subq.upvotes,
             FROM
                 post p
                 INNER JOIN "user" u ON u."userId"=p."userId"
+                INNER JOIN (
+                    SELECT
+                        p2."postId",
+                        COUNT(pu."userId") AS upvotes
+                    FROM
+                        post p2
+                        LEFT JOIN post_upvote pu ON pu."postId"=p2."postId"
+                    GROUP BY
+                        p2."postId"
+                ) subq ON subq."postId"=p."postId"
             WHERE
                 p."courseId"=:courseId
             ORDER BY
@@ -686,12 +698,51 @@ const getCoursePosts = async (req, res) => {
             ;
         `
 
-        const posts = await sequelize.query(queryString, {
+        const queryString = `
+            SELECT
+                p.*,
+                u."firstName",
+                u."lastName",
+                subq.upvotes,
+                CASE
+                    WHEN pu_current."userId" IS NOT NULL THEN TRUE
+                    ELSE FALSE
+                END AS "hasUpvoted"
+            FROM
+                post p
+            INNER JOIN
+                "user" u ON u."userId" = p."userId"
+            INNER JOIN (
+                SELECT
+                    p2."postId",
+                    COUNT(pu."userId") AS upvotes
+                FROM
+                    post p2
+                LEFT JOIN
+                    post_upvote pu ON pu."postId" = p2."postId"
+                GROUP BY
+                    p2."postId"
+            ) subq ON subq."postId" = p."postId"
+            LEFT JOIN
+                post_upvote pu_current ON pu_current."postId" = p."postId" AND pu_current."userId" = :userId
+            WHERE
+                p."courseId" = :courseId
+            ORDER BY
+                p."createdAt" DESC
+            ;
+        `
+
+        let posts = await sequelize.query(queryString, {
             replacements: {
-                courseId
+                courseId,
+                userId: req.user.userId
             },
             type: Sequelize.QueryTypes.SELECT
         })
+        
+
+
+        const upvote = await 
 
         res.status(200).json({ posts })
     } catch (err) {
