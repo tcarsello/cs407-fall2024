@@ -239,6 +239,50 @@ const CourseGames = () => {
 
     }
     
+    const handleRandomChallenge = async () => {
+        try {
+
+            const candidates = memberList.filter(member =>
+                !incomingChallengeList.some(incoming => member.userId === incoming.contenderId)
+                && !outgoingChallengeList.some(outgoing => member.userId === outgoing.challengerId)
+                && member.userId >= 0
+                && member.userId !== user.userId
+            )
+
+            if (candidates.length == 0) return
+
+            const choice = candidates[Math.floor(Math.random() * candidates.length)]
+
+            const bodyContent = {
+                courseId: course.courseId,
+                contenderId: user.userId,
+                challengerId: choice.userId,
+            }
+
+            const response = await fetch(`/api/challenge/`, {
+                method: 'POST',
+                body: JSON.stringify(bodyContent),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                throw (json.error || 'Failed to create challenge')
+            }
+
+            setOutgoingChallengeList(prev => [...prev, {...json.challenge, name: `${choice.firstName} ${choice.lastName}`}])
+        
+        } catch (err) {
+            console.error(err)
+        }
+
+    }
+
     return ( <>
         <div className='flex page-container'>
             <div style={{ flex: 1, paddingRight: '15px' }}>
@@ -262,8 +306,10 @@ const CourseGames = () => {
 
                 <div className='content-card'>
                     <h4 style={{ margin: 0 }} >Outgoing Challenges</h4>
-                    <button className='standard-button' onClick={() => setCreateChallengeEnabled(true)}>New Challenge</button>
-                    <br />
+                    <div className='flex'>
+                        <button style={{ flex: 1 }} className='standard-button' onClick={() => setCreateChallengeEnabled(true)}>New</button>
+                        <button style={{ flex: 1, marginLeft: '5px' }} className='standard-button' onClick={handleRandomChallenge}>Random</button>
+                    </div>
                     <br />
                     {outgoingChallengeList && outgoingChallengeList.map((outgoing, index) => (
                         <div key={index} className='flex'>
