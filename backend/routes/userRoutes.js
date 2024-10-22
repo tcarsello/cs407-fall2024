@@ -3,7 +3,8 @@ const requireAuth = require('../middleware/requireAuth')
 const { createUser, forgotPassword, loginUser, verifyToken, getUser, deleteUser, updateUser,
     resetUserPassword, getCoordinatingCourses, getInvites,
     getJoinedCourses, uploadProfilePicture, getProfilePicture,
-    getUserPublicInfo } = require('../controllers/userController')
+    getUserPublicInfo, getOutgoingChallengesByCourse, getIncomingChallengesByCourse,
+    getGamesByCourse } = require('../controllers/userController')
 
 const router = express.Router()
 
@@ -25,5 +26,8 @@ router.get('/:userId/courses/coordinating', requireAuth, getCoordinatingCourses)
 router.get('/:userId/courses/joined', requireAuth, getJoinedCourses) // Get all courses userId is a student of
 router.get('/:userId/invites', requireAuth, getInvites) // Get all invites send to userId's email
 router.get('/:userId/picture', getProfilePicture) // Get profile picture by userId (no auth required - will be used to get others' pictures)
+router.get('/:userId/outgoingChallenges/:courseId', requireAuth, getOutgoingChallengesByCourse)
+router.get('/:userId/incomingChallenges/:courseId', requireAuth, getIncomingChallengesByCourse)
+router.get('/:userId/games/:courseId', requireAuth, getGamesByCourse)
 
 module.exports = router

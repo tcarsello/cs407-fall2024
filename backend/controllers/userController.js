@@ -12,6 +12,8 @@ const { Sequelize } = require('sequelize')
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
 const CourseInvite = require('../models/courseInviteModel')
+const Challenge = require('../models/challengeModel')
+const Game = require('../models/gameModel')
 
 const { createJWT } = require('../utils')
 
@@ -511,6 +513,82 @@ const getUserPublicInfo = async (req, res) => {
     }
 }
 
+const getOutgoingChallengesByCourse = async (req, res) => {
+
+    try {
+
+        const { userId, courseId } = req.params
+
+        if (!userId || !courseId) throw 'Must provide userId and courseId'
+
+        const challenges = await Challenge.findAll({
+            where: {
+                courseId,
+                contenderId: userId
+            }
+        })
+
+        res.status(200).json({ challenges })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+
+}
+
+const getIncomingChallengesByCourse = async (req, res) => {
+
+    try {
+
+        const { userId, courseId } = req.params
+
+        if (!userId || !courseId) throw 'Must provide userId and courseId'
+
+        const challenges = await Challenge.findAll({
+            where: {
+                courseId,
+                challengerId: userId
+            }
+        })
+
+        res.status(200).json({ challenges })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+
+}
+
+const getGamesByCourse = async (req, res) => {
+    try {
+
+        const { userId, courseId } = req.params
+
+        if (!userId || !courseId) throw 'Must provide userId and courseId'
+
+        const queryString = `
+            SELECT
+                g.*
+            FROM game g
+            WHERE
+                g."courseId" = :courseId
+                AND (g."playerOneId" = :userId OR g."playerTwoId" = :userId)
+        `
+        const games = await sequelize.query(queryString, {
+            replacements: {
+                userId,
+                courseId
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+
+        res.status(200).json({games})
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+} 
+
 module.exports = {
     createUser,
     forgotPassword,
@@ -525,5 +603,8 @@ module.exports = {
     getJoinedCourses,
     uploadProfilePicture,
     getProfilePicture,
-    getUserPublicInfo
+    getUserPublicInfo,
+    getOutgoingChallengesByCourse,
+    getIncomingChallengesByCourse,
+    getGamesByCourse ,
 }
