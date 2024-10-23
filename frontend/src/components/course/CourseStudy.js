@@ -104,7 +104,7 @@ const CourseStudy = () => {
 
         if (questionList) setQuestionsFiltered(questionList.filter(question => topicFilter === '-1' || question.topicId === parseInt(topicFilter)))
 
-    }, [termList, topicFilter])
+    }, [termList, topicFilter, questionList])
 
     return (
         <div>

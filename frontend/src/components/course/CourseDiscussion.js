@@ -99,13 +99,12 @@ const CourseDiscussion = () => {
 
             setCreatePostEnabled(false)
             setCreatePostFormError()
-            setPostList(prev => [{...json.post, ...user }, ...prev])
+            setPostList(prev => [{...json.post, ...user, upvotes: 0 }, ...prev])
             setCreatePostForm({
                 postTitle: '',
                 postBody: '',
                 postTag: 'General',
             })
-
 
         } catch (err) {
             console.error(err)

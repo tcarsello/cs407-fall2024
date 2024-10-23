@@ -672,32 +672,6 @@ const getCoursePosts = async (req, res) => {
 
         const { courseId } = req.params 
 
-        const queryString2 = `
-            SELECT
-                p.*,
-                u."firstName",
-                u."lastName",
-                subq.upvotes,
-            FROM
-                post p
-                INNER JOIN "user" u ON u."userId"=p."userId"
-                INNER JOIN (
-                    SELECT
-                        p2."postId",
-                        COUNT(pu."userId") AS upvotes
-                    FROM
-                        post p2
-                        LEFT JOIN post_upvote pu ON pu."postId"=p2."postId"
-                    GROUP BY
-                        p2."postId"
-                ) subq ON subq."postId"=p."postId"
-            WHERE
-                p."courseId"=:courseId
-            ORDER BY
-                p."createdAt" DESC
-            ;
-        `
-
         const queryString = `
             SELECT
                 p.*,
@@ -739,16 +713,46 @@ const getCoursePosts = async (req, res) => {
             },
             type: Sequelize.QueryTypes.SELECT
         })
-        
-
-
-        const upvote = await 
 
         res.status(200).json({ posts })
     } catch (err) {
         res.status(err).json({error: err})
     }
 
+}
+
+const exportCourseQuestions = async (req, res) => {
+    try {
+
+        const { courseId } = req.params
+
+        const queryString = `
+            SELECT
+                t."topicName" AS "topicName",
+                q.text AS "questionText",
+                q.difficulty AS "questionDifficulty",
+                '[' || STRING_AGG(
+                    CASE 
+                        WHEN a."isCorrect" = TRUE THEN a.text || ' (Correct)'
+                        ELSE a.text || ' (Incorrect)'
+                    END, '; '
+                ) || ']' AS "answers"
+            FROM
+                question q
+                INNER JOIN topic t ON q."topicId" = t."topicId"
+                INNER JOIN course c ON t."courseId" = c."courseId"
+                LEFT JOIN answer a ON a."questionId" = q."questionId"
+            WHERE
+                c."courseId" = 1
+            GROUP BY
+                t."topicName", q.text, q.difficulty;
+        `
+
+        res.status(200).json()
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
 }
 
 module.exports = {
@@ -771,5 +775,6 @@ module.exports = {
     createTerm,
     getCourseTerms,
     getCourseQuestions,
-    getCoursePosts
+    getCoursePosts,
+    exportCourseQuestions,
 }
