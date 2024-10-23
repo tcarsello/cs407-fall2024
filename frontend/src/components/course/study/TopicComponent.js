@@ -7,7 +7,7 @@ import { GrFormClose, GrEdit } from 'react-icons/gr'
 
 import PopupForm from '../../PopupForm'
 
-const TopicComponent = ({ topics, setTopics, refresh, activeForm, setActiveForm }) => {
+const TopicComponent = ({ topics, setTopics, refresh, activeForm, setActiveForm, setTopicFilter, topicFilter }) => {
 
     const { user } = useAuthContext()
     const { course } = useCourseContext()
@@ -162,6 +162,25 @@ const TopicComponent = ({ topics, setTopics, refresh, activeForm, setActiveForm 
             }
             {user.userId === course.coordinatorId && <div>
                 <button className='standard-button' onClick={() => setActiveForm('createTopic')}>Create Topic</button>
+                <form className='standard-form'>
+                    <br />
+                    <div>
+                        <label>Filter Content By Topic:</label>
+                            <select
+                                id='topicSelect'
+                                value={topicFilter}
+                                onChange={(e) => setTopicFilter(e.target.value)}
+                                required
+                            >
+                                <option value={-1}>All</option>
+                                {topics && topics.map((topic, index) => (
+                                    <option key={index} value={topic.topicId}>
+                                        {topic.topicName}
+                                    </option>
+                                ))}
+                            </select>
+                    </div>
+                </form>
             </div>}
 
             <PopupForm

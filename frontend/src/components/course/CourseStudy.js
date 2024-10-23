@@ -19,6 +19,10 @@ const CourseStudy = () => {
 
     const [activeForm, setActiveForm] = useState(null)
 
+    const [topicFilter, setTopicFilter] = useState('-1')
+    const [termsFiltered, setTermsFiltered] = useState()
+    const [questionsFiltered, setQuestionsFiltered] = useState()
+
     const triggerEffect = () => { setTrigger(!trigger) }
 
     useEffect(() => {
@@ -94,6 +98,14 @@ const CourseStudy = () => {
 
     }, [user, course, trigger])
 
+    useEffect(() => {
+
+        if (termList) setTermsFiltered(termList.filter(term => topicFilter === '-1' || term.topicId === parseInt(topicFilter)))
+
+        if (questionList) setQuestionsFiltered(questionList.filter(question => topicFilter === '-1' || question.topicId === parseInt(topicFilter)))
+
+    }, [termList, topicFilter])
+
     return (
         <div>
             <TopicComponent
@@ -102,9 +114,11 @@ const CourseStudy = () => {
                 refresh={triggerEffect}
                 activeForm={activeForm}
                 setActiveForm={setActiveForm}
+                topicFilter={topicFilter}
+                setTopicFilter={setTopicFilter}
             />
             <TermsComponent
-                terms={termList}
+                terms={termsFiltered}
                 setTerms={setTermList}
                 topics={topicList}
                 refresh={triggerEffect}
@@ -112,7 +126,7 @@ const CourseStudy = () => {
                 setActiveForm={setActiveForm}
             />
             <QuestionsComponent
-                questions={questionList}
+                questions={questionsFiltered}
                 setQuestions={setQuestionList}
                 refresh={triggerEffect}
                 topics={topicList}
