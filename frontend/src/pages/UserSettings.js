@@ -43,6 +43,8 @@ const UserSettings = () => {
 
     const [displayMode, setDisplayMode] = useState('light mode')
 
+    const [challengeNotifications, setChallengeNotifications] = useState(user.challengeNotifications)
+
     useEffect(() => {
 
         const fetchProfilePicture = async () => {
@@ -248,6 +250,37 @@ const UserSettings = () => {
 
     }
 
+    const handleChallengeNotificationToggle = async () => {
+        const newSetting = !challengeNotifications
+
+        try {
+
+            const response = await fetch(`/api/user/${user.userId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({challengeNotifications: newSetting}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                throw Error('failed to patch challenge notifications')
+            }
+
+            user.lightMode = !user.lightMode
+            localStorage.setItem('user', JSON.stringify(json))
+            dispatch({ type: 'LOGIN', payload: json })
+
+            setChallengeNotifications(newSetting)
+
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
     return (
         <div className={classNames.settingsPageContainer}>
             <div className={classNames.settingsCard}>
@@ -356,6 +389,16 @@ const UserSettings = () => {
                     <span className="slider round"></span>
                 </label>
                 <p className={classNames.text}>{displayMode}</p>
+            </div>
+
+            <div className={classNames.settingsCard}>
+                <h2>Email Notification Settings</h2>
+                <span className={classNames.text} style={{ margin: '0' }}>Notify Incoming Challenge</span>
+                <label class="switch">
+                    <input type="checkbox" defaultChecked={!user.challengeNotifications} onChange={handleChallengeNotificationToggle}/>
+                    <span className="slider round"></span>
+                </label>
+               
             </div>
 
             <div className={classNames.settingsCard}>

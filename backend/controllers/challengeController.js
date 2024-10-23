@@ -3,6 +3,8 @@ const User = require('../models/userModel')
 const Course = require('../models/courseModel')
 const Game = require('../models/gameModel')
 
+const nodemailer = require('nodemailer')
+
 const createChallenge = async (req, res) => {
 
     try {
@@ -39,6 +41,37 @@ const createChallenge = async (req, res) => {
             contenderId,
             challengerId,
         }).catch(err => { throw 'Challenge already exists with this user' })
+
+        if (challenger.challengeNotifications) {
+
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD_APP_EMAIL,
+                },
+                sendingRate: 1,
+            });
+
+            // TODO: Make link correct if hosted anywhere other than localhost
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: challenger.email,
+                subject: "Course Clash - You've been Challenged!",
+                html: `<h1>A friend has challenged you to a game in Course Clash!</h1>
+                <p>${req.user.firstName} ${req.user.lastName} challenges you to a match.</p>
+                `,
+            };
+
+            transporter.sendMail(mailOptions, (err, info) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+                res.status(200).send({ message: "Email sent successfully" });
+            });
+        }
 
         res.status(200).json({challenge})
     } catch (err){
