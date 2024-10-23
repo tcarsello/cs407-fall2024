@@ -4,7 +4,7 @@ const { createUser, forgotPassword, loginUser, verifyToken, getUser, deleteUser,
     resetUserPassword, getCoordinatingCourses, getInvites,
     getJoinedCourses, uploadProfilePicture, getProfilePicture,
     getUserPublicInfo, getOutgoingChallengesByCourse, getIncomingChallengesByCourse,
-    getGamesByCourse } = require('../controllers/userController')
+    getGamesByCourse, referFriend } = require('../controllers/userController')
 
 const router = express.Router()
 
@@ -20,6 +20,7 @@ router.post('/login', loginUser)
 router.post('/verify-token', verifyToken)
 router.post('/forgot-password', forgotPassword)
 router.post('/:userId/picture', requireAuth, uploadProfilePicture)
+router.post('/refer', requireAuth, referFriend)
 
 router.get('/:userId/public', getUserPublicInfo)
 router.get('/:userId/courses/coordinating', requireAuth, getCoordinatingCourses) // Get all courses userId is coordinator of

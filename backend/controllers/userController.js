@@ -589,6 +589,58 @@ const getGamesByCourse = async (req, res) => {
     }
 } 
 
+const referFriend = async (req, res) => {
+    try {
+
+        const { email } = req.body
+
+        if (!email) throw 'email must be provided'
+
+        const user = await User.findOne({
+            where: { email }
+        })
+        if (!user) {
+            
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD_APP_EMAIL,
+                },
+                sendingRate: 1,
+            });
+
+            // TODO: Make link correct if hosted anywhere other than localhost
+            const link = `http://localhost:3000/`;
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: email,
+                subject: "Course Clash - You're Invited!",
+                html: `<h1>A friend has invited you to join Course Clash!</h1>
+                <p>${req.user.firstName} ${req.user.lastName} invites you to sign up with the link below:</p>
+                <a href="${link}">${link}</a>
+                `,
+            };
+
+            transporter.sendMail(mailOptions, (err, info) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+                res.status(200).send({ message: "Email sent successfully" });
+            });
+
+        }
+
+        res.status(200).json({message: 'invite sent'})
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+}
+
 module.exports = {
     createUser,
     forgotPassword,
@@ -607,4 +659,5 @@ module.exports = {
     getOutgoingChallengesByCourse,
     getIncomingChallengesByCourse,
     getGamesByCourse ,
+    referFriend,
 }

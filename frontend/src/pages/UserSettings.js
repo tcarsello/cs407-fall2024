@@ -353,7 +353,7 @@ const UserSettings = () => {
                 <div className='vspacer-med'></div>
                 <label class="switch">
                     <input type="checkbox" defaultChecked={!user.lightMode} onChange={(e) => handleDisplayModeChange(e)}/>
-                    <span class="slider round"></span>
+                    <span className="slider round"></span>
                 </label>
                 <p className={classNames.text}>{displayMode}</p>
             </div>

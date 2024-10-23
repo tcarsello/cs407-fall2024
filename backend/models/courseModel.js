@@ -45,7 +45,7 @@ const Course = sequelize.define('course', {
     timestamps: true
 })
 
-Course.belongsTo(User, { foreignKey: 'coordinatorId' })
+Course.belongsTo(User, { foreignKey: 'coordinatorId', onDelete: 'CASCADE' })
 
 Course.belongsToMany(User, { through: 'course_members' })
 User.belongsToMany(Course, { through: 'course_members' })

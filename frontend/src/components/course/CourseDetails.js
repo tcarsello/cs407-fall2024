@@ -58,7 +58,7 @@ const CourseDetails = ({ course, onDelete }) => {
                 setCoursePictureUrl(imageUrl)
 
             } catch (err) {
-                console.err(err)
+                console.error(err)
             }
         }
 

@@ -36,9 +36,11 @@ const Home = () => {
     })
     const [joinCourseFormError, setJoinCourseFormError] = useState()
 
-
     const [classNames, setClassNames] = useState(getClassNames('lightMode'))
 
+    const [referFriendEnabled, setReferFriendEnabled] = useState(false)
+    const [referFriendEmail, setReferFriendEmail] = useState('')
+    const [referFriendError, setReferFriendError] = useState('')
 
     useEffect(() => {
         if (user && !user.lightMode) {
@@ -152,6 +154,33 @@ const Home = () => {
 
     }, [user])
 
+    const handleReferFriendSubmit = async (e) => {
+        e.preventDefault()
+
+        try {
+
+            const response = await fetch(`/api/user/refer`, {
+                method: 'POST',
+                body: JSON.stringify({ email: referFriendEmail }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+
+            if (!response.ok) {
+                throw Error('Failed to send reference email')
+            }
+
+            setReferFriendEnabled(false)
+            alert('Reference email sent')
+        } catch (err) {
+            console.log(err)
+            setReferFriendError('Failed to send email')
+        }
+
+    }
+
     return (
         <div className={classNames.pageContainer}>
             <div className='home-lnav flex-col'>
@@ -181,6 +210,8 @@ const Home = () => {
                                 <GrFormClose size='25' onClick={() => removeFriend(friend.userId)}/>
                             </div>
                         ))}
+                        <br />
+                        <span style={{ color: 'grey', textDecoration: 'underline', fontStyle: 'italic'}} onClick={() => setReferFriendEnabled(true)}>Refer a friend</span>
                     </div>
                 </div>
             </div>
@@ -288,6 +319,30 @@ const Home = () => {
                     />
                 </div>
             </PopupForm>
+
+            <PopupForm
+                title='Refer a Friend'
+                isOpen={referFriendEnabled}
+                onClose={() => {
+                    setReferFriendEnabled(false)
+                    setReferFriendEmail('')
+                    setReferFriendError()
+                }}
+                onSubmit={handleReferFriendSubmit}
+                errorText={referFriendError} 
+            >
+                <div>
+                    <label>Email</label>
+                    <input
+                        type='email'
+                        name='referFriendEmail'
+                        placeholder='example@email.com'
+                        value={referFriendEmail}
+                        onChange={(e) => setReferFriendEmail(e.target.value)}
+                    />
+                </div>
+            </PopupForm>
+
         </div>
     )
 
