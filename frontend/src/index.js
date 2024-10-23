@@ -4,14 +4,17 @@ import App from './App';
 
 import { AuthContextProvider } from './context/AuthContext'
 import { DisplayContextProvider } from './context/DisplayContext';
+import { FriendContextProvider } from './context/FriendContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
         <AuthContextProvider>
-            <DisplayContextProvider>
-                <App/>
-            </DisplayContextProvider>
+            <FriendContextProvider>
+                <DisplayContextProvider>
+                    <App/>
+                </DisplayContextProvider>
+            </FriendContextProvider>
         </AuthContextProvider>
     </React.StrictMode>
 );

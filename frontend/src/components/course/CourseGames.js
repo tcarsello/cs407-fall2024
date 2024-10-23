@@ -10,11 +10,14 @@ import { GrFormClose, GrFormCheckmark } from 'react-icons/gr'
 const CourseGames = () => {
 
     const { user } = useAuthContext()
-    const { course } = useCourseContext()
+    const { course, courseFriends } = useCourseContext()
 
     const [createChallengeEnabled, setCreateChallengeEnabled] = useState(false)
     const [createChallengeError, setCreateChallengeError] = useState()
     const [challengerId, setChallengerId] = useState(-1)
+    
+    const [createFriendChallengeEnabled, setCreateFriendChallengeEnabled] = useState(false)
+    const [createFriendChallengeError, setCreateFriendChallengeError] = useState()
 
     const [memberList, setMemberList] = useState([])
     const [outgoingChallengeList, setOutgoingChallengeList] = useState([])
@@ -149,6 +152,7 @@ const CourseGames = () => {
 
             if (!response.ok) {
                 setCreateChallengeError(json.error || 'Failed to create challenge')
+                setCreateFriendChallengeError(json.error || 'Failed to create challenge')
                 throw (json.error || 'Failed to create challenge')
             }
 
@@ -157,6 +161,11 @@ const CourseGames = () => {
 
             setCreateChallengeEnabled(false)
             setCreateChallengeError()
+
+            setCreateFriendChallengeEnabled(false)
+            setCreateFriendChallengeError()
+
+            setChallengerId(-1)
         } catch (err) {
             console.error(err)
         }
@@ -287,11 +296,20 @@ const CourseGames = () => {
         <div className='flex page-container'>
             <div style={{ flex: 1, paddingRight: '15px' }}>
                 <div className='content-card'>
-                    {gameList && gameList.map(g => (<p kye={g.gameId}>{g.gameId}</p>))}
+                    {gameList && gameList.map(g => (<p key={g.gameId}>{g.gameId}</p>))}
                 </div>
             </div>
 
             <div style={{ width: '20%', minWidth: '250px' }}>
+                <div className='content-card'>
+                    <h4 style={{ margin: 0 }} >Create Challenge</h4>
+                    <div className='flex-col'>
+                        <button className='standard-button' onClick={() => setCreateChallengeEnabled(true)}>New</button>
+                        <button className='standard-button' onClick={handleRandomChallenge}>Random</button>
+                        <button className='standard-button' onClick={() => setCreateFriendChallengeEnabled(true)}>Friend</button>
+                    </div>
+                </div>
+
                 <div className='content-card'>
                     <h4 style={{ margin: 0 }} >Incoming Challenges</h4>
                     {incomingChallengeList && incomingChallengeList.map((incoming, index) => (
@@ -306,11 +324,6 @@ const CourseGames = () => {
 
                 <div className='content-card'>
                     <h4 style={{ margin: 0 }} >Outgoing Challenges</h4>
-                    <div className='flex'>
-                        <button style={{ flex: 1 }} className='standard-button' onClick={() => setCreateChallengeEnabled(true)}>New</button>
-                        <button style={{ flex: 1, marginLeft: '5px' }} className='standard-button' onClick={handleRandomChallenge}>Random</button>
-                    </div>
-                    <br />
                     {outgoingChallengeList && outgoingChallengeList.map((outgoing, index) => (
                         <div key={index} className='flex'>
                             <span style={{ flex: 1 }}>{outgoing.name}</span> 
@@ -340,14 +353,44 @@ const CourseGames = () => {
                     onChange={(e) => setChallengerId(e.target.value)}
                     required
                 >
-                    {memberList && memberList.filter(member => member.userId !== user.userId).map(member => (
-                        <option key={member.userId} value={member.userId}>
+                    {memberList && memberList.filter(member => member.userId !== user.userId).map((member, index) => (
+                        <option key={index} value={member.userId}>
                             {`${member.firstName} ${member.lastName}`}
                         </option>
                     ))}
                 </select>
             </div>
         </PopupForm>
+
+        <PopupForm
+            title={'Challenge a Friend'}
+            isOpen={createFriendChallengeEnabled}
+            onClose={() => {
+                setCreateFriendChallengeEnabled(false)
+                setCreateFriendChallengeError()
+            }}
+            onSubmit={handleCreateChallenge}
+            errorText={createFriendChallengeError}
+        >
+            <div>
+                <label>Friend</label>
+                <select
+                    id='friendSelect'
+                    value={challengerId}
+                    onChange={(e) => setChallengerId(e.target.value)}
+                    required
+                >
+                    <option value={-1}></option>
+                    {courseFriends && courseFriends.filter(member => member.userId !== user.userId).map((member, index) => (
+                        <option key={index} value={member.userId}>
+                            {`${member.firstName} ${member.lastName}`}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </PopupForm>
+
+
 
     </>)
 }

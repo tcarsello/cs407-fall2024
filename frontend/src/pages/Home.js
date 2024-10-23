@@ -9,10 +9,15 @@ import CourseDetails from '../components/course/CourseDetails'
 import InviteDetails from '../components/course/InviteDetails'
 
 import { useDisplayContext } from '../context/DisplayContext'
+import { useFriendContext } from '../context/FriendContext'
+
+import { GrFormClose } from 'react-icons/gr'
 
 const Home = () => {
 
     const { user } = useAuthContext()
+    const { getClassNames } = useDisplayContext()
+    const { friendsList, removeFriend } = useFriendContext()
 
     const [myCourseList, setMyCourseList] = useState([])
     const [joinedCourseList, setJoinedCourseList] = useState([])
@@ -31,7 +36,6 @@ const Home = () => {
     })
     const [joinCourseFormError, setJoinCourseFormError] = useState()
 
-    const {getClassNames} = useDisplayContext()
 
     const [classNames, setClassNames] = useState(getClassNames('lightMode'))
 
@@ -42,7 +46,7 @@ const Home = () => {
         } else if (user && user.lightMode) {
             setClassNames(getClassNames('lightMode'))
         }
-    }, [user])
+    }, [user, getClassNames])
 
     const handleJoinCourseFormChange = (e) => {
         const { name, value } = e.target
@@ -167,6 +171,18 @@ const Home = () => {
                 >
                     Join a Course
                 </button>
+
+                <div style={{ marginTop: '25px', paddingLeft: '15px', paddingRight: '15px' }}>
+                    <div className='content-card'>
+                        <h3>Friends ({friendsList ? friendsList.length : 0})</h3>
+                        {friendsList && friendsList.map((friend, index) => (
+                            <div key={index} className='flex'>
+                                <span style={{ flex: 1 }}>{`${friend.firstName} ${friend.lastName}`}</span> 
+                                <GrFormClose size='25' onClick={() => removeFriend(friend.userId)}/>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <div className='home-content'>
