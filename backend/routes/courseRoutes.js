@@ -35,6 +35,6 @@ router.get('/:courseId/topics', requireAuth, getCourseTopics)
 router.get('/:courseId/terms', requireAuth, getCourseTerms)
 router.get('/:courseId/questions', requireAuth, getCourseQuestions)
 router.get('/:courseId/posts', requireAuth, getCoursePosts)
-router.get('/:courseId/export/questions', requireAuth, exportCourseQuestions)
+router.post('/:courseId/export/questions', requireAuth, exportCourseQuestions)
 
 module.exports = router

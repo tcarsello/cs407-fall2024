@@ -120,6 +120,37 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
     );
   };
 
+    const handleExport = async () => {
+
+        try {
+
+            const response = await fetch(`/api/course/${course.courseId}/export/questions`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            if (!response.ok) throw Error('POST to export route failed')
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cc_questions.csv'
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+
+        } catch (err) {
+            console.error(err)
+            alert('Could not export questions')
+        }
+
+    }
+
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>Questions</Typography>
@@ -254,6 +285,7 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
           </Box>
         </AccordionDetails>
       </Accordion>
+      <button className='standard-button' onClick={handleExport}>Export Questions</button>
     </Box>
   );
 };

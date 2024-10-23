@@ -18,6 +18,8 @@ const { Sequelize } = require('sequelize')
 
 const { generateJoinCode } = require('../utils')
 
+const { Parser } = require('json2csv')
+
 const createCourse = async (req, res) => {
     try {
 
@@ -743,12 +745,27 @@ const exportCourseQuestions = async (req, res) => {
                 INNER JOIN course c ON t."courseId" = c."courseId"
                 LEFT JOIN answer a ON a."questionId" = q."questionId"
             WHERE
-                c."courseId" = 1
+                c."courseId" = :courseId
             GROUP BY
                 t."topicName", q.text, q.difficulty;
         `
 
-        res.status(200).json()
+        const query = await sequelize.query(queryString, {
+            replacements: {
+                courseId,
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+        if (query.length < 1) throw 'No data'
+
+        const fields = Object.keys(query[0] || {})
+        const parser = new Parser({ fields })
+        const csv = parser.parse(query)
+
+        res.setHeader('Content-Disposition', 'attachment; filename=cc_questions.csv')
+        res.setHeader('Content-Type', 'text/csv')
+        res.status(200).send(csv)
+
     } catch (err) {
         console.error(err)
         res.status(400).json({error: err})
