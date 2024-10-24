@@ -8,6 +8,7 @@ const Term = require('../models/termModel')
 const Question = require('../models/questionModel')
 const Post = require('../models/postModel')
 const PostUpvote = require('../models/postUpvoteModel')
+const Answer = require('../models/answerModel')
 
 const Buffer = require('buffer').Buffer
 const path = require('path')
@@ -19,6 +20,7 @@ const { Sequelize } = require('sequelize')
 const { generateJoinCode } = require('../utils')
 
 const { Parser } = require('json2csv')
+const { parse } = require('csv-parse')
 
 const createCourse = async (req, res) => {
     try {
@@ -772,6 +774,92 @@ const exportCourseQuestions = async (req, res) => {
     }
 }
 
+const parseAnswers = (answersString) => {
+    const answers = answersString.slice(1, -1).split('; ')
+    const correctAnswers = []
+    const incorrectAnswers = []
+
+    answers.forEach(answer => {
+        if (answer.endsWith(' (Correct)')) {
+            correctAnswers.push(answer.slice(0, -' (Correct)'.length))
+        } else if (answer.endsWith(' (Incorrect)')) {
+            incorrectAnswers.push(answer.slice(0, -' (Incorrect)'.length))
+        }
+    })
+
+    return { correctAnswers, incorrectAnswers }
+}
+
+const importCourseQuestions = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { fileBase64 } = req.body;
+
+        if (!courseId) throw "Need course ID";
+        if (!fileBase64) throw "Need file base64";
+
+        const buffer = Buffer.from(fileBase64, 'base64');
+        const csv = buffer.toString('utf-8');
+
+        const csvItems = await new Promise((resolve, reject) => {
+            const parsedItems = [];
+            parse(csv, {
+                columns: ['topicName', 'questionText', 'questionDifficulty', 'answers'],
+                skip_empty_lines: true,
+            }, (err, rows) => {
+                if (err) return reject(err);
+
+                rows.forEach(row => {
+                    const { correctAnswers, incorrectAnswers } = parseAnswers(row.answers);
+                    parsedItems.push({
+                        ...row,
+                        correctAnswers,
+                        incorrectAnswers,
+                    });
+                });
+
+                resolve(parsedItems);
+            });
+        });
+
+        const promises = csvItems.map(async (item, index) => {
+            if (index === 0) return;
+
+            const [topic] = await Topic.findOrCreate({
+                where: {
+                    courseId,
+                    topicName: item.topicName,
+                }
+            });
+
+            const question = await Question.create({
+                topicId: topic.topicId,
+                text: item.questionText,
+                difficulty: item.questionDifficulty,
+            });
+
+            await Answer.bulkCreate(item.correctAnswers.map(ca => ({
+                questionId: question.questionId,
+                text: ca,
+                isCorrect: true,
+            })));
+
+            await Answer.bulkCreate(item.incorrectAnswers.map(ia => ({
+                questionId: question.questionId,
+                text: ia,
+                isCorrect: false,
+            })));
+        });
+
+        await Promise.all(promises);
+
+        res.status(200).json({ message: 'Uploaded' });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ error: err });
+    }
+};
+
 module.exports = {
     createCourse,
     getCourse,
@@ -794,4 +882,5 @@ module.exports = {
     getCourseQuestions,
     getCoursePosts,
     exportCourseQuestions,
+    importCourseQuestions,
 }

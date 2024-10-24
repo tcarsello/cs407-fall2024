@@ -20,6 +20,8 @@ import {
 } from '@mui/material';
 import { Add, ExpandMore, PhotoCamera } from '@mui/icons-material';
 
+import PopupForm from '../../PopupForm'
+
 const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
   const { user } = useAuthContext();
   const { course } = useCourseContext();
@@ -32,6 +34,11 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
   const [questionImageBase64, setQuestionImageBase64] = useState();
   const [createQuestionFormError, setCreateQuestionFormError] = useState();
   const [answerList, setAnswerList] = useState([]);
+
+    const [importEnabled, setImportEnabled] = useState(false)
+    const [importError, setImportError] = useState('')
+    const [importFile, setImportFile] = useState(null)
+    const [importFileBase64, setImportFileBase64] = useState()
 
   if (user.userId !== course.coordinatorId) return null;
 
@@ -149,6 +156,51 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
             alert('Could not export questions')
         }
 
+    }
+
+    const handleImport = async (e) => {
+        e.preventDefault()
+        try {
+            if (!importFile || !importFileBase64) {
+                setImportError('No import file selected')
+                throw Error('No file selected')
+            }
+
+            const response = await fetch(`/api/course/${course.courseId}/import/questions`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    fileBase64: importFileBase64,
+                }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            if (!response.ok) {
+                setImportError('Failed to import CSV file')
+                throw Error('Failed to import CSV file')
+            }
+
+            setImportEnabled(false)
+            setImportFile(null)
+            setImportError()
+        } catch (err) {
+            console.error(err)
+        }
+        refresh()
+    }
+
+    const handleImportFileChange = (e) => {
+        setImportFile(e.target.files[0])
+        
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1];
+            setImportFileBase64(base64);
+          };
+          reader.readAsDataURL(e.target.files[0]);
+     
     }
 
   return (
@@ -286,6 +338,24 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
         </AccordionDetails>
       </Accordion>
       <button className='standard-button' onClick={handleExport}>Export Questions</button>
+      <button className='standard-button' style={{ marginLeft: '5px' }} onClick={() => {setImportEnabled(true)}}>Import Questions</button>
+
+      <PopupForm
+        title={'Import Questions from CSV'}
+        isOpen={importEnabled}
+        onClose={() => {
+            setImportError()
+            setImportFile(null)
+            setImportEnabled(false)
+        }}
+        errorText={importError}
+        onSubmit={handleImport}
+      >
+        <div>
+            <label>CSV File</label>
+            <input type='file' accept='.csv' onChange={handleImportFileChange} />
+        </div>
+      </PopupForm>
     </Box>
   );
 };
