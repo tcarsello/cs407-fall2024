@@ -1,0 +1,37 @@
+const { DataTypes } = require('sequelize')
+const sequelize = require('../database')
+
+const Round = sequelize.define('Round', {
+    roundId: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+        references: {
+            model: Round,
+            key: 'roundId'
+        }
+    },
+    topicId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Topic,
+            key: 'topicId'
+        }
+    },
+    gameId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Game,
+            key: 'gameId'
+        }
+    }
+}, {
+    tableName: 'round',
+    timestamps: true
+})
+
+Round.belongsTo(Game, { foreignKey: 'gameId' })
+
+module.exports = Round;
