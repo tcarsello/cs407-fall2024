@@ -6,10 +6,6 @@ const Round = sequelize.define('Round', {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-        references: {
-            model: Round,
-            key: 'roundId'
-        }
     },
     topicId: {
         type: DataTypes.INTEGER,
