@@ -1,6 +1,9 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('../database')
 
+const Topic = require('./topicModel')
+const Game = require('./gameModel')
+
 const Round = sequelize.define('Round', {
     roundId: {
         type: DataTypes.INTEGER,
