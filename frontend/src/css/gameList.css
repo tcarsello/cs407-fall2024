@@ -1,0 +1,12 @@
+.gameLink {
+	text-decoration: none;
+	color: inherit;
+}
+
+#gameDiv h2 {
+	color: #0056b3;
+}
+
+#gameDiv:hover {
+	background-color: #f0f0f0;
+}

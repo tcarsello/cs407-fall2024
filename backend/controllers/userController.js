@@ -7,7 +7,7 @@ const path = require('path')
 
 const sequelize = require('../database')
 const s3 = require('../objectstore')
-const { Sequelize } = require('sequelize')
+const { Sequelize, Op } = require('sequelize')
 
 const User = require('../models/userModel')
 const Course = require('../models/courseModel')
@@ -574,7 +574,8 @@ const getGamesByCourse = async (req, res) => {
             WHERE
                 g."courseId" = :courseId
                 AND (g."playerOneId" = :userId OR g."playerTwoId" = :userId)
-        `
+            ORDER BY "updatedAt" DESC
+        `;
         const games = await sequelize.query(queryString, {
             replacements: {
                 userId,
@@ -588,7 +589,114 @@ const getGamesByCourse = async (req, res) => {
         console.error(err)
         res.status(400).json({error: err})
     }
-} 
+}
+
+const getGames = async (req, res) => {
+	try {
+		const { userId } = req.params;
+        
+        if (userId != req.user.userId) throw "Wrong user";
+
+		if (!userId) throw "Must provide userId";
+
+		const queryString = `
+            SELECT
+                g.*
+            FROM game g
+            WHERE
+                g."playerOneId" = :userId OR g."playerTwoId" = :userId
+            ORDER BY "updatedAt" DESC
+        `;
+		const games = await sequelize.query(queryString, {
+			replacements: {
+				userId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+		res.status(200).json({ games });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
+const getGamesByCourseWithNames = async (req, res) => {
+	try {
+		const { userId, courseId } = req.params;
+
+		if (!userId || !courseId) throw "Must provide userId and courseId";
+
+		const queryString = `
+            SELECT
+                g.*,
+                "playerOne"."firstName" AS "playerOneFirstName",
+                "playerOne"."lastName" AS "playerOneLastName",
+                "playerTwo"."firstName" AS "playerTwoFirstName",
+                "playerTwo"."lastName" AS "playerTwoLastName"
+            FROM game g
+            LEFT JOIN "user" AS "playerOne"
+                ON "playerOne"."userId" = g."playerOneId"
+            LEFT JOIN "user" AS "playerTwo"
+                ON "playerTwo"."userId" = g."playerTwoId"
+            WHERE
+                g."courseId" = :courseId
+                AND (g."playerOneId" = :userId OR g."playerTwoId" = :userId)
+            ORDER BY "updatedAt" DESC
+        `;
+		const games = await sequelize.query(queryString, {
+			replacements: {
+                courseId,
+				userId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+		res.status(200).json({ games });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
+const getGamesWithNames = async (req, res) => {
+	try {
+		const { userId } = req.params;
+
+		if (userId != req.user.userId) throw "Wrong user";
+
+		if (!userId) throw "Must provide userId";
+
+		const queryString = `
+            SELECT
+                g.*,
+                "playerOne"."firstName" AS "playerOneFirstName",
+                "playerOne"."lastName" AS "playerOneLastName",
+                "playerTwo"."firstName" AS "playerTwoFirstName",
+                "playerTwo"."lastName" AS "playerTwoLastName"
+            FROM game g
+            LEFT JOIN "user" AS "playerOne"
+                ON "playerOne"."userId" = g."playerOneId"
+            LEFT JOIN "user" AS "playerTwo"
+                ON "playerTwo"."userId" = g."playerTwoId"
+            WHERE
+                g."playerOneId" = :userId OR g."playerTwoId" = :userId
+            ORDER BY "updatedAt" DESC
+            `;
+
+		const games = await sequelize.query(queryString, {
+			replacements: {
+				userId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+		res.status(200).json({ games });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
 
 const referFriend = async (req, res) => {
     try {
@@ -659,6 +767,9 @@ module.exports = {
     getUserPublicInfo,
     getOutgoingChallengesByCourse,
     getIncomingChallengesByCourse,
-    getGamesByCourse ,
+    getGamesByCourse,
+    getGames,
+    getGamesByCourseWithNames,
+    getGamesWithNames,
     referFriend,
 }

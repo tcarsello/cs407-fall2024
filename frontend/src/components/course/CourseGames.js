@@ -2,6 +2,7 @@ import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
 import PopupForm from "../PopupForm"
+import GameList from "../games/GameList"
 
 import { useState, useEffect } from 'react'
 
@@ -22,7 +23,9 @@ const CourseGames = () => {
     const [memberList, setMemberList] = useState([])
     const [outgoingChallengeList, setOutgoingChallengeList] = useState([])
     const [incomingChallengeList, setIncomingChallengeList] = useState([])
-    const [gameList, setGameList] = useState([])
+
+    // Used to update the game list
+    const [gameList, setGameList] = useState(0)
 
     useEffect(() => {
 
@@ -105,7 +108,7 @@ const CourseGames = () => {
             fetchIncomingChallenges()
         }
 
-    }, [memberList])
+    }, [course, memberList, user])
 
     const handleCreateChallenge = async (e) => {
         e.preventDefault()
@@ -217,9 +220,8 @@ const CourseGames = () => {
             })
 
             if (response.ok) {
-                const json = await response.json()
                 setIncomingChallengeList(prev => prev.filter((c, i) => i !== index))
-                setGameList(prev => [...prev, json.game])
+                setGameList(gameList + 1)
             }
 
         } catch (err) {
@@ -238,7 +240,7 @@ const CourseGames = () => {
                 && member.userId !== user.userId
             )
 
-            if (candidates.length == 0) return
+            if (candidates.length === 0) return
 
             const choice = candidates[Math.floor(Math.random() * candidates.length)]
 
@@ -275,9 +277,7 @@ const CourseGames = () => {
     return ( <>
         <div className='flex page-container'>
             <div style={{ flex: 1, paddingRight: '15px' }}>
-                <div className='content-card'>
-                    {gameList && gameList.map(g => (<p key={g.gameId}>{g.gameId}</p>))}
-                </div>
+                <GameList course={course} key={gameList}/>
             </div>
 
             <div style={{ width: '20%', minWidth: '250px' }}>

@@ -12,6 +12,7 @@ import { useDisplayContext } from '../context/DisplayContext'
 import { useFriendContext } from '../context/FriendContext'
 
 import { GrFormClose } from 'react-icons/gr'
+import GameList from '../components/games/GameList'
 
 const Home = () => {
 
@@ -263,6 +264,7 @@ const Home = () => {
                         </Collapsible>
                     }
                 </div>
+                <GameList />
             </div>
 
             <PopupForm
