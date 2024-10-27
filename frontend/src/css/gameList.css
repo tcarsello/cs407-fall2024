@@ -3,8 +3,39 @@
 	color: inherit;
 }
 
+p.victory {
+	color: limegreen;
+	font-size: large;
+	margin: 0;
+}
+
+p.defeat {
+	color: red;
+	font-size: large;
+	margin: 0;
+}
+
+p.inprogress {
+	color: orange;
+	font-size: large;
+	margin: 0;
+}
+
+p.new {
+	color: green;
+	font-size: large;
+	margin: 0;
+}
+
 #gameDiv h2 {
 	color: #0056b3;
+	margin: 0 0 5px 0;
+}
+
+p.time {
+	font-size: 14px;
+	color: darkgray;
+	margin: 20px 0px 0px 0px;
 }
 
 #gameDiv:hover {

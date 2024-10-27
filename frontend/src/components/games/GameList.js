@@ -17,21 +17,30 @@ const timeStampToStr = (ts) => {
 	return timeAgo.format(date, { future: false });
 };
 
-const Game = ({ game }) => {
+const Game = ({ game, history }) => {
 	return (
 		<Link to={`/game/${game.gameId}`} className="gameLink">
 			<div className="content-card" id="gameDiv">
 				<h2>
 					{game.playerOneFirstName} vs {game.playerTwoFirstName}
 				</h2>
-				<p>Game Status: {game.status}</p>
-				<p>{timeStampToStr(game.updatedAt)}</p>
+				{!history && <p className={game.status.replaceAll(" ", "").toLowerCase()}>{game.status}</p>}
+				{history && (
+					<p className={game.victory ? "victory" : "defeat"}>{game.victory ? "Victory" : "Defeat"}</p>
+				)}
+				<p className="time">{timeStampToStr(game.updatedAt)}</p>
 			</div>
 		</Link>
 	);
 };
 
-const GameList = ({ title = "My Games", masterList = false, course = null }) => {
+const GameList = ({
+	title = "Active Games",
+	history = false,
+	masterList = false,
+	course = null,
+	divClass = "content-card",
+}) => {
 	const { user } = useAuthContext();
 
 	const [games, setGames] = useState([]);
@@ -52,7 +61,23 @@ const GameList = ({ title = "My Games", masterList = false, course = null }) => 
 				});
 
 				const json = await response.json();
-				setGames(json.games);
+				const gameArray = json.games;
+				if (history) {
+					const filteredGamesWithVictory = gameArray.reduce((accumulator, game) => {
+						if (game.status === "Player One Win" || game.status === "Player Two Win") {
+							game.victory = (user.userId === game.playerOneId) === (game.status === "Player One Win");
+							accumulator.push(game);
+						}
+
+						return accumulator;
+					}, []);
+					setGames(filteredGamesWithVictory);
+				} else {
+					const filteredGames = gameArray.filter((game) => {
+						return game.status === "In Progress" || game.status === "New";
+					});
+					setGames(filteredGames);
+				}
 			} catch (err) {
 				console.error(err);
 			}
@@ -61,12 +86,12 @@ const GameList = ({ title = "My Games", masterList = false, course = null }) => 
 		if (user) {
 			fetchGames();
 		}
-	}, [user, course, masterList]);
+	}, [user, course, masterList, history]);
 
 	return (
-		<div className="content-card">
-			<h1>{title}</h1>
-			{games && games.map((g) => <Game game={g} key={g.gameId} />)}
+		<div className={divClass}>
+			{title && <h2 display="inline">{title}</h2>}
+			{games && games.map((g) => <Game game={g} history={history} key={g.gameId} />)}
 		</div>
 	);
 };

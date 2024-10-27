@@ -2,6 +2,7 @@ import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
 import PopupForm from "../PopupForm"
+import Collapsible from '../Collapsible'
 import GameList from "../games/GameList"
 
 import { useState, useEffect } from 'react'
@@ -277,8 +278,23 @@ const CourseGames = () => {
     return ( <>
         <div className='flex page-container'>
             <div style={{ flex: 1, paddingRight: '15px' }}>
-                <GameList course={course} key={gameList}/>
-                {user.userId === course.coordinatorId && <GameList title={"All Games"} masterList={true} course={course} key={gameList + 1}/>}
+               	<div className="content-card">
+					<Collapsible title="Active Games" defaultState={true}>
+						<GameList title="" divClass="" course={course} key={gameList} />
+					</Collapsible>
+				</div>
+                <div className="content-card">
+                    <Collapsible title="Game History" defaultState={true} >
+                        <GameList title="" divClass="" course={course} history={true} key={gameList + 1} />
+                    </Collapsible>
+                </div>
+                {user.userId === course.coordinatorId &&
+                    <div className="content-card">
+                        <Collapsible title="Course Games" defaultState={true}>
+                            <GameList title={""} divClass="" masterList={true} course={course} key={gameList + 2} />
+                        </Collapsible>
+                    </div>
+                }
             </div>
 
             <div style={{ width: '20%', minWidth: '250px' }}>
