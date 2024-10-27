@@ -3,8 +3,11 @@ const requireAuth = require('../middleware/requireAuth')
 const { createUser, forgotPassword, loginUser, verifyToken, getUser, deleteUser, updateUser,
     resetUserPassword, getCoordinatingCourses, getInvites,
     getJoinedCourses, uploadProfilePicture, getProfilePicture,
-    getUserPublicInfo, getOutgoingChallengesByCourse, getIncomingChallengesByCourse,
-    getGamesByCourse, referFriend } = require('../controllers/userController')
+    getUserPublicInfo, getUsersPublicInfo, getOutgoingChallengesByCourse, getIncomingChallengesByCourse,
+    getGamesByCourse, referFriend, 
+    getGames,
+    getGamesByCourseWithNames,
+    getGamesWithNames} = require('../controllers/userController')
 
 const router = express.Router()
 
@@ -30,5 +33,8 @@ router.get('/:userId/picture', getProfilePicture) // Get profile picture by user
 router.get('/:userId/outgoingChallenges/:courseId', requireAuth, getOutgoingChallengesByCourse)
 router.get('/:userId/incomingChallenges/:courseId', requireAuth, getIncomingChallengesByCourse)
 router.get('/:userId/games/:courseId', requireAuth, getGamesByCourse)
+router.get('/:userId/games', requireAuth, getGames);
+router.get("/:userId/gamesWithNames/:courseId", requireAuth, getGamesByCourseWithNames);
+router.get("/:userId/gamesWithNames", requireAuth, getGamesWithNames);
 
 module.exports = router

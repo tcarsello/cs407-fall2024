@@ -16,6 +16,10 @@ function App() {
 
   const { user } = useAuthContext()
 
+  if (user === undefined) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="App">
       <BrowserRouter>
