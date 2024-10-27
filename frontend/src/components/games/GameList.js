@@ -8,12 +8,13 @@ import "../../css/general.css";
 import "../../css/generalAssets.css";
 import "../../css/gameList.css";
 
-TimeAgo.addDefaultLocale(en);
+TimeAgo.addLocale(en);
 const timeAgo = new TimeAgo("en-US");
 const timeStampToStr = (ts) => {
-	const date = new Date(ts);
+	const org_date = new Date(ts);
+	const date = Math.min(Date.now(), org_date);
 
-	return timeAgo.format(date);
+	return timeAgo.format(date, { future: false });
 };
 
 const Game = ({ game }) => {
@@ -30,7 +31,7 @@ const Game = ({ game }) => {
 	);
 };
 
-const GameList = ({ title = "Games", masterList = false, course = null }) => {
+const GameList = ({ title = "My Games", masterList = false, course = null }) => {
 	const { user } = useAuthContext();
 
 	const [games, setGames] = useState([]);
@@ -38,16 +39,17 @@ const GameList = ({ title = "Games", masterList = false, course = null }) => {
 	useEffect(() => {
 		const fetchGames = async () => {
 			try {
-				const response = await fetch(
-					`/api/user/${user.userId}/gamesWithNames/${course ? course.courseId : ""}`,
-					{
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${user.token}`,
-						},
-					}
-				);
+				const queryString =
+					masterList && course != null
+						? `/api/course/${course.courseId}/courseGamesWithNames`
+						: `/api/user/${user.userId}/gamesWithNames/${course ? course.courseId : ""}`;
+				const response = await fetch(queryString, {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${user.token}`,
+					},
+				});
 
 				const json = await response.json();
 				setGames(json.games);
@@ -59,7 +61,7 @@ const GameList = ({ title = "Games", masterList = false, course = null }) => {
 		if (user) {
 			fetchGames();
 		}
-	}, [user, course]);
+	}, [user, course, masterList]);
 
 	return (
 		<div className="content-card">

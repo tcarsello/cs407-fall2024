@@ -21,6 +21,7 @@ const { generateJoinCode } = require('../utils')
 
 const { Parser } = require('json2csv')
 const { parse } = require('csv-parse')
+const { getGamesWithNames } = require('./userController')
 
 const createCourse = async (req, res) => {
     try {
@@ -860,6 +861,42 @@ const importCourseQuestions = async (req, res) => {
     }
 };
 
+const getCourseGamesWithNames = async (req, res) => {
+	try {
+		const { courseId } = req.params;
+
+		if (!courseId) throw "Must provide courseId";
+
+		const queryString = `
+            SELECT
+                g.*,
+                "playerOne"."firstName" AS "playerOneFirstName",
+                "playerOne"."lastName" AS "playerOneLastName",
+                "playerTwo"."firstName" AS "playerTwoFirstName",
+                "playerTwo"."lastName" AS "playerTwoLastName"
+            FROM game g
+            LEFT JOIN "user" AS "playerOne"
+                ON "playerOne"."userId" = g."playerOneId"
+            LEFT JOIN "user" AS "playerTwo"
+                ON "playerTwo"."userId" = g."playerTwoId"
+            WHERE
+                g."courseId" = :courseId
+            ORDER BY "updatedAt" DESC
+        `;
+		const games = await sequelize.query(queryString, {
+			replacements: {
+				courseId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+		res.status(200).json({ games });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
 module.exports = {
     createCourse,
     getCourse,
@@ -883,4 +920,5 @@ module.exports = {
     getCoursePosts,
     exportCourseQuestions,
     importCourseQuestions,
+    getCourseGamesWithNames
 }

@@ -278,6 +278,7 @@ const CourseGames = () => {
         <div className='flex page-container'>
             <div style={{ flex: 1, paddingRight: '15px' }}>
                 <GameList course={course} key={gameList}/>
+                {user.userId === course.coordinatorId && <GameList title={"All Games"} masterList={true} course={course} key={gameList + 1}/>}
             </div>
 
             <div style={{ width: '20%', minWidth: '250px' }}>
