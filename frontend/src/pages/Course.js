@@ -29,7 +29,7 @@ const CourseHomeContent = () => {
     const { user } = useAuthContext()
     const { course, loading, error } = useCourseContext()
 
-    const [mainComponent, setMainComponent] = useState('home')
+    const [mainComponent, setMainComponent] = useState('Home')
 
     const [coordinator, setCoordinator] = useState()
 

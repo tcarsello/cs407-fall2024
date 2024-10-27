@@ -44,28 +44,8 @@ const CourseGames = () => {
             }
         }
 
-        const fetchGames = async () => {
-            try {
-
-                const response = await fetch(`/api/user/${user.userId}/games/${course.courseId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`
-                    }
-                })
-
-                const json = await response.json()
-                setGameList(json.games)
-
-            } catch (err) {
-                console.error(err)
-            }
-        }
-
         if (user && course) {
             fetchMembers()
-            fetchGames()
         }
 
     }, [user, course])
