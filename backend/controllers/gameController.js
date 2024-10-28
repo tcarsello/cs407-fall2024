@@ -4,7 +4,15 @@ const Game = require('../models/gameModel')
 const getGame = async (req, res) => {
     try {
 
-        res.status(200).json()
+        const { gameId } = req.params
+
+        const game = await Game.findOne({
+            where: {
+                gameId
+            }
+        })
+
+        res.status(200).json({ game })
     } catch (err) {
         console.error(err)
         res.status(400).json({error: err})

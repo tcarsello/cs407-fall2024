@@ -11,6 +11,7 @@ import Course from './pages/Course';
 import NotFound from './pages/NotFound'
 import ForgotPassword from './pages/ForgotPassword';
 import OneTimeCode from './pages/OneTimeCode';
+import Game from './pages/Game';
 
 function App() {
 
@@ -49,6 +50,10 @@ function App() {
             <Route
               path='one-time-code'
               element={user ? <Navigate to='/' /> : <OneTimeCode />}
+            />
+            <Route
+              path='/course/:courseId/game/:gameId'
+              element={user ? <Game /> : <Navigate to='/' />}
             />
             <Route
               path='*'
