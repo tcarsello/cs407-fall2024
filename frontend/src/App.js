@@ -52,7 +52,7 @@ function App() {
               element={user ? <Navigate to='/' /> : <OneTimeCode />}
             />
             <Route
-              path='/course/:courseId/game/:gameId'
+              path='/game/:gameId'
               element={user ? <Game /> : <Navigate to='/' />}
             />
             <Route

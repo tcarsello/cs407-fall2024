@@ -1,18 +1,37 @@
 const { Sequelize, Op } = require('sequelize')
 const Game = require('../models/gameModel')
 
+const sequelize = require('../database')
+
 const getGame = async (req, res) => {
     try {
 
         const { gameId } = req.params
 
-        const game = await Game.findOne({
-            where: {
-                gameId
-            }
-        })
+        const queryString = `
+            SELECT
+                g.*,
+                CONCAT(p1."firstName", ' ', p1."lastName") AS "playerOneName",
+                CONCAT(p2."firstName", ' ', p2."lastName") AS "playerTwoName"
+            FROM
+                game g
+                INNER JOIN "user" p1 ON p1."userId"=g."playerOneId"
+                INNER JOIN "user" p2 ON p2."userId"=g."playerTwoId"
+            WHERE
+                g."gameId"=:gameId
+            ;
+        `
 
-        res.status(200).json({ game })
+		const game = await sequelize.query(queryString, {
+			replacements: {
+				gameId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+        if (game.length < 1) throw 'Game not found'
+
+        res.status(200).json({ game: game[0] })
     } catch (err) {
         console.error(err)
         res.status(400).json({error: err})
