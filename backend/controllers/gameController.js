@@ -95,9 +95,39 @@ const resignGame = async (req, res) => {
 	}
 };
 
+const getGameRounds = async (req, res) => {
+    try {
+
+        const { gameId } = req.params
+
+        const queryString = `
+            SELECT
+                r.*
+            FROM
+                round r
+            WHERE
+                r."gameId" = :gameId
+            ;
+        `
+		const rounds = await sequelize.query(queryString, {
+			replacements: {
+				gameId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+
+        res.status(200).json({ rounds })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+}
+
 module.exports = {
     getGame,
     updateGame,
     deleteGame,
-    resignGame
+    resignGame,
+    getGameRounds,
 }

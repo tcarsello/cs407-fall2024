@@ -7,6 +7,8 @@ import { useAuthContext } from "../hooks/UseAuthContext"
 
 import { useNavigate } from "react-router-dom"
 
+import RoundsTable from '../components/games/RoundsTable'
+
 const Game = () => {
 
     return (
@@ -59,8 +61,9 @@ const GameComponent = () => {
                 <div className='content-card flex-col' style={{ marginTop: '15px' }}>
                     <div className='flex'>
                         <h2 style={{ display: 'inline-block', flex: 1 }}>{game.playerOneName} vs. {game.playerTwoName}</h2>
-                        <button className='standard-button' onClick={() => setResignDialogEnabled(true)}>Resign</button>
+                        { (game.status === 'New' || game.status === 'In Progress') && <button className='standard-button' onClick={() => setResignDialogEnabled(true)}>Resign</button> }
                     </div>
+                    <RoundsTable />
                 </div>
             }
 

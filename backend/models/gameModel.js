@@ -39,6 +39,10 @@ const Game = sequelize.define('game', {
         type: DataTypes.ENUM('New', 'In Progress', 'Player One Win', 'Player Two Win' ),
         allowNull: false,
         defaultValue: 'New'
+    },
+    maxRounds: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     }
 
 }, {

@@ -165,11 +165,15 @@ const acceptChallenge = async (req, res) => {
             }
         })
 
+        const course = await Course.findOne({
+            where: { courseId }
+        })
+
         const game = await Game.create({
             courseId,
             playerOneId: challengerId,
             playerTwoId: contenderId,
-
+            maxRounds: course.gameRoundLimit,
         })
 
         res.status(200).json({game, message: 'Challenge Accepted'})

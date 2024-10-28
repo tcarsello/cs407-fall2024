@@ -383,14 +383,14 @@ const putSettings = async (req, res) => {
     try {
 
         const { courseId } = req.params
-        let { accessType, gameLimit } = req.body
+        let { accessType, gameLimit, gameRoundLimit } = req.body
 
         console.log(accessType)
 
         const course = await Course.findOne({
             where: {
                 courseId,
-                coordinatorId: req.user.userId
+                coordinatorId: req.user.userId,
             }
         })
 
@@ -406,7 +406,8 @@ const putSettings = async (req, res) => {
         await Course.update(
             {
                 joinCode,
-                gameLimit
+                gameLimit,
+                gameRoundLimit,
             },
             {
                 where: {

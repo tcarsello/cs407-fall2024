@@ -1,0 +1,4 @@
+table.round-table thead tr th, table.round-table tbody tr td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
