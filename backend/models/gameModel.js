@@ -36,7 +36,7 @@ const Game = sequelize.define('game', {
         }
     },
     status: {
-        type: DataTypes.ENUM('New', 'In Progress', 'Player One Win', 'Player Two Win' ),
+        type: DataTypes.ENUM('New', 'In Progress', 'Player One Win', 'Player Two Win', 'Tie'),
         allowNull: false,
         defaultValue: 'New'
     },

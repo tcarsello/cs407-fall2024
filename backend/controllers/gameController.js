@@ -217,7 +217,6 @@ const startRound = async (req, res) => {
 			type: Sequelize.QueryTypes.INSERT,
 		});
 
-        /*
         const queryString = `
             SELECT 
                 ROW_NUMBER() OVER (ORDER BY r."createdAt") AS "roundNumber",
@@ -225,53 +224,18 @@ const startRound = async (req, res) => {
                 COUNT(rq."questionId") AS "roundQuestions",
                 SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerOneScore",
                 SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerTwoScore",
-                CASE 
-                    WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) > 
-                         SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
-                    THEN CONCAT(u1."firstName", ' ', u1."lastName")
-                    WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) <
-                         SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
-                    THEN CONCAT(u2."firstName", ' ', u2."lastName")
-                    ELSE 'Tie'
-                END AS "roundWinner"
-            FROM 
-                round r
-            LEFT JOIN topic t ON r."topicId" = t."topicId"
-            JOIN game g ON r."gameId" = g."gameId"
-            LEFT JOIN round_question rq ON r."roundId" = rq."roundId"
-            JOIN "user" u1 ON g."playerOneId" = u1."userId"
-            JOIN "user" u2 ON g."playerTwoId" = u2."userId"
-            WHERE
-                r."roundId"=:roundId
-            GROUP BY 
-                r."roundId", t."topicName", u1."firstName", u1."lastName", u2."firstName", u2."lastName"
-            ORDER BY 
-                r."createdAt";
-        `
-        */
-
-        const queryString = `
-            SELECT 
-                ROW_NUMBER() OVER (ORDER BY r."createdAt") AS "roundNumber",
-                t."topicName" AS "topicName",
-                COUNT(rq."questionId") AS "roundQuestions",
-                SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerOneScore",
-                SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerTwoScore",
-                -- Determine if Player One is done
                 CASE 
                     WHEN COUNT(rq."questionId") = 0 
                          OR COUNT(CASE WHEN rq."playerOneStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
                     THEN TRUE 
                     ELSE FALSE 
                 END AS "playerOneDone",
-                -- Determine if Player Two is done
                 CASE 
                     WHEN COUNT(rq."questionId") = 0 
                          OR COUNT(CASE WHEN rq."playerTwoStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
                     THEN TRUE 
                     ELSE FALSE 
                 END AS "playerTwoDone",
-                -- Determine the Round Winner
                 CASE 
                     WHEN COUNT(rq."questionId") = 0 THEN 'Tie'
                     WHEN COUNT(CASE WHEN rq."playerOneStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
@@ -308,6 +272,15 @@ const startRound = async (req, res) => {
 			},
 			type: Sequelize.QueryTypes.SELECT,
 		});
+
+        await Game.update(
+            {
+                status: 'In Progress'
+            },
+            {
+                where: { gameId }
+            }
+        )
 
         res.status(200).json({ round: rounds[0] })
     } catch (err) {

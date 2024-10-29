@@ -16,6 +16,9 @@ const RoundsTable = () => {
     const [isAnimating, setIsAnimating] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)
 
+    const [playerOneScore, setPlayerOneScore] = useState(0)
+    const [playerTwoScore, setPlayerTwoScore] = useState(0)
+
     useEffect(() => {
 
         const fetchRounds = async () => {
@@ -66,6 +69,29 @@ const RoundsTable = () => {
         }
 
     }, [user.token, game.gameId, course])
+
+    useEffect(() => {
+
+        let total1 = 0
+        let total2 = 0
+        roundList.map(round => {
+            if (round.roundWinner === 'Unfinished') return
+
+            if (round.playerOneScore > round.playerTwoScore) {
+                total1 += 1
+            } else if (round.playerOneScore < round.playerTwoScore) {
+                total2 += 1
+            } else {
+                total1 += 0.5
+                total2 += 0.5
+            }
+
+        })
+
+        setPlayerOneScore(total1)
+        setPlayerTwoScore(total2)
+
+    }, [roundList])
 
     const addRound = async (newRound) => {
         setRoundList(prev => ([...prev, newRound]))
@@ -125,13 +151,15 @@ const RoundsTable = () => {
     const newRoundButtonDisabled = () => {
         if (isAnimating) return true
         if (roundList.length >= game.maxRounds) return true
-        if (game.status === 'Player One Win' || game.status === 'Player Two Win') return true
+        if (game.status === 'Player One Win' || game.status === 'Player Two Win' || game.status === 'Tie') return true
+        if (roundList.length > 0 && roundList.at(-1).roundWinner === 'Unfinished') return true
 
         return false
     }
 
     return (
         <div>
+            <h4>Current Score: {playerOneScore} - {playerTwoScore}</h4>
             <h4>Rounds ({roundList ? roundList.length : 0} / {game ? game.maxRounds : 0})</h4>
             <table className='round-table' border="1" style={{ width: '100%', margin: '0 auto', borderCollapse: 'collapse' }}> 
                 <thead>
@@ -145,7 +173,14 @@ const RoundsTable = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {roundList && roundList.map((round, index) => (<RoundRow key={index} round={round} number={index + 1}/>))}
+                    {roundList && roundList.map((round, index) => (
+                        <RoundRow
+                            key={index}
+                            round={round}
+                            number={index + 1}
+                            game={game}
+                            user={user}
+                        />))}
                 </tbody>
             </table>
             <div style={{ textAlign: 'center', marginTop: '50px' }}>
@@ -160,15 +195,34 @@ const RoundsTable = () => {
 
 }
 
-const RoundRow = ({ round, number }) => {
+const RoundRow = ({ round, number, game, user }) => {
 
     return (
         <tr style={{ textAlign: 'center' }}>
             <td>{number}</td>
             <td>{round.topicName}</td>
             <td>{round.roundQuestions}</td>
-            <td>{round.playerOneScore}</td>
-            <td>{round.playerTwoScore}</td>
+            <td>{round.playerOneDone ?
+                    round.playerOneScore
+                :
+                    (
+                        game.playerOneId === user.userId && (game.status === 'New' || game.status === 'In Progress') ?
+                            <button className='standard-button' style={{ margin: 0 }}>Play Round</button>
+                        :
+                            '-'
+                    )
+            }</td>
+            <td>{round.playerTwoDone ?
+                    round.playerTwoScore
+                :
+                    (
+                        game.playerTwoId === user.userId  && (game.status === 'New' || game.status === 'In Progress')?
+                            <button className='standard-button' style={{ margin: 0 }}>Play Round</button>
+                        :
+                            '-'
+                    )
+            }</td>
+
             <td>{round.roundWinner}</td>
         </tr>
     )
