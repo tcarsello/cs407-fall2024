@@ -157,8 +157,15 @@ const RoundsTable = () => {
         return false
     }
 
+    const gameStatusString = () => {
+        if (game?.status === 'Player One Win') return game.playerOneName
+        if (game?.status === 'Player Two Win') return game.playerTwoName
+        return game ? game.status : ''
+    }
+
     return (
         <div>
+            <h4>Game Status: {gameStatusString()}</h4>
             <h4>Current Score: {playerOneScore} - {playerTwoScore}</h4>
             <h4>Rounds ({roundList ? roundList.length : 0} / {game ? game.maxRounds : 0})</h4>
             <table className='round-table' border="1" style={{ width: '100%', margin: '0 auto', borderCollapse: 'collapse' }}> 
