@@ -4,7 +4,7 @@ const sequelize = require('../database')
 const Topic = require('./topicModel')
 const Game = require('./gameModel')
 
-const Round = sequelize.define('Round', {
+const Round = sequelize.define('round', {
     roundId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,

@@ -57,10 +57,10 @@ const GameComponent = () => {
                 <button className='standard-button' onClick={() => navigate(`/`)}>Back to Home</button>
                 { course && <button className='standard-button' style={{ marginLeft: '5px' }} onClick={() => navigate(course ? `/course/${course.courseId}` : '/')}>Back to Course</button> }
             </div>
-            {game &&
+            {(game && course) &&
                 <div className='content-card flex-col' style={{ marginTop: '15px' }}>
                     <div className='flex'>
-                        <h2 style={{ display: 'inline-block', flex: 1 }}>{game.playerOneName} vs. {game.playerTwoName}</h2>
+                        <h2 style={{ display: 'inline-block', flex: 1 }}>{game.playerOneName} vs. {game.playerTwoName} ({course.courseName})</h2>
                         { (game.status === 'New' || game.status === 'In Progress') && <button className='standard-button' onClick={() => setResignDialogEnabled(true)}>Resign</button> }
                     </div>
                     <RoundsTable />

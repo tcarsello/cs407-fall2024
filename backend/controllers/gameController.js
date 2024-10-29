@@ -1,5 +1,9 @@
 const { Sequelize, Op } = require('sequelize')
 const Game = require('../models/gameModel')
+const Round = require('../models/roundModel')
+const Topic = require('../models/topicModel')
+const Question = require('../models/questionModel')
+const RoundQuestion = require('../models/roundQuestionModel')
 
 const sequelize = require('../database')
 
@@ -99,16 +103,59 @@ const getGameRounds = async (req, res) => {
     try {
 
         const { gameId } = req.params
-
         const queryString = `
-            SELECT
-                r.*
-            FROM
+            SELECT 
+                ROW_NUMBER() OVER (ORDER BY r."createdAt") AS "roundNumber",
+                t."topicName" AS "topicName",
+                COUNT(rq."questionId") AS "roundQuestions",
+                SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerOneScore",
+                SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerTwoScore",
+                -- Determine if Player One is done
+                CASE 
+                    WHEN COUNT(rq."questionId") = 0 
+                         OR COUNT(CASE WHEN rq."playerOneStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
+                    THEN TRUE 
+                    ELSE FALSE 
+                END AS "playerOneDone",
+                -- Determine if Player Two is done
+                CASE 
+                    WHEN COUNT(rq."questionId") = 0 
+                         OR COUNT(CASE WHEN rq."playerTwoStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
+                    THEN TRUE 
+                    ELSE FALSE 
+                END AS "playerTwoDone",
+                -- Determine the Round Winner
+                CASE 
+                    WHEN COUNT(rq."questionId") = 0 THEN 'Tie'
+                    WHEN COUNT(CASE WHEN rq."playerOneStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
+                         AND COUNT(CASE WHEN rq."playerTwoStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 THEN
+                        CASE 
+                            WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) > 
+                                 SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
+                            THEN CONCAT(u1."firstName", ' ', u1."lastName")
+                            WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) <
+                                 SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
+                            THEN CONCAT(u2."firstName", ' ', u2."lastName")
+                            ELSE 'Tie'
+                        END
+                    ELSE 'Unfinished'
+                END AS "roundWinner"
+            FROM 
                 round r
+            LEFT JOIN topic t ON r."topicId" = t."topicId"
+            LEFT JOIN round_question rq ON r."roundId" = rq."roundId"
+            JOIN game g ON r."gameId" = g."gameId"
+            JOIN "user" u1 ON g."playerOneId" = u1."userId"
+            JOIN "user" u2 ON g."playerTwoId" = u2."userId"
             WHERE
-                r."gameId" = :gameId
-            ;
+                g."gameId"=:gameId
+            GROUP BY 
+                r."roundId", t."topicName", u1."firstName", u1."lastName", u2."firstName", u2."lastName"
+            ORDER BY 
+                r."createdAt";
+
         `
+
 		const rounds = await sequelize.query(queryString, {
 			replacements: {
 				gameId,
@@ -124,10 +171,156 @@ const getGameRounds = async (req, res) => {
     }
 }
 
+const startRound = async (req, res) => {
+    try {
+
+        const { gameId } = req.params
+        const { topicId } = req.body
+
+        if (!topicId) throw 'Topic ID must be provided'
+
+        const game = await Game.findOne({
+            where: { gameId }
+        })
+
+        const topic = await Topic.findOne({
+            where: { topicId }
+        })
+
+        if (!topic) throw 'Topic not found'
+
+        if (!game) throw 'Game not found'
+
+        const round = await Round.create({
+            gameId,
+            topicId,
+        })
+
+        const createQuestionQueryString = `
+            INSERT
+                INTO round_question ("roundId", "questionId", "createdAt", "updatedAt")
+            SELECT
+                :roundId,
+                q."questionId",
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            FROM
+                question q 
+            WHERE q."topicId"=:topicId;
+        `
+
+		const newQuestions = await sequelize.query(createQuestionQueryString, {
+			replacements: {
+                roundId: round.roundId,
+                topicId: topicId,
+			},
+			type: Sequelize.QueryTypes.INSERT,
+		});
+
+        /*
+        const queryString = `
+            SELECT 
+                ROW_NUMBER() OVER (ORDER BY r."createdAt") AS "roundNumber",
+                t."topicName" AS "topicName",
+                COUNT(rq."questionId") AS "roundQuestions",
+                SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerOneScore",
+                SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerTwoScore",
+                CASE 
+                    WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) > 
+                         SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
+                    THEN CONCAT(u1."firstName", ' ', u1."lastName")
+                    WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) <
+                         SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
+                    THEN CONCAT(u2."firstName", ' ', u2."lastName")
+                    ELSE 'Tie'
+                END AS "roundWinner"
+            FROM 
+                round r
+            LEFT JOIN topic t ON r."topicId" = t."topicId"
+            JOIN game g ON r."gameId" = g."gameId"
+            LEFT JOIN round_question rq ON r."roundId" = rq."roundId"
+            JOIN "user" u1 ON g."playerOneId" = u1."userId"
+            JOIN "user" u2 ON g."playerTwoId" = u2."userId"
+            WHERE
+                r."roundId"=:roundId
+            GROUP BY 
+                r."roundId", t."topicName", u1."firstName", u1."lastName", u2."firstName", u2."lastName"
+            ORDER BY 
+                r."createdAt";
+        `
+        */
+
+        const queryString = `
+            SELECT 
+                ROW_NUMBER() OVER (ORDER BY r."createdAt") AS "roundNumber",
+                t."topicName" AS "topicName",
+                COUNT(rq."questionId") AS "roundQuestions",
+                SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerOneScore",
+                SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END) AS "playerTwoScore",
+                -- Determine if Player One is done
+                CASE 
+                    WHEN COUNT(rq."questionId") = 0 
+                         OR COUNT(CASE WHEN rq."playerOneStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
+                    THEN TRUE 
+                    ELSE FALSE 
+                END AS "playerOneDone",
+                -- Determine if Player Two is done
+                CASE 
+                    WHEN COUNT(rq."questionId") = 0 
+                         OR COUNT(CASE WHEN rq."playerTwoStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
+                    THEN TRUE 
+                    ELSE FALSE 
+                END AS "playerTwoDone",
+                -- Determine the Round Winner
+                CASE 
+                    WHEN COUNT(rq."questionId") = 0 THEN 'Tie'
+                    WHEN COUNT(CASE WHEN rq."playerOneStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 
+                         AND COUNT(CASE WHEN rq."playerTwoStatus" = 'Unanswered' THEN 1 ELSE NULL END) = 0 THEN
+                        CASE 
+                            WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) > 
+                                 SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
+                            THEN CONCAT(u1."firstName", ' ', u1."lastName")
+                            WHEN SUM(CASE WHEN rq."playerOneStatus" = 'Correct' THEN 1 ELSE 0 END) <
+                                 SUM(CASE WHEN rq."playerTwoStatus" = 'Correct' THEN 1 ELSE 0 END)
+                            THEN CONCAT(u2."firstName", ' ', u2."lastName")
+                            ELSE 'Tie'
+                        END
+                    ELSE 'Unfinished'
+                END AS "roundWinner"
+            FROM 
+                round r
+            LEFT JOIN topic t ON r."topicId" = t."topicId"
+            LEFT JOIN round_question rq ON r."roundId" = rq."roundId"
+            JOIN game g ON r."gameId" = g."gameId"
+            JOIN "user" u1 ON g."playerOneId" = u1."userId"
+            JOIN "user" u2 ON g."playerTwoId" = u2."userId"
+            WHERE
+                r."roundId"=:roundId
+            GROUP BY 
+                r."roundId", t."topicName", u1."firstName", u1."lastName", u2."firstName", u2."lastName"
+            ORDER BY 
+                r."createdAt";
+        `
+
+		const rounds = await sequelize.query(queryString, {
+			replacements: {
+                roundId: round.roundId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+        res.status(200).json({ round: rounds[0] })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({ error: err })
+    }
+}
+
 module.exports = {
     getGame,
     updateGame,
     deleteGame,
     resignGame,
     getGameRounds,
+    startRound,
 }

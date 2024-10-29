@@ -11,6 +11,11 @@ const RoundsTable = () => {
 
     const [roundList, setRoundList] = useState([])
 
+    const [topicList, setTopicList] = useState([])
+    const [selectedTopic, setSelectedTopic] = useState()
+    const [isAnimating, setIsAnimating] = useState(false)
+    const [currentIndex, setCurrentIndex] = useState(0)
+
     useEffect(() => {
 
         const fetchRounds = async () => {
@@ -34,12 +39,95 @@ const RoundsTable = () => {
             }
         }
 
-        if (user && game) fetchRounds()
+        const fetchTopics = async () => {
+            try {
 
-    }, [user.token, game.gameId])
+                const response = await fetch(`/api/course/${course.courseId}/topics`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                })
+
+                const json = await response.json()
+                if (response.ok) {
+                    setTopicList(json.topics)
+                }
+
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+        if (user && game && course) {
+            fetchRounds()
+            fetchTopics()
+        }
+
+    }, [user.token, game.gameId, course])
 
     const addRound = async (newRound) => {
+        setRoundList(prev => ([...prev, newRound]))
+    }
 
+    const createRound = async (topicId) => {
+
+        try {
+
+            const response = await fetch(`/api/game/${game.gameId}/newRound`, {
+                method: 'POST',
+                body: JSON.stringify({ topicId }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+            
+            const json = await response.json()
+            if (response.ok) addRound(json.round)
+
+        } catch (err) {
+            console.error(err)
+        }
+
+    }
+
+    const startSelection = () => {
+        if (isAnimating) return
+        if (!topicList || topicList.length === 0) return
+
+        setIsAnimating(true)
+        setSelectedTopic(null)
+
+        let spinDuration = 2000
+        let interval = 100
+        let elapsed = 0
+
+        const spinInterval = setInterval(() => {
+            setCurrentIndex(prev => (prev + 1) % topicList.length)
+            elapsed += interval
+
+            if (elapsed >= spinDuration / 2) {
+                interval += 50;
+            }
+
+            if (elapsed >= spinDuration) {
+                clearInterval(spinInterval)
+                setIsAnimating(false)
+                const topic = topicList[Math.floor(Math.random() * topicList.length)]
+                setSelectedTopic(topic)
+                createRound(topic.topicId)
+            }
+        }, interval)
+    }
+
+    const newRoundButtonDisabled = () => {
+        if (isAnimating) return true
+        if (roundList.length >= game.maxRounds) return true
+        if (game.status === 'Player One Win' || game.status === 'Player Two Win') return true
+
+        return false
     }
 
     return (
@@ -57,24 +145,31 @@ const RoundsTable = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {roundList && roundList.map((round, index) => (<RoundRow key={index} round={round}/>))}
+                    {roundList && roundList.map((round, index) => (<RoundRow key={index} round={round} number={index + 1}/>))}
                 </tbody>
             </table>
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                {(isAnimating || selectedTopic) && <div style={{ fontSize: '24px', margin: '0px', minHeight: '50px' }}>
+                    {isAnimating ? (<span>{topicList[currentIndex].topicName}</span>) : (<span>{selectedTopic?.topicName || 'Start Selection'}</span>)}
+                </div>
+                }
+                { !newRoundButtonDisabled() && <button className='standard-button' onClick={startSelection} disabled={newRoundButtonDisabled()}>{isAnimating ? 'Selecting Topic ...' : 'Start new Round'}</button> } 
+            </div>
         </div>
     )
 
 }
 
-const RoundRow = ({ round }) => {
+const RoundRow = ({ round, number }) => {
 
     return (
         <tr style={{ textAlign: 'center' }}>
-            <td>1</td>
-            <td>Topic Name</td>
-            <td>5</td>
-            <td>4</td>
-            <td>3</td>
-            <td>User Last</td>
+            <td>{number}</td>
+            <td>{round.topicName}</td>
+            <td>{round.roundQuestions}</td>
+            <td>{round.playerOneScore}</td>
+            <td>{round.playerTwoScore}</td>
+            <td>{round.roundWinner}</td>
         </tr>
     )
 
