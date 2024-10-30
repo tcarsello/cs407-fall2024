@@ -86,6 +86,8 @@ const RoundsTable = () => {
                 total2 += 0.5
             }
 
+            return 0
+
         })
 
         setPlayerOneScore(total1)
