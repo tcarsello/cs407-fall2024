@@ -2,7 +2,7 @@ const express = require('express')
 const requireAuth = require('../middleware/requireAuth')
 
 const { getGame, updateGame, deleteGame, resignGame, getGameRounds,
-    startRound } = require('../controllers/gameController')
+    startRound, declareScore } = require('../controllers/gameController')
 
 const router = express.Router()
 
@@ -12,6 +12,7 @@ router.delete('/:gameId', requireAuth, deleteGame)
 
 router.post('/:gameId/resign', requireAuth, resignGame);
 router.post('/:gameId/newRound', requireAuth, startRound)
+router.post('/:gameId/declareScore', requireAuth, declareScore)
 
 router.get('/:gameId/rounds', requireAuth, getGameRounds)
 

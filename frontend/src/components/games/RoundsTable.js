@@ -94,6 +94,24 @@ const RoundsTable = () => {
         setPlayerOneScore(total1)
         setPlayerTwoScore(total2)
 
+        if (roundList.length === game.maxRounds) {
+            if (roundList.at(-1).roundWinner !== 'Unfinished' && (game.status === 'In Progress')) {
+                // Declare score
+                try {
+                    fetch(`/api/game/${game.gameId}/declareScore`, {
+                        method: 'POST',
+                        body: JSON.stringify({ playerOneScore, playerTwoScore }),
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${user.token}`
+                        }
+                    })
+                } catch (err) {
+                    console.error(err)
+                }
+            }
+        }
+
     }, [roundList])
 
     const addRound = async (newRound) => {
@@ -161,8 +179,8 @@ const RoundsTable = () => {
     }
 
     const gameStatusString = () => {
-        if (game?.status === 'Player One Win') return game.playerOneName
-        if (game?.status === 'Player Two Win') return game.playerTwoName
+        if (game?.status === 'Player One Win') return `${game.playerOneName} Wins!`
+        if (game?.status === 'Player Two Win') return `${game.playerTwoName} Wins!`
         return game ? game.status : ''
     }
 

@@ -26,7 +26,7 @@ const Game = ({ game, history }) => {
 				</h2>
 				{!history && <p className={game.status.replaceAll(" ", "").toLowerCase()}>{game.status}</p>}
 				{history && (
-					<p className={game.victory ? "victory" : "defeat"}>{game.victory ? "Victory" : "Defeat"}</p>
+					<p className={game.victory ? "victory" : "defeat"}>{game.outcome}</p>
 				)}
 				<p className="time">{timeStampToStr(game.updatedAt)}</p>
 			</div>
@@ -64,8 +64,14 @@ const GameList = ({
 				const gameArray = json.games;
 				if (history) {
 					const filteredGamesWithVictory = gameArray.reduce((accumulator, game) => {
-						if (game.status === "Player One Win" || game.status === "Player Two Win") {
+						if (game.status === "Player One Win" || game.status === "Player Two Win" || game.status === 'Tie') {
 							game.victory = (user.userId === game.playerOneId) === (game.status === "Player One Win");
+                            if (game.status === 'Player One Win' && user.userId === game.playerOneId) game.outcome = 'Victory' 
+                            if (game.status === 'Player One Win' && user.userId !== game.playerOneId) game.outcome = 'Defeat' 
+                            if (game.status === 'Player Two Win' && user.userId === game.playerTwoId) game.outcome = 'Victory' 
+                            if (game.status === 'Player Two Win' && user.userId !== game.playerTwoId) game.outcome = 'Defeat' 
+                            if (game.status === 'Tie') game.outcome = 'Tie' 
+
 							accumulator.push(game);
 						}
 

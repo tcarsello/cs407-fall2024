@@ -291,6 +291,31 @@ const startRound = async (req, res) => {
     }
 }
 
+const declareScore = async (req, res) => {
+    try {
+        const { gameId } = req.params
+        const { playerOneScore, playerTwoScore } = req.params
+
+        let status = 'In Progress'
+        if (playerOneScore > playerTwoScore) status = 'Player One Win'
+        if (playerOneScore < playerTwoScore) status = 'Player Two Win'
+        if (playerOneScore == playerTwoScore) status = 'Tie'
+
+        await Game.update(
+            { status },
+            {
+                where: { gameId }
+            }
+        )
+
+        res.status(200).json({ message: 'Status updated' })
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+}
+
 module.exports = {
     getGame,
     updateGame,
@@ -298,4 +323,5 @@ module.exports = {
     resignGame,
     getGameRounds,
     startRound,
+    declareScore,
 }
