@@ -126,7 +126,7 @@ const submitAnswer = async (req, res) => {
 
         let response = {
             isCorrect: answer.isCorrect,
-            correctText: correctAnswer.text,
+            correctId: correctAnswer.answerId,
         }
 
         const updatedStatus = response.isCorrect ? 'Correct' : 'Incorrect'
@@ -193,10 +193,14 @@ const fetchQuestion = async (req, res) => {
 
         const answers = await Answer.findAll({ where: { questionId: question.questionId }})
 
-        res.status(200).json({ question, answers })
+        res.status(200).json({ question, answers, found: true })
     } catch (err) {
-        console.error(err)
-        res.status(400).json({error: err})
+        if (err === 'No round question found') {
+            res.status(200).json({ found: false})
+        } else {
+            console.error(err)
+            res.status(400).json({error: err})
+        }
     }
 }
 

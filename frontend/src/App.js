@@ -12,6 +12,7 @@ import NotFound from './pages/NotFound'
 import ForgotPassword from './pages/ForgotPassword';
 import OneTimeCode from './pages/OneTimeCode';
 import Game from './pages/Game';
+import Round from './pages/Round'
 
 function App() {
 
@@ -54,6 +55,10 @@ function App() {
             <Route
               path='/game/:gameId'
               element={user ? <Game /> : <Navigate to='/' />}
+            />
+            <Route
+              path='/game/:gameId/round/:roundId'
+              element={user ? <Round /> : <Navigate to='/' />}
             />
             <Route
               path='*'

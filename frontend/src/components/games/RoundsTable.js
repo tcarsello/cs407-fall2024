@@ -3,6 +3,7 @@ import { useGameContext } from '../../context/GameContext'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 
 import '../../css/game.css'
+import { useNavigate } from 'react-router-dom'
 
 const RoundsTable = () => {
 
@@ -206,6 +207,8 @@ const RoundsTable = () => {
 
 const RoundRow = ({ round, number, game, user }) => {
 
+    const navigate = useNavigate()
+
     return (
         <tr style={{ textAlign: 'center' }}>
             <td>{number}</td>
@@ -216,7 +219,7 @@ const RoundRow = ({ round, number, game, user }) => {
                 :
                     (
                         game.playerOneId === user.userId && (game.status === 'New' || game.status === 'In Progress') ?
-                            <button className='standard-button' style={{ margin: 0 }}>Play Round</button>
+                            <button className='standard-button' style={{ margin: 0 }} onClick={() => navigate(`/game/${game.gameId}/round/${round.roundId}`)}>Play Round</button>
                         :
                             '-'
                     )
@@ -226,7 +229,7 @@ const RoundRow = ({ round, number, game, user }) => {
                 :
                     (
                         game.playerTwoId === user.userId  && (game.status === 'New' || game.status === 'In Progress')?
-                            <button className='standard-button' style={{ margin: 0 }}>Play Round</button>
+                            <button className='standard-button' style={{ margin: 0 }} onClick={() => navigate(`/game/${game.gameId}/round/${round.roundId}`)}>Play Round</button>
                         :
                             '-'
                     )

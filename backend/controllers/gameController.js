@@ -105,6 +105,7 @@ const getGameRounds = async (req, res) => {
         const { gameId } = req.params
         const queryString = `
             SELECT 
+                r."roundId" AS "roundId",
                 ROW_NUMBER() OVER (ORDER BY r."createdAt") AS "roundNumber",
                 t."topicName" AS "topicName",
                 COUNT(rq."questionId") AS "roundQuestions",
@@ -219,6 +220,7 @@ const startRound = async (req, res) => {
 
         const queryString = `
             SELECT 
+                r."roundId" AS "roundId",
                 ROW_NUMBER() OVER (ORDER BY r."createdAt") AS "roundNumber",
                 t."topicName" AS "topicName",
                 COUNT(rq."questionId") AS "roundQuestions",
