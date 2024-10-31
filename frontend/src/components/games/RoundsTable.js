@@ -4,6 +4,7 @@ import { useAuthContext } from '../../hooks/UseAuthContext'
 
 import '../../css/game.css'
 import { useNavigate } from 'react-router-dom'
+import TopicWheel from './TopicWheel'
 
 const RoundsTable = () => {
 
@@ -143,30 +144,13 @@ const RoundsTable = () => {
     const startSelection = () => {
         if (isAnimating) return
         if (!topicList || topicList.length === 0) return
-
+        
         setIsAnimating(true)
         setSelectedTopic(null)
-
-        let spinDuration = 2000
-        let interval = 100
-        let elapsed = 0
-
-        const spinInterval = setInterval(() => {
-            setCurrentIndex(prev => (prev + 1) % topicList.length)
-            elapsed += interval
-
-            if (elapsed >= spinDuration / 2) {
-                interval += 50;
-            }
-
-            if (elapsed >= spinDuration) {
-                clearInterval(spinInterval)
-                setIsAnimating(false)
-                const topic = topicList[Math.floor(Math.random() * topicList.length)]
-                setSelectedTopic(topic)
-                createRound(topic.topicId)
-            }
-        }, interval)
+        
+        setTimeout(() => {
+            setIsAnimating(false)
+        }, 3000)
     }
 
     const newRoundButtonDisabled = () => {
@@ -212,12 +196,26 @@ const RoundsTable = () => {
                 </tbody>
             </table>
             <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                {(isAnimating || selectedTopic) && <div style={{ fontSize: '24px', margin: '0px', minHeight: '50px' }}>
-                    {isAnimating ? (<span>{topicList[currentIndex].topicName}</span>) : (<span>{selectedTopic?.topicName || 'Start Selection'}</span>)}
-                </div>
-                }
-                { !newRoundButtonDisabled() && <button className='standard-button' onClick={startSelection} disabled={newRoundButtonDisabled()}>{isAnimating ? 'Selecting Topic ...' : 'Start new Round'}</button> } 
-            </div>
+    <TopicWheel 
+        topics={topicList}
+        onTopicSelected={(topic) => {
+            setSelectedTopic(topic)
+            createRound(topic.topicId)
+        }}
+        isSpinning={isAnimating}
+        disabled={newRoundButtonDisabled()}
+    />
+    { !newRoundButtonDisabled() && 
+        <button 
+            className='standard-button' 
+            onClick={startSelection} 
+            disabled={newRoundButtonDisabled()}
+        >
+            {isAnimating ? 'Spinning...' : 'Spin Wheel'}
+        </button> 
+    }
+</div>
+
         </div>
     )
 
