@@ -824,36 +824,43 @@ const importCourseQuestions = async (req, res) => {
             });
         });
 
-        const promises = csvItems.map(async (item, index) => {
-            if (index === 0) return;
 
-            const [topic] = await Topic.findOrCreate({
-                where: {
-                    courseId,
-                    topicName: item.topicName,
-                }
-            });
+        const createAsync = async () => {
 
-            const question = await Question.create({
-                topicId: topic.topicId,
-                text: item.questionText,
-                difficulty: item.questionDifficulty,
-            });
+            for (let i = 0; i < csvItems.length; i++) {
+                let item = csvItems[i];
 
-            await Answer.bulkCreate(item.correctAnswers.map(ca => ({
-                questionId: question.questionId,
-                text: ca,
-                isCorrect: true,
-            })));
+                if (i === 0) continue;
 
-            await Answer.bulkCreate(item.incorrectAnswers.map(ia => ({
-                questionId: question.questionId,
-                text: ia,
-                isCorrect: false,
-            })));
-        });
+                const [topic] = await Topic.findOrCreate({
+                    where: {
+                        courseId,
+                        topicName: item.topicName,
+                    }
+                });
 
-        await Promise.all(promises);
+                const question = await Question.create({
+                    topicId: topic.topicId,
+                    text: item.questionText,
+                    difficulty: item.questionDifficulty,
+                });
+
+                await Answer.bulkCreate(item.correctAnswers.map(ca => ({
+                    questionId: question.questionId,
+                    text: ca,
+                    isCorrect: true,
+                })));
+                
+                await Answer.bulkCreate(item.incorrectAnswers.map(ia => ({
+                    questionId: question.questionId,
+                    text: ia,
+                    isCorrect: false,
+                })));
+
+            }
+        }
+
+        await createAsync()
 
         res.status(200).json({ message: 'Uploaded' });
     } catch (err) {
