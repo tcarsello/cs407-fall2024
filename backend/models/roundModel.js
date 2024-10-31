@@ -31,6 +31,6 @@ const Round = sequelize.define('round', {
     timestamps: true
 })
 
-Round.belongsTo(Game, { foreignKey: 'gameId' })
+Round.belongsTo(Game, { foreignKey: 'gameId', onDelete: 'CASCADE' })
 
 module.exports = Round;

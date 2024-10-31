@@ -27,6 +27,6 @@ const Topic = sequelize.define('topic', {
     timestamps: true
 })
 
-Topic.belongsTo(Course, { foreignKey: 'courseId' })
+Topic.belongsTo(Course, { foreignKey: 'courseId', onDelete: 'CASCADE'})
 
 module.exports =  Topic
