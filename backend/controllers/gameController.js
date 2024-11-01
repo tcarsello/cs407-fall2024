@@ -294,7 +294,7 @@ const startRound = async (req, res) => {
 const declareScore = async (req, res) => {
     try {
         const { gameId } = req.params
-        const { playerOneScore, playerTwoScore } = req.params
+        const { playerOneScore, playerTwoScore } = req.body
 
         let status = 'In Progress'
         if (playerOneScore > playerTwoScore) status = 'Player One Win'
