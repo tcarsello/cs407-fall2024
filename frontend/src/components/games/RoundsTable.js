@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useGameContext } from '../../context/GameContext'
 import { useAuthContext } from '../../hooks/UseAuthContext'
+import { Trophy, Users, Clock } from 'lucide-react';
+import { 
+    Box, 
+    Container,
+    Paper, 
+    Typography, 
+    Grid, 
+    Button,
+    LinearProgress,
+    Stack,
+    Avatar,
+    Divider
+} from '@mui/material';
 
 import '../../css/game.css'
 import { useNavigate } from 'react-router-dom'
@@ -169,92 +182,228 @@ const RoundsTable = () => {
     }
 
     return (
-        <div>
-            <h4>Game Status: {gameStatusString()}</h4>
-            <h4>Current Score: {playerOneScore} - {playerTwoScore}</h4>
-            <h4>Rounds ({roundList ? roundList.length : 0} / {game ? game.maxRounds : 0})</h4>
-            <table className='round-table' border="1" style={{ width: '100%', margin: '0 auto', borderCollapse: 'collapse' }}> 
-                <thead>
-                    <tr>
-                        <th>Round #</th>
-                        <th>Topic</th>
-                        <th>Round Questions</th>
-                        <th>{game?.playerOneName}'s Score</th>
-                        <th>{game?.playerTwoName}'s Score</th>
-                        <th>Round Winner</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {roundList && roundList.map((round, index) => (
-                        <RoundRow
-                            key={index}
-                            round={round}
-                            number={index + 1}
-                            game={game}
-                            user={user}
-                        />))}
-                </tbody>
-            </table>
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-    <TopicWheel 
-        topics={topicList}
-        onTopicSelected={(topic) => {
-            setSelectedTopic(topic)
-            createRound(topic.topicId)
-        }}
-        isSpinning={isAnimating}
-        disabled={newRoundButtonDisabled()}
-    />
-    { !newRoundButtonDisabled() && 
-        <button 
-            className='standard-button' 
-            onClick={startSelection} 
-            disabled={newRoundButtonDisabled()}
-        >
-            {isAnimating ? 'Spinning...' : 'Spin Wheel'}
-        </button> 
-    }
-</div>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            {/* Game Status Header */}
+            <Paper 
+                elevation={3}
+                sx={{
+                    mb: 4,
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white',
+                    p: 3,
+                    borderRadius: 2
+                }}
+            >
+                <Grid container justifyContent="space-between" alignItems="center">
+                    <Grid item>
+                        <Typography variant="h4" fontWeight="bold" gutterBottom>
+                            {gameStatusString()}
+                        </Typography>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <Clock />
+                            <Typography>
+                                Round {roundList?.length || 0} of {game?.maxRounds || 0}
+                            </Typography>
+                        </Stack>
+                    </Grid>
+                    <Grid item>
+                        <Typography variant="h6">Current Score</Typography>
+                        <Typography variant="h3" fontWeight="bold">
+                            {playerOneScore} - {playerTwoScore}
+                        </Typography>
+                    </Grid>
+                </Grid>
+            </Paper>
 
-        </div>
-    )
+            {/* Player Score Cards */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+                {/* Player One */}
+                <Grid item xs={12} md={6}>
+                    <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                        <Stack spacing={2}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Users color="#2196F3" />
+                                    <Typography variant="h6">{game?.playerOneName}</Typography>
+                                </Stack>
+                                <Typography variant="h4" fontWeight="bold">
+                                    {playerOneScore}
+                                </Typography>
+                            </Stack>
+                            <LinearProgress 
+                                variant="determinate" 
+                                value={(playerOneScore / (game?.maxRounds || 1)) * 100}
+                                sx={{ height: 10, borderRadius: 5 }}
+                            />
+                        </Stack>
+                    </Paper>
+                </Grid>
 
-}
+                {/* Player Two */}
+                <Grid item xs={12} md={6}>
+                    <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                        <Stack spacing={2}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Users color="#673AB7" />
+                                    <Typography variant="h6">{game?.playerTwoName}</Typography>
+                                </Stack>
+                                <Typography variant="h4" fontWeight="bold">
+                                    {playerTwoScore}
+                                </Typography>
+                            </Stack>
+                            <LinearProgress 
+                                variant="determinate" 
+                                value={(playerTwoScore / (game?.maxRounds || 1)) * 100}
+                                sx={{ 
+                                    height: 10, 
+                                    borderRadius: 5,
+                                    '& .MuiLinearProgress-bar': {
+                                        backgroundColor: '#673AB7'
+                                    }
+                                }}
+                            />
+                        </Stack>
+                    </Paper>
+                </Grid>
+            </Grid>
 
-const RoundRow = ({ round, number, game, user }) => {
+            {/* Rounds List */}
+            <Stack spacing={2} sx={{ mb: 4 }}>
+                {roundList && roundList.map((round, index) => (
+                    <RoundCard
+                        key={index}
+                        round={round}
+                        number={index + 1}
+                        game={game}
+                        user={user}
+                    />
+                ))}
+            </Stack>
 
-    const navigate = useNavigate()
+            {/* Topic Wheel Section */}
+            <Box sx={{ textAlign: 'center', mt: 6 }}>
+                <TopicWheel 
+                    topics={topicList}
+                    onTopicSelected={(topic) => {
+                        createRound(topic.topicId);
+                    }}
+                    isSpinning={isAnimating}
+                    disabled={newRoundButtonDisabled()}
+                />
+                {!newRoundButtonDisabled() && (
+                    <Button 
+                        variant="contained"
+                        onClick={startSelection} 
+                        disabled={isAnimating}
+                        sx={{
+                            mt: 3,
+                            background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                            color: 'white',
+                            px: 4,
+                            py: 1.5,
+                            '&:hover': {
+                                background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                            }
+                        }}
+                    >
+                        {isAnimating ? 'Spinning...' : 'Spin Wheel'}
+                    </Button>
+                )}
+            </Box>
+        </Container>
+    );
+};
+
+const RoundCard = ({ round, number, game, user }) => {
+    const navigate = useNavigate();
+
+    const getStatusColor = () => {
+        if (round.roundWinner === 'Unfinished') return '#FFC107';
+        if (round.roundWinner === 'Tie') return '#2196F3';
+        return '#4CAF50';
+    };
 
     return (
-        <tr style={{ textAlign: 'center' }}>
-            <td>{number}</td>
-            <td>{round.topicName}</td>
-            <td>{round.roundQuestions}</td>
-            <td>{round.playerOneDone ?
-                    round.playerOneScore
-                :
-                    (
-                        game.playerOneId === user.userId && (game.status === 'New' || game.status === 'In Progress') ?
-                            <button className='standard-button' style={{ margin: 0 }} onClick={() => navigate(`/game/${game.gameId}/round/${round.roundId}`)}>Play Round</button>
-                        :
-                            '-'
-                    )
-            }</td>
-            <td>{round.playerTwoDone ?
-                    round.playerTwoScore
-                :
-                    (
-                        game.playerTwoId === user.userId  && (game.status === 'New' || game.status === 'In Progress')?
-                            <button className='standard-button' style={{ margin: 0 }} onClick={() => navigate(`/game/${game.gameId}/round/${round.roundId}`)}>Play Round</button>
-                        :
-                            '-'
-                    )
-            }</td>
+        <Paper elevation={2} sx={{ p: 2, borderRadius: 2 }}>
+            <Grid container alignItems="center" spacing={2}>
+                <Grid item>
+                    <Avatar 
+                        sx={{ 
+                            width: 40, 
+                            height: 40,
+                            background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)'
+                        }}
+                    >
+                        {number}
+                    </Avatar>
+                </Grid>
+                <Grid item xs>
+                    <Typography variant="h6">{round.topicName}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {round.roundQuestions} Questions
+                    </Typography>
+                </Grid>
+                
+                <Grid item>
+                    <Stack direction="row" spacing={4} alignItems="center">
+                        {/* Player One */}
+                        <Box textAlign="center">
+                            {round.playerOneDone ? (
+                                <Typography variant="h6">{round.playerOneScore}</Typography>
+                            ) : (
+                                game.playerOneId === user.userId && 
+                                (game.status === 'New' || game.status === 'In Progress') ? (
+                                    <Button 
+                                        variant="contained"
+                                        onClick={() => navigate(`/game/${game.gameId}/round/${round.roundId}`)}
+                                        sx={{ bgcolor: '#2196F3' }}
+                                    >
+                                        Play Round
+                                    </Button>
+                                ) : (
+                                    <Typography variant="h6" color="text.secondary">-</Typography>
+                                )
+                            )}
+                            <Typography variant="body2" color="text.secondary">
+                                {game?.playerOneName}
+                            </Typography>
+                        </Box>
 
-            <td>{round.roundWinner}</td>
-        </tr>
-    )
+                        <Divider orientation="vertical" flexItem />
 
-}
+                        {/* Player Two */}
+                        <Box textAlign="center">
+                            {round.playerTwoDone ? (
+                                <Typography variant="h6">{round.playerTwoScore}</Typography>
+                            ) : (
+                                game.playerTwoId === user.userId && 
+                                (game.status === 'New' || game.status === 'In Progress') ? (
+                                    <Button 
+                                        variant="contained"
+                                        onClick={() => navigate(`/game/${game.gameId}/round/${round.roundId}`)}
+                                        sx={{ bgcolor: '#673AB7' }}
+                                    >
+                                        Play Round
+                                    </Button>
+                                ) : (
+                                    <Typography variant="h6" color="text.secondary">-</Typography>
+                                )
+                            )}
+                            <Typography variant="body2" color="text.secondary">
+                                {game?.playerTwoName}
+                            </Typography>
+                        </Box>
 
-export default RoundsTable
+                        <Box sx={{ color: getStatusColor(), display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {round.roundWinner !== 'Unfinished' && <Trophy />}
+                            <Typography fontWeight="medium">{round.roundWinner}</Typography>
+                        </Box>
+                    </Stack>
+                </Grid>
+            </Grid>
+        </Paper>
+    );
+};
+
+export default RoundsTable;
