@@ -2,6 +2,21 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from "react-router-dom"
 import { GameProvider, useGameContext } from "../context/GameContext"
 import { useAuthContext } from "../hooks/UseAuthContext"
+import { 
+    Container,
+    Paper,
+    Typography,
+    Button,
+    Box,
+    Stack,
+    LinearProgress,
+    IconButton,
+    Card,
+    CardContent,
+    Fade,
+    Slide
+} from '@mui/material';
+import { ArrowLeftCircle, HelpCircle } from 'lucide-react';
 
 const Round = () => {
     return (
@@ -117,50 +132,146 @@ const RoundComponent = () => {
     }
 
     return (
-        <div className='page-container flex-col' style={{ marginLeft: '15px', marginRight: '15px' }}>
-             <div>
-                { game && <button className='standard-button' style={{ marginLeft: '5px' }} onClick={() => navigate(game ? `/game/${game.gameId}` : '/')}>Back to Game</button> }
-            </div>
-            {(game && course) &&
-                <div className='content-card' style={{ marginTop: '25px' }}>
-                    <div className='flex-col' style={{ marginTop: '15px' }}>
-                       <h2>Answer the Questions</h2> 
-                        {questionText && <p><strong>Question: </strong>{questionText}</p>}
-                        {answerList && answerList.map((answer, index) => (
-                            <AnswerOption
-                                key={index}
-                                answer={answer}
-                                selected={selectedAnswerId == answer.answerId}
-                                correct={submitted && correctAnswerId == answer.answerId}
-                                incorrect={submitted && correctAnswerId !== selectedAnswerId && selectedAnswerId === answer.answerId}
-                                handleSelect={handleSelect}
-                            />
-                        ))}
-                    </div>
-                    {!submitted ?
-                        <button className='standard-button' onClick={handleSubmit}>Submit</button>
-                        :
-                        <button className='standard-button' onClick={advanceQuestion}>Next Question</button>
-                    }
-                </div>
-            }
+        <Container maxWidth="md" sx={{ py: 4 }}>
+            {/* Header */}
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <IconButton 
+                    onClick={() => navigate(game ? `/game/${game.gameId}` : '/')}
+                    sx={{ 
+                        bgcolor: 'background.paper',
+                        boxShadow: 1,
+                        '&:hover': { bgcolor: 'grey.100' }
+                    }}
+                >
+                    <ArrowLeftCircle />
+                </IconButton>
+                <Typography variant="h4" fontWeight="bold">
+                    Round {roundId}
+                </Typography>
+            </Box>
 
-        </div>
-    )
-}
+            {(game && course) && (
+                <Fade in={true}>
+                    <Paper 
+                        elevation={3} 
+                        sx={{
+                            borderRadius: 3,
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {/* Question Section */}
+                        <Box 
+                            sx={{
+                                p: 4,
+                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                color: 'white'
+                            }}
+                        >
+                            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                                <HelpCircle size={32} />
+                                <Typography variant="h5" fontWeight="medium">
+                                    Question
+                                </Typography>
+                            </Stack>
+                            <Typography variant="h6">
+                                {questionText}
+                            </Typography>
+                        </Box>
+
+                        {/* Answer Options */}
+                        <Box sx={{ p: 4 }}>
+                            <Stack spacing={2}>
+                                {answerList && answerList.map((answer, index) => (
+                                    <Slide 
+                                        direction="right" 
+                                        in={true} 
+                                        style={{ transitionDelay: `${index * 100}ms` }}
+                                        key={index}
+                                    >
+                                        <div>
+                                            <AnswerOption
+                                                answer={answer}
+                                                selected={selectedAnswerId === answer.answerId}
+                                                correct={submitted && correctAnswerId === answer.answerId}
+                                                incorrect={submitted && correctAnswerId !== selectedAnswerId && selectedAnswerId === answer.answerId}
+                                                handleSelect={handleSelect}
+                                            />
+                                        </div>
+                                    </Slide>
+                                ))}
+                            </Stack>
+
+                            <Box sx={{ mt: 4, textAlign: 'center' }}>
+                                <Button
+                                    variant="contained"
+                                    size="large"
+                                    onClick={!submitted ? handleSubmit : advanceQuestion}
+                                    disabled={!selectedAnswerId}
+                                    sx={{
+                                        px: 6,
+                                        py: 1.5,
+                                        borderRadius: 2,
+                                        background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                        '&:hover': {
+                                            background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                        }
+                                    }}
+                                >
+                                    {!submitted ? 'Submit Answer' : 'Next Question'}
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Fade>
+            )}
+        </Container>
+    );
+};
 
 const AnswerOption = ({ answer, selected, correct, incorrect, handleSelect }) => {
+    const getBackgroundColor = () => {
+        if (correct) return 'success.light';
+        if (incorrect) return 'error.light';
+        if (selected) return 'grey.200';
+        return 'background.paper';
+    };
 
-    let bgColor = ''
-    if (selected) bgColor = 'lightgrey'
-    if (correct) bgColor = 'lightgreen'
-    if (incorrect) bgColor = 'red'
+    const getBorderColor = () => {
+        if (correct) return 'success.main';
+        if (incorrect) return 'error.main';
+        if (selected) return 'primary.main';
+        return 'grey.300';
+    };
 
     return (
-        <div style={{ padding: '15px', marginBottom: '10px', border: '1px solid lightgrey', backgroundColor: bgColor }} onClick={() => handleSelect(answer)}>
-            <p style={{ margin: 0 }}>{answer.text}</p>
-        </div>
-    )
-}
+        <Card
+            onClick={() => !correct && !incorrect && handleSelect(answer)}
+            sx={{
+                bgcolor: getBackgroundColor(),
+                borderWidth: 2,
+                borderStyle: 'solid',
+                borderColor: getBorderColor(),
+                transition: 'all 0.2s ease-in-out',
+                cursor: correct || incorrect ? 'default' : 'pointer',
+                '&:hover': {
+                    transform: correct || incorrect ? 'none' : 'translateX(8px)',
+                    bgcolor: correct || incorrect ? getBackgroundColor() : 'grey.100'
+                }
+            }}
+        >
+            <CardContent>
+                <Typography 
+                    variant="body1"
+                    sx={{
+                        color: correct || incorrect ? 'white' : 'text.primary',
+                        fontWeight: selected ? 'bold' : 'regular'
+                    }}
+                >
+                    {answer.text}
+                </Typography>
+            </CardContent>
+        </Card>
+    );
+};
 
-export default Round
+export default Round;
