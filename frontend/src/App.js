@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './css/general.css'
-
+import { Box, ThemeProvider, createTheme } from '@mui/material';
 import { useAuthContext } from './hooks/UseAuthContext';
 
 import Navbar from './components/Navbar';
@@ -14,20 +14,57 @@ import OneTimeCode from './pages/OneTimeCode';
 import Game from './pages/Game';
 import Round from './pages/Round'
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#2196F3', // primary color
+    },
+    secondary: {
+      main: '#673AB7', // secondary color
+    },
+    background: {
+      default: '#f5f5f5', // Light grey background
+      paper: '#ffffff',
+    },
+  },
+});
+
 function App() {
 
   const { user } = useAuthContext()
 
   if (user === undefined) {
-    return <div>Loading...</div>;
+    return (
+      <ThemeProvider theme={theme}>
+        <Box 
+          sx={{ 
+            height: '100vh', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            bgcolor: 'background.default'
+          }}
+        >
+          Loading...
+        </Box>
+      </ThemeProvider>
+    );
   }
-
   return (
-    <div className="App">
+    <ThemeProvider theme={theme}>
       <BrowserRouter>
-        <Navbar />
-        <div className='page-container'>
-          <Routes>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Navbar />
+          <Box 
+            component="main" 
+            sx={{ 
+              flexGrow: 1, 
+              pt: '84px',
+              px: 3,
+              bgcolor: 'background.default'
+            }}
+          >
+            <Routes>
             <Route
               path='/'
               element={user ? <Home /> : <Navigate to='/login' />}
@@ -64,10 +101,11 @@ function App() {
               path='*'
               element={<NotFound />}
             />
-          </Routes>
-        </div>
+            </Routes>
+          </Box>
+        </Box>
       </BrowserRouter>
-    </div>
+    </ThemeProvider>
   );
 }
 

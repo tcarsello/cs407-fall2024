@@ -1,13 +1,40 @@
 import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
-import PopupForm from "../PopupForm"
-import Collapsible from '../Collapsible'
 import GameList from "../games/GameList"
 
 import { useState, useEffect } from 'react'
 
-import { GrFormClose, GrFormCheckmark } from 'react-icons/gr'
+import { 
+    Container,
+    Grid,
+    Paper,
+    Typography,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    IconButton,
+    Stack,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Alert
+} from '@mui/material';
+import { 
+    X, 
+    Check, 
+    Plus, 
+    Shuffle, 
+    Users, 
+    ChevronDown,
+    Gamepad
+} from 'lucide-react';
 
 const CourseGames = () => {
 
@@ -275,121 +302,315 @@ const CourseGames = () => {
 
     }
 
-    return ( <>
-        <div className='flex page-container'>
-            <div style={{ flex: 1, paddingRight: '15px' }}>
-               	<div className="content-card">
-					<Collapsible title="Active Games" defaultState={true}>
-						<GameList title="" divClass="" course={course} key={gameList} />
-					</Collapsible>
-				</div>
-                <div className="content-card">
-                    <Collapsible title="Game History" defaultState={true} >
-                        <GameList title="" divClass="" course={course} history={true} key={gameList + 1} />
-                    </Collapsible>
-                </div>
-                {user.userId === course.coordinatorId &&
-                    <div className="content-card">
-                        <Collapsible title="Course Games" defaultState={true}>
-                            <GameList title={""} divClass="" masterList={true} course={course} key={gameList + 2} />
-                        </Collapsible>
-                    </div>
-                }
-            </div>
+    return (
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+            <Grid container spacing={3}>
+                {/* Main Content Area */}
+                <Grid item xs={12} md={9}>
+                    {/* Active Games */}
+                    <Paper sx={{ mb: 3, p: 3 }}>
+                        <Accordion defaultExpanded>
+                        <AccordionSummary 
+                expandIcon={<ChevronDown />}
+                sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white',
+                    borderRadius: '4px 4px 0 0'
+                }}
+            >
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <Gamepad />
+                    <Typography variant="h6">Active Games</Typography>
+                </Stack>
+            </AccordionSummary>
+                            <AccordionDetails>
+                                <GameList title="" divClass="" course={course} key={gameList} />
+                            </AccordionDetails>
+                        </Accordion>
+                    </Paper>
 
-            <div style={{ width: '20%', minWidth: '250px' }}>
-                <div className='content-card'>
-                    <h4 style={{ margin: 0 }} >Create Challenge</h4>
-                    <div className='flex-col'>
-                        <button className='standard-button' onClick={() => setCreateChallengeEnabled(true)}>New</button>
-                        <button className='standard-button' onClick={handleRandomChallenge}>Random</button>
-                        <button className='standard-button' onClick={() => setCreateFriendChallengeEnabled(true)}>Friend</button>
-                    </div>
-                </div>
+                    {/* Game History */}
+                    <Paper sx={{ mb: 3, p: 3 }}>
+                        <Accordion defaultExpanded>
+                        <AccordionSummary 
+                expandIcon={<ChevronDown />}
+                sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white',
+                    borderRadius: '4px 4px 0 0'
+                }}
+            >
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <Gamepad />
+                    <Typography variant="h6">Active Games</Typography>
+                </Stack>
+            </AccordionSummary>
+                            <AccordionDetails>
+                                <GameList title="" divClass="" course={course} history={true} key={gameList + 1} />
+                            </AccordionDetails>
+                        </Accordion>
+                    </Paper>
 
-                <div className='content-card'>
-                    <h4 style={{ margin: 0 }} >Incoming Challenges</h4>
-                    {incomingChallengeList && incomingChallengeList.map((incoming, index) => (
-                        <div key={index} className='flex'>
-                            <span style={{ flex: 1 }}>{incoming.name}</span> 
-                            <GrFormCheckmark size='25' onClick={() => handleAcceptChallenge(index)}/>
-                            <GrFormClose size='25' onClick={() => handleRejectChallenge(index)}/>
-                        </div>
-                    ))}
+                    {/* Course Games (Coordinator Only) */}
+                    {user.userId === course.coordinatorId && (
+                        <Paper sx={{ mb: 3, p: 3 }}>
+                            <Accordion defaultExpanded>
+                            <AccordionSummary 
+                expandIcon={<ChevronDown />}
+                sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white',
+                    borderRadius: '4px 4px 0 0'
+                }}
+            >
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <Gamepad />
+                    <Typography variant="h6">Active Games</Typography>
+                </Stack>
+            </AccordionSummary>
+                                <AccordionDetails>
+                                    <GameList title={""} divClass="" masterList={true} course={course} key={gameList + 2} />
+                                </AccordionDetails>
+                            </Accordion>
+                        </Paper>
+                    )}
+                </Grid>
 
-                </div>
+                {/* Sidebar */}
+                <Grid item xs={12} md={3}>
+                    {/* Create Challenge */}
+                    <Paper sx={{ p: 2, mb: 3 }}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Create Challenge</Typography>
+                        <Stack spacing={2}>
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                startIcon={<Plus />}
+                                onClick={() => setCreateChallengeEnabled(true)}
+                                sx={{
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                    color: 'white'
+                                }}
+                            >
+                                New Challenge
+                            </Button>
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                startIcon={<Shuffle />}
+                                onClick={handleRandomChallenge}
+                                sx={{
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                    color: 'white'
+                                }}
+                            >
+                                Random Challenge
+                            </Button>
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                startIcon={<Users />}
+                                onClick={() => setCreateFriendChallengeEnabled(true)}
+                                sx={{
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                    color: 'white'
+                                }}
+                            >
+                                Challenge Friend
+                            </Button>
+                        </Stack>
+                    </Paper>
 
-                <div className='content-card'>
-                    <h4 style={{ margin: 0 }} >Outgoing Challenges</h4>
-                    {outgoingChallengeList && outgoingChallengeList.map((outgoing, index) => (
-                        <div key={index} className='flex'>
-                            <span style={{ flex: 1 }}>{outgoing.name}</span> 
-                            <GrFormClose size='25' onClick={() => handleCancelChallenge(index)}/>
-                        </div>
-                    ))}
-                </div>
+                    {/* Incoming Challenges */}
+                    <Paper sx={{ p: 2, mb: 3 }}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Incoming Challenges</Typography>
+                        <Stack spacing={2}>
+                            {incomingChallengeList?.map((incoming, index) => (
+                                <Paper 
+                                    key={index} 
+                                    variant="outlined"
+                                    sx={{ p: 1 }}
+                                >
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Typography sx={{ flex: 1 }}>{incoming.name}</Typography>
+                                        <IconButton 
+                                            size="small" 
+                                            color="success"
+                                            onClick={() => handleAcceptChallenge(index)}
+                                        >
+                                            <Check size={20} />
+                                        </IconButton>
+                                        <IconButton 
+                                            size="small" 
+                                            color="error"
+                                            onClick={() => handleRejectChallenge(index)}
+                                        >
+                                            <X size={20} />
+                                        </IconButton>
+                                    </Stack>
+                                </Paper>
+                            ))}
+                        </Stack>
+                    </Paper>
 
-            </div>
-        </div>
+                    {/* Outgoing Challenges */}
+                    <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Outgoing Challenges</Typography>
+                        <Stack spacing={2}>
+                            {outgoingChallengeList?.map((outgoing, index) => (
+                                <Paper 
+                                    key={index} 
+                                    variant="outlined"
+                                    sx={{ p: 1 }}
+                                >
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Typography sx={{ flex: 1 }}>{outgoing.name}</Typography>
+                                        <IconButton 
+                                            size="small" 
+                                            color="error"
+                                            onClick={() => handleCancelChallenge(index)}
+                                        >
+                                            <X size={20} />
+                                        </IconButton>
+                                    </Stack>
+                                </Paper>
+                            ))}
+                        </Stack>
+                    </Paper>
+                </Grid>
+            </Grid>
 
-        <PopupForm
-            title={'Challenge a Classmate'}
-            isOpen={createChallengeEnabled}
-            onClose={() => {
-                setCreateChallengeEnabled(false)
-                setCreateChallengeError()
-            }}
-            onSubmit={handleCreateChallenge}
-            errorText={createChallengeError}
-        >
-            <div>
-                <label>Student</label>
-                <select
-                    id='userSelect'
-                    value={challengerId}
-                    onChange={(e) => setChallengerId(e.target.value)}
-                    required
-                >
-                    {memberList && memberList.filter(member => member.userId !== user.userId).map((member, index) => (
-                        <option key={index} value={member.userId}>
-                            {`${member.firstName} ${member.lastName}`}
-                        </option>
-                    ))}
-                </select>
-            </div>
-        </PopupForm>
+            {/* Challenge Dialogs */}
+            <Dialog
+                open={createChallengeEnabled}
+                onClose={() => {
+                    setCreateChallengeEnabled(false);
+                    setCreateChallengeError();
+                }}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white'
+                }}>
+                    Challenge a Classmate
+                </DialogTitle>
+                <form onSubmit={handleCreateChallenge}>
+                    <DialogContent sx={{ pt: 3 }}>
+                        {createChallengeError && (
+                            <Alert severity="error" sx={{ mb: 2 }}>
+                                {createChallengeError}
+                            </Alert>
+                        )}
+                        <FormControl fullWidth>
+                            <InputLabel>Select Student</InputLabel>
+                            <Select
+                                value={challengerId}
+                                onChange={(e) => setChallengerId(e.target.value)}
+                                label="Select Student"
+                                required
+                            >
+                                {memberList
+                                    .filter(member => member.userId !== user.userId)
+                                    .map((member, index) => (
+                                        <MenuItem key={index} value={member.userId}>
+                                            {`${member.firstName} ${member.lastName}`}
+                                        </MenuItem>
+                                    ))
+                                }
+                            </Select>
+                        </FormControl>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={() => {
+                            setCreateChallengeEnabled(false);
+                            setCreateChallengeError();
+                        }}>
+                            Cancel
+                        </Button>
+                        <Button 
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                '&:hover': {
+                                    background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                }
+                            }}
+                        >
+                            Create Challenge
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
 
-        <PopupForm
-            title={'Challenge a Friend'}
-            isOpen={createFriendChallengeEnabled}
-            onClose={() => {
-                setCreateFriendChallengeEnabled(false)
-                setCreateFriendChallengeError()
-            }}
-            onSubmit={handleCreateChallenge}
-            errorText={createFriendChallengeError}
-        >
-            <div>
-                <label>Friend</label>
-                <select
-                    id='friendSelect'
-                    value={challengerId}
-                    onChange={(e) => setChallengerId(e.target.value)}
-                    required
-                >
-                    <option value={-1}></option>
-                    {courseFriends && courseFriends.filter(member => member.userId !== user.userId).map((member, index) => (
-                        <option key={index} value={member.userId}>
-                            {`${member.firstName} ${member.lastName}`}
-                        </option>
-                    ))}
-                </select>
-            </div>
-        </PopupForm>
+            <Dialog
+                open={createFriendChallengeEnabled}
+                onClose={() => {
+                    setCreateFriendChallengeEnabled(false);
+                    setCreateFriendChallengeError();
+                }}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white'
+                }}>
+                    Challenge a Friend
+                </DialogTitle>
+                <form onSubmit={handleCreateChallenge}>
+                    <DialogContent sx={{ pt: 3 }}>
+                        {createFriendChallengeError && (
+                            <Alert severity="error" sx={{ mb: 2 }}>
+                                {createFriendChallengeError}
+                            </Alert>
+                        )}
+                        <FormControl fullWidth>
+                            <InputLabel>Select Friend</InputLabel>
+                            <Select
+                                value={challengerId}
+                                onChange={(e) => setChallengerId(e.target.value)}
+                                label="Select Friend"
+                                required
+                            >
+                                <MenuItem value={-1}><em>None</em></MenuItem>
+                                {courseFriends
+                                    .filter(member => member.userId !== user.userId)
+                                    .map((member, index) => (
+                                        <MenuItem key={index} value={member.userId}>
+                                            {`${member.firstName} ${member.lastName}`}
+                                        </MenuItem>
+                                    ))
+                                }
+                            </Select>
+                        </FormControl>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={() => {
+                            setCreateFriendChallengeEnabled(false);
+                            setCreateFriendChallengeError();
+                        }}>
+                            Cancel
+                        </Button>
+                        <Button 
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                '&:hover': {
+                                    background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                }
+                            }}
+                        >
+                            Create Challenge
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+        </Container>
+    );
+};
 
-
-
-    </>)
-}
-
-export default CourseGames
+export default CourseGames;
