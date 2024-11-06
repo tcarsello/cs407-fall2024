@@ -1,11 +1,30 @@
 import '../../css/generalAssets.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDisplayContext } from '../../context/DisplayContext'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 import PopupForm from  '../../components/PopupForm'
 import { useCourseContext } from '../../context/CourseContext'
 
 import DiscussionPost from './discussion/DiscussionPost'
+import { 
+    Container,
+    Typography,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Alert,
+    Box,
+    Fade,
+    Stack
+} from '@mui/material';
+import { Plus, MessageSquare } from 'lucide-react';
 
 const CourseDiscussion = () => {
     const {getClassNames} = useDisplayContext()
@@ -22,6 +41,16 @@ const CourseDiscussion = () => {
     })
 
     const [ postList, setPostList ] = useState([])
+
+    const resetForm = useCallback(() => {
+        setCreatePostEnabled(false);
+        setCreatePostFormError(undefined);
+        setCreatePostForm({
+            postTitle: '',
+            postBody: '',
+            postTag: 'General',
+        });
+    }, []);
 
     useEffect(() => {
         if (user && !user.lightMode) {
@@ -113,78 +142,127 @@ const CourseDiscussion = () => {
     }
 
     return (
-    <div>
-        <h1>Discuss</h1>
-        <button
-            className={classNames.button}
-            style={{ marginBottom: '15px' }}
-            onClick={() => {
-                setCreatePostEnabled(true)
-            }}
-        >
-        + New Dicussion Post
-        </button>
-
-        {postList && postList.map((post) =>
-            <DiscussionPost
-                key={post.postId}
-                post={post}
-                onDelete={() => setPostList(postList.filter(p => (p.postId != post.postId)))}
-            />
-        )}
-
-        <PopupForm
-                title='Create a discussion post'
-                isOpen={createPostEnabled}
-                onClose={() => {
-                    setCreatePostEnabled(false)
-                    setCreatePostFormError()
-                    setCreatePostForm({
-                        postTitle: '',
-                        postBody: '',
-                        postTag: 'General',
-                    })
-                }}
-                onSubmit={handleCreatePostFormSubmit}
-                errorText={createPostFormError}
-            >
-                <div>
-                    <label>Post Title</label>
-                    <input
-                        type='text'
-                        name='postTitle'
-                        placeholder='Title'
-                        value={createPostForm.postTitle}
-                        onChange={handleCreatePostFormChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Post Body</label>
-                    <input
-                        type='text'
-                        name='postBody'
-                        placeholder='body'
-                        value={createPostForm.postBody}
-                        onChange={handleCreatePostFormChange}
-                    />
-                </div>
-                <div>
-                    <label>Tag</label>
-                    <select
-                        name='postTag'
-                        value={createPostForm.postTag}
-                        onChange={handleCreatePostFormChange}
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            {/* Header Section */}
+            <Box sx={{ mb: 4 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <MessageSquare size={32} color="#1976d2" />
+                        <Typography variant="h4" component="h1" fontWeight="bold">
+                            Discussion Board
+                        </Typography>
+                    </Stack>
+                    <Button
+                        variant="contained"
+                        startIcon={<Plus />}
+                        onClick={() => setCreatePostEnabled(true)}
+                        sx={{
+                            background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                            color: 'white',
+                            boxShadow: '0 3px 5px 2px rgba(33, 150, 243, .3)',
+                            '&:hover': {
+                                background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                            }
+                        }}
                     >
-                        <option value='General'>General</option>
-                        <option value='Question'>Question</option>
-                        <option value='PSA'>PSA</option>
-                    </select>
-                </div>
+                        New Discussion Post
+                    </Button>
+                </Stack>
+            </Box>
 
-            </PopupForm>
-    </div>
-    )
-}
+            {/* Posts List */}
+            <Stack spacing={3}>
+                {postList && postList.map((post) => (
+                    <Fade in={true} key={post.postId}>
+                        <div>
+                            <DiscussionPost
+                                post={post}
+                                onDelete={() => setPostList(postList.filter(p => (p.postId !== post.postId)))}
+                            />
+                        </div>
+                    </Fade>
+                ))}
+            </Stack>
 
-export default CourseDiscussion
+            {/* Create Post Dialog */}
+            <Dialog 
+                open={createPostEnabled} 
+                onClose={resetForm}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle 
+                    sx={{ 
+                        background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                        color: 'white'
+                    }}
+                >
+                    Create a Discussion Post
+                </DialogTitle>
+                <form onSubmit={handleCreatePostFormSubmit}>
+                    <DialogContent sx={{ pt: 3 }}>
+                        <Stack spacing={3}>
+                            {createPostFormError && (
+                                <Alert severity="error" sx={{ mt: 2 }}>
+                                    {createPostFormError}
+                                </Alert>
+                            )}
+                            
+                            <TextField
+                                fullWidth
+                                label="Post Title"
+                                name="postTitle"
+                                value={createPostForm.postTitle}
+                                onChange={handleCreatePostFormChange}
+                                required
+                                variant="outlined"
+                            />
+                            
+                            <TextField
+                                fullWidth
+                                label="Post Body"
+                                name="postBody"
+                                value={createPostForm.postBody}
+                                onChange={handleCreatePostFormChange}
+                                multiline
+                                rows={4}
+                                variant="outlined"
+                            />
+                            
+                            <FormControl fullWidth>
+                                <InputLabel>Tag</InputLabel>
+                                <Select
+                                    name="postTag"
+                                    value={createPostForm.postTag}
+                                    onChange={handleCreatePostFormChange}
+                                    label="Tag"
+                                >
+                                    <MenuItem value="General">General</MenuItem>
+                                    <MenuItem value="Question">Question</MenuItem>
+                                    <MenuItem value="PSA">PSA</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={resetForm}>Cancel</Button>
+                        <Button 
+                            type="submit" 
+                            variant="contained"
+                            sx={{
+                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                '&:hover': {
+                                    background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                }
+                            }}
+                        >
+                            Create Post
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+        </Container>
+    );
+};
+
+export default CourseDiscussion;
