@@ -3,10 +3,6 @@ import { useState } from 'react'
 import { useAuthContext } from '../../../hooks/UseAuthContext'
 import { useCourseContext} from '../../../hooks/UseCourseContext'
 
-import { GrFormClose, GrEdit } from 'react-icons/gr'
-
-import PopupForm from '../../PopupForm'
-
 import { 
     Paper,
     Typography,

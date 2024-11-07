@@ -37,8 +37,6 @@ import {
   X 
 } from 'lucide-react';
 
-import PopupForm from '../../PopupForm'
-
 const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
   const { user } = useAuthContext();
   const { course } = useCourseContext();
