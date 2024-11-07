@@ -1,15 +1,49 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
-import Collapsible from "../Collapsible"
-import PopupForm from "../PopupForm"
-
 import InviteManager from './InviteManager'
 import MemberDetails from './MemberDetails'
 
-import { GrFormClose } from 'react-icons/gr'
+import { 
+    Container,
+    Grid,
+    Paper,
+    Typography,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Alert,
+    Box,
+    Stack,
+    IconButton,
+    Collapse,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemSecondaryAction,
+    Divider,
+    Card,
+    CardContent,
+    CardHeader
+} from '@mui/material';
+import { 
+    UserPlus, 
+    Users, 
+    Mail, 
+    X as CloseIcon,
+    ChevronDown,
+    ChevronUp,
+    UserMinus
+} from 'lucide-react';
 
 const CourseMembers = () => {
 
@@ -18,6 +52,8 @@ const CourseMembers = () => {
 
     const [inviteList, setInviteList] = useState([])
     const [memberList, setMemberList] = useState([])
+    const [invitesExpanded, setInvitesExpanded] = useState(true);
+    const [membersExpanded, setMembersExpanded] = useState(true);
 
     const [inviteUserEnabled, setInviteUserEnabled] = useState(false)
     const [inviteUserError, setInviteUserError] = useState()
@@ -27,6 +63,17 @@ const CourseMembers = () => {
 
     const [addFriendEnabled, setAddFriendEnabled] = useState(false)
     const [addFriendId, setAddFriendId] = useState(-1)
+
+    const resetInviteForm = useCallback(() => {
+        setInviteUserEnabled(false);
+        setInviteUserError(undefined);
+        setInviteUserForm({ email: '' });
+    }, []);
+
+    const resetFriendForm = useCallback(() => {
+        setAddFriendEnabled(false);
+        setAddFriendId(-1);
+    }, []);
 
     useEffect(() => {
 
@@ -114,111 +161,246 @@ const CourseMembers = () => {
     }
 
     return (
-        <div className='flex'>
-            <div style={{ flex: 1 }}>
-                {user.userId === course.coordinatorId &&
-                    <div className='content-card'>
-                        <h2 style={{ margin: 0 }}>User Invites</h2>
-                        <button className='standard-button' style={{ marginBottom: '15px' }} onClick={() => setInviteUserEnabled(true)}>Invite Users</button>
-                        <Collapsible
-                            title={`Pending Invites (${inviteList ? inviteList.length : 0})`}
-                        >
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Grid container spacing={3}>
+                {/* Main Content */}
+                <Grid item xs={12} md={8}>
+                    {user.userId === course.coordinatorId && (
+                        <Paper sx={{ p: 3, mb: 3 }}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Mail size={24} color="#1976d2" />
+                                    <Typography variant="h5" fontWeight="medium">
+                                        User Invites
+                                    </Typography>
+                                </Stack>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<UserPlus />}
+                                    onClick={() => setInviteUserEnabled(true)}
+                                    sx={{
+                                        background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                        color: 'white'
+                                    }}
+                                >
+                                    Invite Users
+                                </Button>
+                            </Stack>
 
-                            {inviteList &&
-                                inviteList.map((invite, index) =>
-                                    <InviteManager
-                                        key={invite.email}
-                                        invite={invite}
-                                        onDelete={() => { setInviteList(inviteList.filter(item => item.email !== invite.email)) }}
-                                    />)
+                            <Paper 
+                                variant="outlined" 
+                                sx={{ mt: 2 }}
+                            >
+                                <Box
+                                    onClick={() => setInvitesExpanded(!invitesExpanded)}
+                                    sx={{
+                                        p: 2,
+                                        cursor: 'pointer',
+                                        '&:hover': { bgcolor: 'action.hover' }
+                                    }}
+                                >
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        {invitesExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                        <Typography>
+                                            Pending Invites ({inviteList?.length || 0})
+                                        </Typography>
+                                    </Stack>
+                                </Box>
+                                <Collapse in={invitesExpanded}>
+                                    <Divider />
+                                    <List>
+                                        {inviteList?.map((invite) => (
+                                            <ListItem key={invite.email}>
+                                                <InviteManager
+                                                    invite={invite}
+                                                    onDelete={() => {
+                                                        setInviteList(inviteList.filter(item => item.email !== invite.email));
+                                                    }}
+                                                />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Collapse>
+                            </Paper>
+                        </Paper>
+                    )}
+
+                    <Paper sx={{ p: 3 }}>
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                            <Users size={24} color="#1976d2" />
+                            <Typography variant="h5" fontWeight="medium">
+                                Course Members ({memberList?.length || 0})
+                            </Typography>
+                        </Stack>
+                        <List>
+                            {memberList?.map((member) => (
+                                <ListItem key={member.userId}>
+                                    <MemberDetails
+                                        member={member}
+                                        onDelete={() => {
+                                            setMemberList(memberList.filter(item => item.userId !== member.userId));
+                                        }}
+                                    />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Paper>
+                </Grid>
+
+                {/* Friends Sidebar */}
+                <Grid item xs={12} md={4}>
+                    <Card>
+                        <CardHeader 
+                            title="Friends"
+                            titleTypography={{ variant: 'h6' }}
+                            action={
+                                <Button
+                                    variant="contained"
+                                    startIcon={<UserPlus />}
+                                    onClick={() => setAddFriendEnabled(true)}
+                                    size="small"
+                                    sx={{
+                                        background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                        color: 'white'
+                                    }}
+                                >
+                                    Add Friend
+                                </Button>
                             }
-                        </Collapsible>
-                    </div>
-                }
+                        />
+                        <CardContent>
+                            <List>
+                                {courseFriends.map((friend) => (
+                                    <ListItem key={friend.userId}>
+                                        <ListItemText 
+                                            primary={`${friend.firstName} ${friend.lastName}`}
+                                        />
+                                        <ListItemSecondaryAction>
+                                            <IconButton 
+                                                edge="end" 
+                                                onClick={() => removeCourseFriend(friend.userId)}
+                                                color="error"
+                                                size="small"
+                                            >
+                                                <UserMinus size={20} />
+                                            </IconButton>
+                                        </ListItemSecondaryAction>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
 
-                <div className='content-card'>
-                    <Collapsible
-                        title={`Course Members (${memberList ? memberList.length : 0})`}
-                        defaultState={true}
-                    >
-                        {memberList &&
-                            memberList.map((member, index) =>
-                                <MemberDetails
-                                    key={member.userId}
-                                    member={member}
-                                    onDelete={() => { setMemberList(memberList.filter(item => item.userId !== member.userId)) }}
-                                />)
-                        }
-                    </Collapsible>
-                </div>
-            </div>
-
-            <div style={{ width: '15%', minWidth: '250px', marginLeft: '15px'}}>
-                <div className='content-card'>
-                    <h3 style={{ margin: 0, textAlign: 'center' }}>Friends</h3>     
-                    <button className='standard-button' style={{ width: '100%' }} onClick={() => {setAddFriendEnabled(true)}}>Add Friend</button>
-                    <br />
-                    <br />
-                    {courseFriends.map((friend, index) => (
-                        <div key={index} className='flex'>
-                            <span style={{ flex: 1 }}>{`${friend.firstName} ${friend.lastName}`}</span> 
-                            <GrFormClose size='25' onClick={() => {removeCourseFriend(friend.userId)}}/>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <PopupForm
-                title='Invite a user'
-                isOpen={inviteUserEnabled}
-                onClose={() => {
-                    setInviteUserEnabled(false)
-                    setInviteUserError()
-                }}
-                onSubmit={handleInviteUserFormSubmit}
-                errorText={inviteUserError}
+            {/* Invite User Dialog */}
+            <Dialog 
+                open={inviteUserEnabled} 
+                onClose={resetInviteForm}
+                fullWidth
+                maxWidth="sm"
             >
-                <div>
-                    <label>Email Address</label>
-                    <input
-                        type='email'
-                        name='email'
-                        placeholder='Student email address'
-                        value={inviteUserForm.email}
-                        onChange={handleInviteUserFormChange}
-                        required
-                    />
-                </div>
-            </PopupForm>
+                <DialogTitle sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white'
+                }}>
+                    Invite a User
+                </DialogTitle>
+                <form onSubmit={handleInviteUserFormSubmit}>
+                    <DialogContent sx={{ pt: 3 }}>
+                        <Stack spacing={3}>
+                            {inviteUserError && (
+                                <Alert severity="error">
+                                    {inviteUserError}
+                                </Alert>
+                            )}
+                            <TextField
+                                fullWidth
+                                label="Email Address"
+                                type="email"
+                                name="email"
+                                value={inviteUserForm.email}
+                                onChange={(e) => setInviteUserForm({ email: e.target.value })}
+                                required
+                            />
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={resetInviteForm}>Cancel</Button>
+                        <Button 
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                '&:hover': {
+                                    background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                }
+                            }}
+                        >
+                            Send Invite
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
 
-            <PopupForm
-                title='Add a Friend'
-                isOpen={addFriendEnabled}
-                onClose={() => {
-                    setAddFriendEnabled(false)
-                }}
-                onSubmit={handleAddFriendSubmit}
+            {/* Add Friend Dialog */}
+            <Dialog 
+                open={addFriendEnabled} 
+                onClose={resetFriendForm}
+                fullWidth
+                maxWidth="sm"
             >
-                <div>
-                    <label>Student</label>
-                    <select
-                        id='userSelect'
-                        value={addFriendId}
-                        onChange={(e) => setAddFriendId(e.target.value)}
-                        required
-                    >
-                        <option value={-1}></option>
-                        {memberList && memberList.filter(member => member.userId !== user.userId && !courseFriends.some(friend => friend.userId === member.userId)).map((member, index) => (
-                            <option key={index} value={member.userId}>
-                                {`${member.firstName} ${member.lastName}`}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </PopupForm>
-            
-        </div>
-    )
-}
+                <DialogTitle sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white'
+                }}>
+                    Add a Friend
+                </DialogTitle>
+                <form onSubmit={handleAddFriendSubmit}>
+                    <DialogContent sx={{ pt: 3 }}>
+                        <FormControl fullWidth>
+                            <InputLabel>Select Student</InputLabel>
+                            <Select
+                                value={addFriendId}
+                                onChange={(e) => setAddFriendId(e.target.value)}
+                                label="Select Student"
+                                required
+                            >
+                                <MenuItem value={-1}><em>None</em></MenuItem>
+                                {memberList
+                                    ?.filter(member => 
+                                        member.userId !== user.userId && 
+                                        !courseFriends.some(friend => friend.userId === member.userId)
+                                    )
+                                    .map((member) => (
+                                        <MenuItem key={member.userId} value={member.userId}>
+                                            {`${member.firstName} ${member.lastName}`}
+                                        </MenuItem>
+                                    ))
+                                }
+                            </Select>
+                        </FormControl>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={resetFriendForm}>Cancel</Button>
+                        <Button 
+                            type="submit"
+                            variant="contained"
+                            disabled={addFriendId === -1}
+                            sx={{
+                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                '&:hover': {
+                                    background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                }
+                            }}
+                        >
+                            Add Friend
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+        </Container>
+    );
+};
 
-export default CourseMembers
+export default CourseMembers;

@@ -1,50 +1,60 @@
-import { useState } from 'react'
-
+import { useState } from 'react';
 import { useAuthContext } from '../../../hooks/UseAuthContext';
 import { useCourseContext } from '../../../hooks/UseCourseContext';
-
-import FlashcardView from './FlashcardView'
-import TermComponent from './TermComponent'
-
-import { TextField, Button, Box, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Typography } from '@mui/material';
+import FlashcardView from './FlashcardView';
+import TermComponent from './TermComponent';
+import { 
+    Box,
+    Container,
+    Typography,
+    Button,
+    TextField,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Stack,
+    Paper,
+    Alert,
+    Fade,
+    Autocomplete
+} from '@mui/material';
+import { Plus, List, LayoutGrid, X }from 'lucide-react';
 
 const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiveForm }) => {
-    
-    const { user } = useAuthContext()
-    const { course } = useCourseContext()
+    const { user } = useAuthContext();
+    const { course } = useCourseContext();
     
     const [viewMode, setViewMode] = useState('list');
     const [createTermForm, setCreateTermForm] = useState({
         topicName: '',
         termName: '',
         termDefinition: ''
-    })
-    const [createTermFormError, setCreateTermFormError] = useState()
+    });
+    const [createTermFormError, setCreateTermFormError] = useState();
     const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
-    
     const handleCreateTermFormChange = (e) => {
-        const { name, value } = e.target
-        setCreateTermForm({
-            ...createTermForm,
+        const { name, value } = e.target;
+        setCreateTermForm(prev => ({
+            ...prev,
             [name]: value
-        })
-    }
+        }));
+    };
 
     const handleCreateTerm = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
         try {
-
-            const topic = topics.find(topic => topic.topicName === createTermForm.topicName)
+            const topic = topics.find(topic => topic.topicName === createTermForm.topicName);
             if (!topic) {
-                setCreateTermFormError('No such topic')
-                return
+                setCreateTermFormError('No such topic');
+                return;
             }
 
             const bodyContent = {
                 ...createTermForm,
                 topicId: topic.topicId
-            }
+            };
 
             const response = await fetch(`/api/term/`, {
                 method: 'POST',
@@ -53,147 +63,230 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`,
                 }
-            })
+            });
 
-            const json = await response.json()
+            const json = await response.json();
 
             if (!response.ok) {
-                setCreateTermFormError(json.error || 'Failed to create term')
-                return
+                setCreateTermFormError(json.error || 'Failed to create term');
+                return;
             }
 
-            setCreateTermFormError()
+            setCreateTermFormError(undefined);
             setCreateTermForm({
                 topicId: '',
                 termName: '',
                 termDefinition: ''
-            })
-            setActiveForm(null)
-            setTerms(prev => [...prev, json.term])
+            });
+            setActiveForm(null);
+            setTerms(prev => [...prev, json.term]);
 
         } catch (err) {
-            console.error(err)
+            console.error(err);
+            setCreateTermFormError('An error occurred while creating the term');
         }
-    }
-
-    const handleCancel = () => {
-        setShowCancelConfirmation(true);
     };
 
-    const handleCancelConfirm = () => {
-        setActiveForm(null)
-        setShowCancelConfirmation(false);
+    const handleCancel = () => {
+        if (createTermForm.termName || createTermForm.termDefinition || createTermForm.topicName) {
+            setShowCancelConfirmation(true);
+        } else {
+            setActiveForm(null);
+        }
     };
 
     return (
-        <Box className='content-card'>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h5">Study Terms</Typography>
-                <Box>
-                    {user.userId === course.coordinatorId && (
-                        <Button 
-                            variant="contained" 
-                            color="primary" 
-                            onClick={() => setActiveForm(activeForm ? null : 'createTerm')}
-                            style={{ position: 'unset' }}
-                            sx={{ mr: 1 }}
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                <Stack 
+                    direction="row" 
+                    justifyContent="space-between" 
+                    alignItems="center" 
+                    sx={{ mb: 3 }}
+                >
+                    <Typography variant="h4" fontWeight="bold">
+                        Study Terms
+                    </Typography>
+                    <Stack direction="row" spacing={2}>
+                        {user.userId === course.coordinatorId && (
+                            <Button
+                                variant="contained"
+                                startIcon={activeForm === 'createTerm' ? <X /> : <Plus />}
+                                onClick={() => setActiveForm(activeForm ? null : 'createTerm')}
+                                sx={{
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                    color: 'white',
+                                    '&:hover': {
+                                        background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                    }
+                                }}
+                            >
+                                {activeForm === 'createTerm' ? 'Cancel' : 'Create Term'}
+                            </Button>
+                        )}
+                        <Button
+                            variant={viewMode === 'list' ? 'contained' : 'outlined'}
+                            startIcon={<List size={18} />}
+                            onClick={() => setViewMode('list')}
                         >
-                            {activeForm === 'createTerm' ? 'Cancel' : 'Create Term'}
+                            List View
                         </Button>
-                    )}
-                    <Button 
-                        variant={viewMode === 'list' ? 'contained' : 'outlined'} 
-                        onClick={() => setViewMode('list')}
-                        style={{ position: 'unset' }}
-                        sx={{ mr: 1 }}
-                    >
-                        List View
-                    </Button>
-                    <Button 
-                        variant={viewMode === 'flashcard' ? 'contained' : 'outlined'} 
-                        onClick={() => setViewMode('flashcard')}
-                        style={{ position: 'unset' }}
-                    >
-                        Flashcard View
-                    </Button>
-                </Box>
-            </Box>
+                        <Button
+                            variant={viewMode === 'flashcard' ? 'contained' : 'outlined'}
+                            startIcon={<LayoutGrid size={18} />} // Changed to LayoutGrid icon
+                            onClick={() => setViewMode('flashcard')}
+                        >
+                            Flashcard View
+                        </Button>
+                    </Stack>
+                </Stack>
 
-            {activeForm === 'createTerm' && (
-                <Box sx={{ mb: 4, p: 2, border: '1px solid #e0e0e0', borderRadius: '4px' }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>Create New Term</Typography>
-                    <form onSubmit={handleCreateTerm}>
-                        <Box display="flex" flexDirection="column" gap={2}>
-                            <TextField
-                                label="Name of this term's topic"
-                                name="topicName"
-                                value={createTermForm.topicName}
-                                onChange={handleCreateTermFormChange}
-                                required
-                                fullWidth
-                            />
-                            <TextField
-                                label="Term"
-                                name="termName"
-                                value={createTermForm.termName}
-                                onChange={handleCreateTermFormChange}
-                                required
-                                fullWidth
-                            />
-                            <TextField
-                                label="Definition"
-                                name="termDefinition"
-                                value={createTermForm.termDefinition}
-                                onChange={handleCreateTermFormChange}
-                                multiline
-                                rows={4}
-                                required
-                                fullWidth
-                            />
-                        </Box>
-                        {createTermFormError && (
-                            <Typography color="error" sx={{ mt: 2 }}>{createTermFormError}</Typography>
-                        )}
-                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button onClick={handleCancel} sx={{ mr: 1 }}>Cancel</Button>
-                            <Button type="submit" variant="contained" color="primary">Add Term</Button>
-                        </Box>
-                    </form>
-                </Box>
-            )}
-            <Box sx={{ mt: 2 }}>
-                {viewMode === 'list' ? (
-                    <Box>
-                        {terms && terms.map(term =>
-                            <TermComponent
-                                key={term.termId}
-                                term={term}
-                                topics={topics}
-                                onDelete={() => {setTerms(prev => prev.filter(item => item.termId !== term.termId))}}
-                                onEdit={refresh}
-                            />
-                        )}
-                    </Box>
-                ) : (
-                    <FlashcardView terms={terms} />
+                {/* Create Term Form */}
+                {activeForm === 'createTerm' && (
+                    <Fade in={true}>
+                        <Paper 
+                            elevation={3} 
+                            sx={{ 
+                                p: 3, 
+                                mb: 4, 
+                                borderRadius: 2,
+                                background: 'linear-gradient(to right bottom, rgba(33, 150, 243, 0.05), rgba(103, 58, 183, 0.05))'
+                            }}
+                        >
+                            <Typography variant="h5" fontWeight="medium" sx={{ mb: 3 }}>
+                                Create New Term
+                            </Typography>
+                            <form onSubmit={handleCreateTerm}>
+                                <Stack spacing={3}>
+                                    <Autocomplete
+                                        options={topics.map(topic => topic.topicName)}
+                                        value={createTermForm.topicName}
+                                        onChange={(_, newValue) => {
+                                            setCreateTermForm(prev => ({
+                                                ...prev,
+                                                topicName: newValue || ''
+                                            }));
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Topic"
+                                                name="topicName"
+                                                required
+                                                fullWidth
+                                            />
+                                        )}
+                                    />
+                                    <TextField
+                                        label="Term"
+                                        name="termName"
+                                        value={createTermForm.termName}
+                                        onChange={handleCreateTermFormChange}
+                                        required
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        label="Definition"
+                                        name="termDefinition"
+                                        value={createTermForm.termDefinition}
+                                        onChange={handleCreateTermFormChange}
+                                        multiline
+                                        rows={4}
+                                        required
+                                        fullWidth
+                                    />
+
+                                    {createTermFormError && (
+                                        <Alert severity="error">
+                                            {createTermFormError}
+                                        </Alert>
+                                    )}
+
+                                    <Stack direction="row" justifyContent="flex-end" spacing={2}>
+                                        <Button onClick={handleCancel}>
+                                            Cancel
+                                        </Button>
+                                        <Button 
+                                            type="submit" 
+                                            variant="contained"
+                                            sx={{
+                                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                                }
+                                            }}
+                                        >
+                                            Add Term
+                                        </Button>
+                                    </Stack>
+                                </Stack>
+                            </form>
+                        </Paper>
+                    </Fade>
                 )}
-            </Box>
-            <Dialog open={showCancelConfirmation} onClose={handleCancelConfirm}>
-                <DialogTitle>Cancel Study Term Creation</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to cancel? Any unsaved changes will be lost.
+
+                {/* Terms List/Flashcard View */}
+                <Box sx={{ mt: 2 }}>
+                    {viewMode === 'list' ? (
+                        <Stack spacing={2}>
+                            {terms && terms.map(term => (
+                                <Fade in={true} key={term.termId}>
+                                    <div>
+                                        <TermComponent
+                                            term={term}
+                                            topics={topics}
+                                            onDelete={() => {
+                                                setTerms(prev => prev.filter(item => item.termId !== term.termId));
+                                            }}
+                                            onEdit={refresh}
+                                        />
+                                    </div>
+                                </Fade>
+                            ))}
+                        </Stack>
+                    ) : (
+                        <FlashcardView terms={terms} />
+                    )}
+                </Box>
+            </Paper>
+
+            {/* Cancel Confirmation Dialog */}
+            <Dialog 
+                open={showCancelConfirmation} 
+                onClose={() => setShowCancelConfirmation(false)}
+                PaperProps={{
+                    sx: { borderRadius: 2 }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white'
+                }}>
+                    Cancel Term Creation
+                </DialogTitle>
+                <DialogContent sx={{ mt: 2 }}>
+                    <Typography>
+                        Are you sure you want to cancel? Any unsaved changes will be lost.
+                    </Typography>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setShowCancelConfirmation(false)} color="primary">
-                        No, Keep Editing
-                        </Button>
-                    <Button onClick={handleCancelConfirm}>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setShowCancelConfirmation(false)}>
+                        Keep Editing
+                    </Button>
+                    <Button 
+                        onClick={() => {
+                            setActiveForm(null);
+                            setShowCancelConfirmation(false);
+                        }}
+                        variant="contained"
+                        color="error"
+                    >
                         Yes, Cancel
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Box>
-    )
-}
+        </Container>
+    );
+};
 
-export default TermsComponent
+export default TermsComponent;

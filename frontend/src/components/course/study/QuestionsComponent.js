@@ -17,8 +17,25 @@ import {
   AccordionDetails,
   FormControl,
   FormLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Paper,
+  Stack,
+  Alert,
+  Divider,
+  Chip
 } from '@mui/material';
-import { Add, ExpandMore, PhotoCamera } from '@mui/icons-material';
+import { 
+  ChevronDown,
+  Plus, 
+  Camera,
+  Upload,
+  Download,
+  HelpCircle,
+  X 
+} from 'lucide-react';
 
 import PopupForm from '../../PopupForm'
 
@@ -203,161 +220,315 @@ const QuestionsComponent = ({ questions, setQuestions, topics, refresh }) => {
      
     }
 
-  return (
-    <Box sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>Questions</Typography>
-      
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>Create Question</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box component="form" onSubmit={createQuestionSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Topic Name"
-              value={questionTopicName}
-              onChange={(e) => setTopicName(e.target.value)}
-              fullWidth
+    return (
+      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+        {/* Header Section */}
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <HelpCircle size={32} color="#1976d2" />
+            <Typography variant="h4" fontWeight="bold">
+              Question Bank
+            </Typography>
+            <Chip 
+              label={`${questions ? questions.length : 0} Questions`} 
+              color="primary" 
+              sx={{ ml: 2 }}
             />
-            <TextField
-              label="Question Text"
-              value={questionText}
-              onChange={(e) => setQuestionText(e.target.value)}
-              fullWidth
-              multiline
-              rows={2}
-            />
-            
-            <Box>
-              <Button
+          </Stack>
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="outlined"
+              startIcon={<Download size={20} />}
+              onClick={handleExport}
+            >
+              Export
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Upload size={20} />}
+              onClick={() => setImportEnabled(true)}
+            >
+              Import
+            </Button>
+          </Stack>
+        </Stack>
+  
+        {/* Create Question Section */}
+        <Paper elevation={2} sx={{ mb: 4, overflow: 'hidden' }}>
+          <Accordion>
+            <AccordionSummary 
+              expandIcon={<ChevronDown size={20} />}
+              sx={{
+                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                color: 'white'
+              }}
+            >
+              <Typography variant="h6">Create New Question</Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ p: 3 }}>
+              <Box component="form" onSubmit={createQuestionSubmit}>
+                <Stack spacing={3}>
+                  {createQuestionFormError && (
+                    <Alert severity="error">{createQuestionFormError}</Alert>
+                  )}
+  
+                  <TextField
+                    label="Topic Name"
+                    value={questionTopicName}
+                    onChange={(e) => setTopicName(e.target.value)}
+                    fullWidth
+                    required
+                    variant="outlined"
+                  />
+  
+                  <TextField
+                    label="Question Text"
+                    value={questionText}
+                    onChange={(e) => setQuestionText(e.target.value)}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    required
+                    variant="outlined"
+                  />
+  
+                  <Box>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      startIcon={<Camera size={20} />}
+                      sx={{ mr: 2 }}
+                    >
+                      Upload Image
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
+                    </Button>
+                    {questionImageFile && (
+                      <Chip 
+                        label={questionImageFile.name}
+                        onDelete={() => {
+                          setQuestionImageFile(null);
+                          setQuestionImagePreview(null);
+                          setQuestionImageBase64(null);
+                        }}
+                      />
+                    )}
+                  </Box>
+  
+                  {questionImagePreview && (
+                    <Paper 
+                      elevation={1} 
+                      sx={{
+                        p: 2,
+                        bgcolor: 'grey.100',
+                        maxWidth: 400,
+                        mx: 'auto'
+                      }}
+                    >
+                      <img 
+                        src={questionImagePreview} 
+                        alt="Preview" 
+                        style={{ 
+                          width: '100%', 
+                          height: 'auto',
+                          borderRadius: 8
+                        }} 
+                      />
+                    </Paper>
+                  )}
+  
+                  <FormControl component="fieldset">
+                    <FormLabel>Difficulty Level</FormLabel>
+                    <RadioGroup
+                      row
+                      value={questionDifficulty}
+                      onChange={(e) => setQuestionDifficulty(e.target.value)}
+                    >
+                      <FormControlLabel 
+                        value="easy" 
+                        control={<Radio color="success" />} 
+                        label="Easy" 
+                      />
+                      <FormControlLabel 
+                        value="regular" 
+                        control={<Radio color="primary" />} 
+                        label="Regular" 
+                      />
+                      <FormControlLabel 
+                        value="hard" 
+                        control={<Radio color="error" />} 
+                        label="Hard" 
+                      />
+                    </RadioGroup>
+                  </FormControl>
+  
+                  <Divider />
+  
+                  <Stack spacing={2}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="h6">Answer Choices</Typography>
+                      <Button
+                        startIcon={<Plus size={20} />}
+                        onClick={addAnswerChoice}
+                        variant="outlined"
+                        size="small"
+                      >
+                        Add Answer
+                      </Button>
+                    </Stack>
+  
+                    {answerList.map((answer, index) => (
+                      <Paper 
+                        key={index} 
+                        variant="outlined"
+                        sx={{ p: 2 }}
+                      >
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Checkbox
+                            checked={answer.isCorrect}
+                            onChange={(e) => handleAnswerChange(index, e)}
+                            name="isCorrect"
+                            color="success"
+                          />
+                          <TextField
+                            fullWidth
+                            value={answer.text}
+                            onChange={(e) => handleAnswerChange(index, e)}
+                            name="text"
+                            placeholder="Enter answer text"
+                            size="small"
+                            required
+                          />
+                          <IconButton 
+                            onClick={() => {
+                              setAnswerList(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            color="error"
+                            size="small"
+                          >
+                            <X size={20} />
+                          </IconButton>
+                        </Stack>
+                      </Paper>
+                    ))}
+                  </Stack>
+  
+                  <Button 
+                    type="submit" 
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      mt: 3,
+                      background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                      color: 'white'
+                    }}
+                  >
+                    Create Question
+                  </Button>
+                </Stack>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        </Paper>
+  
+        {/* Questions List Section */}
+        <Paper elevation={2}>
+          <Accordion>
+            <AccordionSummary 
+              expandIcon={<ChevronDown size={20} />}
+              sx={{
+                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                color: 'white'
+              }}
+            >
+              <Typography variant="h6">View All Questions</Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ p: 3 }}>
+              <Stack spacing={2}>
+                {questions && questions.map(question => (
+                  <QuestionDetails
+                    key={question.questionId}
+                    question={question}
+                    hasImage={question.hasImage}
+                    topics={topics}
+                    refresh={refresh}
+                    onDelete={() => {
+                      setQuestions(questions.filter(q => q.questionId !== question.questionId));
+                    }}
+                  />
+                ))}
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
+        </Paper>
+  
+        {/* Import Dialog */}
+        <Dialog 
+          open={importEnabled} 
+          onClose={() => {
+            setImportError('');
+            setImportFile(null);
+            setImportEnabled(false);
+          }}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle sx={{ 
+            background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+            color: 'white'
+          }}>
+            Import Questions from CSV
+          </DialogTitle>
+          <form onSubmit={handleImport}>
+            <DialogContent sx={{ pt: 3 }}>
+              <Stack spacing={3}>
+                {importError && (
+                  <Alert severity="error">{importError}</Alert>
+                )}
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<Upload size={20} />}
+                  fullWidth
+                >
+                  Choose CSV File
+                  <input
+                    type="file"
+                    hidden
+                    accept=".csv"
+                    onChange={handleImportFileChange}
+                  />
+                </Button>
+                {importFile && (
+                  <Chip 
+                    label={importFile.name}
+                    onDelete={() => setImportFile(null)}
+                    color="primary"
+                  />
+                )}
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 3 }}>
+              <Button onClick={() => setImportEnabled(false)}>Cancel</Button>
+              <Button 
+                type="submit"
                 variant="contained"
-                component="label"
-                startIcon={<PhotoCamera />}
+                disabled={!importFile}
                 sx={{
-                  padding: '6px 16px',
-                  fontSize: '0.8125rem',
-                  minWidth: 'auto',
+                  background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
                 }}
               >
-                Upload Photo
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
+                Import
               </Button>
-              {questionImageFile && (
-                <Typography variant="body2" sx={{ ml: 2 }}>
-                  {questionImageFile.name}
-                </Typography>
-              )}
-            </Box>
-
-            {questionImagePreview && (
-              <Box sx={{
-                mt: 2,
-                width: '300px',
-                height: '200px',
-                overflow: 'scroll',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                bgcolor: 'grey.200',
-                borderRadius: '4px',
-              }}>
-                <img 
-                  src={questionImagePreview} 
-                  alt="Question image preview" 
-                  style={{ width: '100%', height: 'auto', objectFit: 'contain' }} 
-                />
-              </Box>
-            )}
-            
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Question Difficulty</FormLabel>
-              <RadioGroup
-                row
-                value={questionDifficulty}
-                onChange={(e) => setQuestionDifficulty(e.target.value)}
-              >
-                <FormControlLabel value="easy" control={<Radio />} label="Easy" />
-                <FormControlLabel value="regular" control={<Radio />} label="Regular" />
-                <FormControlLabel value="hard" control={<Radio />} label="Hard" />
-              </RadioGroup>
-            </FormControl>
-            
-            <Typography variant="h6">Answer Choices ({answerList.length})</Typography>
-            <Button startIcon={<Add />} onClick={addAnswerChoice}>
-              Add Answer Choice
-            </Button>
-            {answerList.map((answer, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Checkbox
-                  checked={answer.isCorrect}
-                  onChange={(e) => handleAnswerChange(index, e)}
-                  name="isCorrect"
-                />
-                <TextField
-                  fullWidth
-                  value={answer.text}
-                  onChange={(e) => handleAnswerChange(index, e)}
-                  name="text"
-                  placeholder="Answer option text"
-                  required
-                />
-              </Box>
-            ))}
-            <Button type="submit" variant="contained" color="primary">
-              Create Question
-            </Button>
-            {createQuestionFormError && (
-              <Typography color="error">{createQuestionFormError}</Typography>
-            )}
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>View Questions ({questions ? questions.length : 0})</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {questions && questions.map(question => (
-              <QuestionDetails
-                key={question.questionId}
-                question={question}
-                hasImage={question.hasImage}
-                topics={topics}
-                refresh={refresh}
-                onDelete={() => { setQuestions(questions.filter(q => q.questionId !== question.questionId)) }}
-              />
-            ))}
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-      <button className='standard-button' onClick={handleExport}>Export Questions</button>
-      <button className='standard-button' style={{ marginLeft: '5px' }} onClick={() => {setImportEnabled(true)}}>Import Questions</button>
-
-      <PopupForm
-        title={'Import Questions from CSV'}
-        isOpen={importEnabled}
-        onClose={() => {
-            setImportError()
-            setImportFile(null)
-            setImportEnabled(false)
-        }}
-        errorText={importError}
-        onSubmit={handleImport}
-      >
-        <div>
-            <label>CSV File</label>
-            <input type='file' accept='.csv' onChange={handleImportFileChange} />
-        </div>
-      </PopupForm>
-    </Box>
-  );
-};
-
-export default QuestionsComponent;
+            </DialogActions>
+          </form>
+        </Dialog>
+      </Box>
+    );
+  };
+  
+  export default QuestionsComponent;

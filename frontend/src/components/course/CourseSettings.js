@@ -3,6 +3,29 @@ import { useState, useEffect } from 'react'
 import { useCourseContext } from "../../context/CourseContext"
 import { useAuthContext } from "../../hooks/UseAuthContext"
 
+import { 
+    Container,
+    Paper,
+    Typography,
+    Radio,
+    RadioGroup,
+    FormControlLabel,
+    FormControl,
+    TextField,
+    Button,
+    Box,
+    Stack,
+    Alert,
+    CircularProgress,
+    Avatar
+} from '@mui/material';
+import { 
+    Lock, 
+    Gamepad, 
+    Image as ImageIcon,
+    Copy
+} from 'lucide-react';
+
 const CourseSettings = () => {
 
     const { user } = useAuthContext()
@@ -186,91 +209,177 @@ const CourseSettings = () => {
 
     }, [user, course, triggerEffect])
 
+    const copyCodeToClipboard = () => {
+        navigator.clipboard.writeText(accessCode);
+    };
+
     return (
-        <>
-            <div className='content-card'>
-                <h2 style={{ marginTop: 0 }}>Course Access Type</h2>
-                <p>This course is currently in <strong>{accessCode ? 'Join Code' : "Invite Only"}</strong> mode.</p>
-                {accessCode && <p>The join code is: <strong>{accessCode}</strong></p>}
-                <label>
-                    <input
-                        type='radio'
-                        name='access'
-                        value='invite'
-                        checked={accessTypeSelection === 'invite'}
+        <Container maxWidth="md" sx={{ py: 4 }}>
+            {/* Access Type Section */}
+            <Paper elevation={2} sx={{ p: 4, mb: 3 }}>
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                    <Lock size={24} />
+                    <Typography variant="h5" fontWeight="bold">
+                        Course Access Type
+                    </Typography>
+                </Stack>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                    This course is currently in <strong>{accessCode ? 'Join Code' : "Invite Only"}</strong> mode.
+                </Typography>
+                {accessCode && (
+    <Box 
+        sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            mb: 3,
+            p: 2,
+            bgcolor: 'primary.light',
+            borderRadius: 1
+        }}
+    >
+        <Typography variant="body1" color="white">
+            Join Code: <strong>{accessCode}</strong>
+        </Typography>
+        <Button 
+            variant="contained" 
+            size="small"
+            onClick={copyCodeToClipboard}
+            startIcon={<Copy size={16} />}
+            sx={{ bgcolor: 'primary.dark' }}
+        >
+            Copy
+        </Button>
+    </Box>
+)}
+                <FormControl>
+                    <RadioGroup
+                        value={accessTypeSelection}
                         onChange={handleAccessChange}
-                    />
-                    Invite Only
-                </label>
-                <br />
-                <label>
-                    <input
-                        type='radio'
-                        name='access'
-                        value='code'
-                        checked={accessTypeSelection === 'code'}
-                        onChange={handleAccessChange}
-                    />
-                    Generate Join Code
-                </label>
-                <br />
-                <button
-                    className='standard-button'
-                    onClick={handleAccessSelectionSubmit}
-                >Submit</button>
-            </div>
+                    >
+                        <FormControlLabel 
+                            value="invite" 
+                            control={<Radio />} 
+                            label="Invite Only"
+                        />
+                        <FormControlLabel 
+                            value="code" 
+                            control={<Radio />} 
+                            label="Generate Join Code"
+                        />
+                    </RadioGroup>
+                    <Button 
+                        variant="contained"
+                        onClick={handleAccessSelectionSubmit}
+                        sx={{ mt: 2, alignSelf: 'flex-start' }}
+                    >
+                        Update Access Type
+                    </Button>
+                </FormControl>
+            </Paper>
 
-            <div className='content-card'>
-                <h2 style={{ marginTop: 0 }}>Game Settings</h2>
-                <form className='standard-form' onSubmit={handleGameSettingsFormSubmit}>
-                    <div>
-                        <label>Student Game Limit</label>
-                        <input
-                            type='text'
-                            name='gameLimit'
+            {/* Game Settings Section */}
+            <Paper elevation={2} sx={{ p: 4, mb: 3 }}>
+    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+        <Gamepad size={24} />
+        <Typography variant="h5" fontWeight="bold">
+            Game Settings
+        </Typography>
+    </Stack>
+                <Box component="form" onSubmit={handleGameSettingsFormSubmit}>
+                    <Stack spacing={3}>
+                        <TextField
+                            fullWidth
+                            label="Student Game Limit"
+                            name="gameLimit"
                             value={gameSettingsForm.gameLimit}
-                            placeholder='Limit'
                             onChange={handleGameSettingsFormChange}
+                            type="number"
+                            variant="outlined"
                         />
-                    </div>
-                    <div>
-                        <label>Round Limit</label>
-                        <input
-                            type='text'
-                            name='gameRoundLimit'
+                        <TextField
+                            fullWidth
+                            label="Round Limit"
+                            name="gameRoundLimit"
                             value={gameSettingsForm.gameRoundLimit}
-                            placeholder='Limit'
                             onChange={handleGameSettingsFormChange}
+                            type="number"
+                            variant="outlined"
                         />
-                    </div>
+                        <Box>
+                            <Button 
+                                type="submit" 
+                                variant="contained"
+                                disabled={isUploading}
+                            >
+                                Update Game Settings
+                            </Button>
+                        </Box>
+                        {gameSettingsFormError && (
+                            <Alert severity="error">{gameSettingsFormError}</Alert>
+                        )}
+                        {gameSettingsFormMsg && (
+                            <Alert severity="success">{gameSettingsFormMsg}</Alert>
+                        )}
+                    </Stack>
+                </Box>
+            </Paper>
 
-                    <button type='submit' className='standard-button'>Submit</button>
-                    {gameSettingsFormError && <p className='form-error'>{gameSettingsFormError}</p>}
-                    {gameSettingsFormMsg && <p className='form-msg'>{gameSettingsFormMsg}</p>}
-                </form>
-            </div>
+            {/* Course Picture Section */}
+            <Paper elevation={2} sx={{ p: 4 }}>
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                    <ImageIcon size={24} />
+                    <Typography variant="h5" fontWeight="bold">
+                        Course Picture
+                    </Typography>
+                </Stack>
+                <Stack direction="row" spacing={3} alignItems="center">
+                    <Avatar 
+                        src={coursePictureUrl} 
+                        alt="Course Picture"
+                        sx={{ 
+                            width: 100, 
+                            height: 100,
+                            bgcolor: 'primary.main'
+                        }}
+                    >
+                        {course?.name?.[0] || 'C'}
+                    </Avatar>
+                    <Stack spacing={2}>
+                        <Button
+                            variant="outlined"
+                            component="label"
+                            startIcon={<ImageIcon size={20} />}
+                        >
+                            Choose File
+                            <input
+                                type="file"
+                                hidden
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                        </Button>
+                        {selectedFile && (
+                            <Typography variant="body2" color="text.secondary">
+                                Selected: {selectedFile.name}
+                            </Typography>
+                        )}
+                        <Button 
+                            variant="contained" 
+                            onClick={handleUpload}
+                            disabled={!selectedFile || isUploading}
+                            startIcon={isUploading ? <CircularProgress size={20} /> : null}
+                        >
+                            {isUploading ? 'Uploading...' : 'Upload Picture'}
+                        </Button>
+                        {uploadError && (
+                            <Alert severity="error">{uploadError}</Alert>
+                        )}
+                    </Stack>
+                </Stack>
+            </Paper>
+        </Container>
+    );
+};
 
-            <div className='content-card'>
-                <h2>Course Picture</h2>
-                <div className='flex' style={{ alignItems: 'center' }}>
-                    <div className='settings-pfp-container'>
-                        {coursePictureUrl && <img src={coursePictureUrl} alt='Profile Picture' />}
-                    </div>
-                    <div style={{ paddingLeft: '15px' }}>
-                        <input
-                            className='standard-form-input'
-                            type='file'
-                            accept='image/*'
-                            onChange={handleFileChange}
-                        />
-                        <button className='standard-button' onClick={handleUpload}>{isUploading ? 'Uploading ...' : 'Upload Course Picture'}</button>
-                        {uploadError && <p className='form-error'>{uploadError}</p>}
-                    </div>
-                </div>
-            </div>
-
-        </>
-    )
-}
-
-export default CourseSettings
+export default CourseSettings;
