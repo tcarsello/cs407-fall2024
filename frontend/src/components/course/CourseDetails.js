@@ -2,11 +2,6 @@ import { useState, useEffect } from 'react'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 
 import { Link } from 'react-router-dom'
-
-import ConfirmDialog from '../ConfirmDialog'
-
-import { GrTrash, GrClose } from 'react-icons/gr'
-
 import { 
     Box,
     Card,
