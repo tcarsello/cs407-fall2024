@@ -52,6 +52,8 @@ const CourseGames = () => {
     const [outgoingChallengeList, setOutgoingChallengeList] = useState([])
     const [incomingChallengeList, setIncomingChallengeList] = useState([])
 
+    const [challengeTrigger, setChallengeTrigger] = useState(false)
+
     // Used to update the game list
     const [gameList, setGameList] = useState(0)
 
@@ -136,7 +138,11 @@ const CourseGames = () => {
             fetchIncomingChallenges()
         }
 
-    }, [course, memberList, user])
+    }, [course, memberList, user, challengeTrigger])
+
+    const triggerChallengeRefresh = () => {
+        setChallengeTrigger(prev => !prev)
+    }
 
     const handleCreateChallenge = async (e) => {
         e.preventDefault()
@@ -342,11 +348,11 @@ const CourseGames = () => {
             >
                 <Stack direction="row" spacing={2} alignItems="center">
                     <Gamepad />
-                    <Typography variant="h6">Active Games</Typography>
+                    <Typography variant="h6">Past Games</Typography>
                 </Stack>
             </AccordionSummary>
                             <AccordionDetails>
-                                <GameList title="" divClass="" course={course} history={true} key={gameList + 1} />
+                                <GameList title="" divClass="" course={course} history={true} key={gameList + 1} refreshChallenges={triggerChallengeRefresh} refreshGames={() => setGameList(prev => prev+1)} />
                             </AccordionDetails>
                         </Accordion>
                     </Paper>

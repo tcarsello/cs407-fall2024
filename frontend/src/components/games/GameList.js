@@ -17,20 +17,63 @@ const timeStampToStr = (ts) => {
 	return timeAgo.format(date, { future: false });
 };
 
-const Game = ({ game, history }) => {
+const Game = ({ game, history, refreshChallenges, refreshGames }) => {
+
+    const { user } = useAuthContext()
+
+    const sendRematch = async () => {
+
+        try {
+
+            const response = await fetch(`/api/game/${game.gameId}/rematch`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                throw Error(json.error)
+            }
+
+            if (json.message === 'Challenge sent') {
+                refreshChallenges()
+                alert('Challenge sent!')
+            } else if (json.message === 'Game created') {
+                refreshGames()
+                refreshChallenges()
+                alert('Game started!')
+            }
+
+        } catch (err) {
+            console.error(err)
+            alert('Rematch challenge could not be sent')
+        }
+
+    }
+
 	return (
-		<Link to={`/game/${game.gameId}`} className="gameLink">
-			<div className="content-card" id="gameDiv">
-				<h2>
-					{game.playerOneFirstName} vs {game.playerTwoFirstName}
-				</h2>
-				{!history && <p className={game.status.replaceAll(" ", "").toLowerCase()}>{game.status}</p>}
-				{history && (
-					<p className={game.victory ? "victory" : "defeat"}>{game.outcome}</p>
-				)}
-				<p className="time">{timeStampToStr(game.updatedAt)}</p>
-			</div>
-		</Link>
+        <>
+            <div className="content-card" id="gameDiv">
+                <Link to={`/game/${game.gameId}`} className="gameLink">
+                        <h2>
+                            {game.playerOneFirstName} vs {game.playerTwoFirstName}
+                        </h2>
+                        {!history && <p className={game.status.replaceAll(" ", "").toLowerCase()}>{game.status}</p>}
+                        {history && (
+                            <p className={game.victory ? "victory" : "defeat"}>{game.outcome}</p>
+                        )}
+                        <p className="time">{timeStampToStr(game.updatedAt)}</p>
+                </Link>
+                {(game.status !== 'New' && game.status !== 'In Progress') && (
+                    <button className='standard-button' onClick={sendRematch}>Rematch!</button>
+                )}
+            </div>
+        </>
+
 	);
 };
 
@@ -40,6 +83,8 @@ const GameList = ({
 	masterList = false,
 	course = null,
 	divClass = "content-card",
+    refreshChallenges = () => {},
+    refreshGames = () => {},
 }) => {
 	const { user } = useAuthContext();
 
@@ -97,7 +142,7 @@ const GameList = ({
 	return (
 		<div className={divClass}>
 			{title && <h2 display="inline">{title}</h2>}
-			{games && games.map((g) => <Game game={g} history={history} key={g.gameId} />)}
+			{games && games.map((g) => <Game game={g} history={history} key={g.gameId} refreshChallenges={refreshChallenges} refreshGames={refreshGames}/>)}
 		</div>
 	);
 };

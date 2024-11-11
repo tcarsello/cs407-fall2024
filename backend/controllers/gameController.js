@@ -4,6 +4,8 @@ const Round = require('../models/roundModel')
 const Topic = require('../models/topicModel')
 const Question = require('../models/questionModel')
 const RoundQuestion = require('../models/roundQuestionModel')
+const Challenge = require('../models/challengeModel')
+const Course = require('../models/courseModel')
 
 const sequelize = require('../database')
 
@@ -316,6 +318,80 @@ const declareScore = async (req, res) => {
     }
 }
 
+const sendRematch = async (req, res) => {
+    try {
+
+        const { gameId } = req.params
+
+        const game = await Game.findOne({
+            where: { gameId }
+        })
+        if (!game) throw 'Game not found'
+
+        const sendingUserId = req.user.userId
+        
+        let receivingUserId;
+        if (game.playerOneId === sendingUserId) {
+            receivingUserId = game.playerTwoId
+        } else if (game.playerTwoId === sendingUserId) {
+            receivingUserId = game.playerOneId
+        }
+        
+        if (!receivingUserId) throw 'Could not determine sender and receiver' 
+
+        // Check outgoing challenge
+        let challenge = await Challenge.findOne({
+            where: {
+                courseId: game.courseId,
+                contenderId: sendingUserId,
+                challengerId: receivingUserId,
+            }
+        }) 
+        if (challenge) throw 'Outgoing challenge already exists'
+
+        // Check incoming challenge
+        challenge = await Challenge.findOne({
+            where: {
+                courseId: game.courseId,
+                contenderId: receivingUserId,
+                challengerId: sendingUserId,
+            }
+        }) 
+
+        let message;
+        if (!challenge) {
+
+            const newChallenge = await Challenge.create({
+                courseId: game.courseId,
+                contenderId: sendingUserId,
+                challengerId: receivingUserId,
+            })
+            message = 'Challenge sent'
+        } else {
+
+            const course = await Course.findOne({
+                where: { courseId: game.courseId }
+            })
+
+            const newGame = await Game.create({
+                courseId: course.courseId,
+                playerOneId: receivingUserId,
+                playerTwoId: sendingUserId,
+                maxRounds: course.gameRoundLimit,
+            })
+
+            await challenge.destroy()
+            message = 'Game created'
+
+        }
+
+        res.status(200).json({message})
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+}
+
 module.exports = {
     getGame,
     updateGame,
@@ -324,4 +400,5 @@ module.exports = {
     getGameRounds,
     startRound,
     declareScore,
+    sendRematch,
 }

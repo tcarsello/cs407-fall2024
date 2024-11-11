@@ -76,6 +76,8 @@ const Home = () => {
 	const [referFriendEmail, setReferFriendEmail] = useState("");
 	const [referFriendError, setReferFriendError] = useState("");
 
+    const [updateGames, setUpdateGames] = useState(0)
+
 	useEffect(() => {
 		if (user && !user.lightMode) {
 			setClassNames(getClassNames("darkMode"));
@@ -490,11 +492,11 @@ const Home = () => {
 							<Stack spacing={3}>
 								<Box>
 									<Typography variant="h6" gutterBottom>Active Games</Typography>
-									<GameList title="" divClass="" />
+									<GameList title="" divClass="" key={updateGames+1}/>
 								</Box>
 								<Box>
 									<Typography variant="h6" gutterBottom>Game History</Typography>
-									<GameList title="" divClass="" history={true} />
+									<GameList title="" divClass="" history={true} key={updateGames} refreshGames={() => setUpdateGames(prev => prev+1)}/>
 								</Box>
 							</Stack>
 						</Paper>
