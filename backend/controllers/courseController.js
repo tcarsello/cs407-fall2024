@@ -905,6 +905,109 @@ const getCourseGamesWithNames = async (req, res) => {
 	}
 };
 
+const exportCourseTerms = async (req, res) => {
+
+    try {
+        const { courseId } = req.params
+
+        const queryString = `
+            SELECT
+                t."topicName",
+                term."termName", 
+                term."termDefinition"
+            FROM
+                term
+                INNER JOIN topic t ON t."topicId"=term."topicId"
+                INNER JOIN course c ON c."courseId"=t."courseId"
+            WHERE
+                c."courseId" = :courseId
+        `
+
+        const query = await sequelize.query(queryString, {
+            replacements: {
+                courseId,
+            },
+            type: Sequelize.QueryTypes.SELECT
+        })
+        if (query.length < 1) throw 'No data'
+
+        const fields = Object.keys(query[0] || {})
+        const parser = new Parser({ fields })
+        const csv = parser.parse(query)
+
+        res.setHeader('Content-Disposition', 'attachment; filename=cc_questions.csv')
+        res.setHeader('Content-Type', 'text/csv')
+        res.status(200).send(csv)
+
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+
+}
+
+const importCourseTerms = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { fileBase64 } = req.body;
+
+        if (!courseId) throw "Need course ID";
+        if (!fileBase64) throw "Need file base64";
+
+        const buffer = Buffer.from(fileBase64, 'base64');
+        const csv = buffer.toString('utf-8');
+
+        const csvItems = await new Promise((resolve, reject) => {
+            const parsedItems = [];
+            parse(csv, {
+                columns: ['topicName', 'termName', 'termDefinition'],
+                skip_empty_lines: true,
+            }, (err, rows) => {
+                if (err) return reject(err);
+
+                rows.forEach(row => {
+                    parsedItems.push({
+                        ...row,
+                    });
+                });
+
+                resolve(parsedItems);
+            });
+        });
+
+
+        const createAsync = async () => {
+
+            for (let i = 0; i < csvItems.length; i++) {
+                let item = csvItems[i];
+
+                if (i === 0) continue;
+
+                const [topic] = await Topic.findOrCreate({
+                    where: {
+                        courseId,
+                        topicName: item.topicName,
+                    }
+                });
+
+                await Term.create({
+                    topicId: topic.topicId,
+                    termName: item.termName,
+                    termDefinition: item.termDefinition,
+                })
+
+            }
+        }
+
+        await createAsync()
+
+        res.status(200).json({ message: 'Uploaded' });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ error: err });
+    }
+}
+
 module.exports = {
     createCourse,
     getCourse,
@@ -928,5 +1031,7 @@ module.exports = {
     getCoursePosts,
     exportCourseQuestions,
     importCourseQuestions,
-    getCourseGamesWithNames
+    getCourseGamesWithNames,
+    exportCourseTerms,
+    importCourseTerms,
 }

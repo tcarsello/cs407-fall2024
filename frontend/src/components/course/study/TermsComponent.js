@@ -17,9 +17,10 @@ import {
     Paper,
     Alert,
     Fade,
-    Autocomplete
+    Autocomplete,
+    Chip
 } from '@mui/material';
-import { Plus, List, LayoutGrid, X }from 'lucide-react';
+import { Plus, List, LayoutGrid, X, Upload, Download }from 'lucide-react';
 
 const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiveForm }) => {
     const { user } = useAuthContext();
@@ -33,6 +34,11 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
     });
     const [createTermFormError, setCreateTermFormError] = useState();
     const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+
+    const [importEnabled, setImportEnabled] = useState(false)
+    const [importFile, setImportFile] = useState()
+    const [importError, setImportError] = useState()
+    const [importFileBase64, setImportFileBase64] = useState()
 
     const handleCreateTermFormChange = (e) => {
         const { name, value } = e.target;
@@ -94,6 +100,83 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
             setActiveForm(null);
         }
     };
+
+    const handleExport = async () => {
+        try {
+
+            const response = await fetch(`/api/course/${course.courseId}/export/terms`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            if (!response.ok) throw Error('POST to export route failed')
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cc_terms.csv'
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+
+        } catch (err) {
+            console.error(err)
+            alert('Could not export questions')
+        }
+
+    }
+
+    const handleImportFileChange = (e) => {
+        setImportFile(e.target.files[0])
+        
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1];
+            setImportFileBase64(base64);
+          };
+          reader.readAsDataURL(e.target.files[0]);
+     
+    }
+
+    const handleImport = async (e) => {
+        e.preventDefault()
+        try {
+            if (!importFile || !importFileBase64) {
+                setImportError('No import file selected')
+                throw Error('No file selected')
+            }
+
+            const response = await fetch(`/api/course/${course.courseId}/import/terms`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    fileBase64: importFileBase64,
+                }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user.token}`,
+                }
+            })
+
+            if (!response.ok) {
+                setImportError('Failed to import CSV file')
+                throw Error('Failed to import CSV file')
+            }
+
+            setImportEnabled(false)
+            setImportFile(null)
+            setImportError()
+        } catch (err) {
+            console.error(err)
+        }
+        refresh()
+    }
+
+
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -248,7 +331,26 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
                         <FlashcardView terms={terms} />
                     )}
                 </Box>
+
             </Paper>
+
+          <Stack direction="row" spacing={2} style={{ marginTop: '15px' }}>
+            <Button
+              variant="outlined"
+              startIcon={<Download size={20} />}
+              onClick={handleExport}
+            >
+              Export
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Upload size={20} />}
+              onClick={() => setImportEnabled(true)}
+            >
+              Import
+            </Button>
+          </Stack>
+
 
             {/* Cancel Confirmation Dialog */}
             <Dialog 
@@ -285,6 +387,68 @@ const TermsComponent = ({ terms, setTerms, topics, refresh, activeForm, setActiv
                     </Button>
                 </DialogActions>
             </Dialog>
+            {/* Import Dialog */}
+            <Dialog 
+              open={importEnabled} 
+              onClose={() => {
+                setImportError('');
+                setImportFile(null);
+                setImportEnabled(false);
+              }}
+              fullWidth
+              maxWidth="sm"
+            >
+              <DialogTitle sx={{ 
+                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                color: 'white'
+              }}>
+                Import Terms from CSV
+              </DialogTitle>
+              <form onSubmit={handleImport}>
+                <DialogContent sx={{ pt: 3 }}>
+                  <Stack spacing={3}>
+                    {importError && (
+                      <Alert severity="error">{importError}</Alert>
+                    )}
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      startIcon={<Upload size={20} />}
+                      fullWidth
+                    >
+                      Choose CSV File
+                      <input
+                        type="file"
+                        hidden
+                        accept=".csv"
+                        onChange={handleImportFileChange}
+                      />
+                    </Button>
+                    {importFile && (
+                      <Chip 
+                        label={importFile.name}
+                        onDelete={() => setImportFile(null)}
+                        color="primary"
+                      />
+                    )}
+                  </Stack>
+                </DialogContent>
+                <DialogActions sx={{ p: 3 }}>
+                  <Button onClick={() => setImportEnabled(false)}>Cancel</Button>
+                  <Button 
+                    type="submit"
+                    variant="contained"
+                    disabled={!importFile}
+                    sx={{
+                      background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    }}
+                  >
+                    Import
+                  </Button>
+                </DialogActions>
+              </form>
+            </Dialog>
+
         </Container>
     );
 };
