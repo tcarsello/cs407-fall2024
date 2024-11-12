@@ -44,6 +44,7 @@ const UserSettings = () => {
     const [displayMode, setDisplayMode] = useState('light mode')
 
     const [challengeNotifications, setChallengeNotifications] = useState(user.challengeNotifications)
+    const [inviteNotifications, setInviteNotifications] = useState(user.inviteNotifications)
 
     useEffect(() => {
 
@@ -280,6 +281,39 @@ const UserSettings = () => {
             console.error(err)
         }
     }
+    
+    const handleInviteNotificationsToggle = async () => {
+        const newSetting = !inviteNotifications
+
+        try {
+
+            const response = await fetch(`/api/user/${user.userId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({inviteNotifications: newSetting}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                throw Error('failed to patch challenge notifications')
+            }
+
+            user.lightMode = !user.lightMode
+            localStorage.setItem('user', JSON.stringify(json))
+            dispatch({ type: 'LOGIN', payload: json })
+
+            setChallengeNotifications(newSetting)
+
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+
 
     return (
         <div className={classNames.settingsPageContainer}>
@@ -393,12 +427,22 @@ const UserSettings = () => {
 
             <div className={classNames.settingsCard}>
                 <h2>Email Notification Settings</h2>
-                <span className={classNames.text} style={{ margin: '0' }}>Notify Incoming Challenge</span>
-                <label class="switch">
-                    <input type="checkbox" defaultChecked={!user.challengeNotifications} onChange={handleChallengeNotificationToggle}/>
-                    <span className="slider round"></span>
-                </label>
-               
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" defaultChecked={!user.challengeNotifications} onChange={handleChallengeNotificationToggle}/>
+                        <span className="slider round"></span>
+                    </label>
+                    <span className={classNames.text} style={{ marginLeft: '15px' }}>Notify Incoming Challenge</span>
+                </div>
+                <br />
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" defaultChecked={!user.inviteNotifications} onChange={handleInviteNotificationsToggle}/>
+                        <span className="slider round"></span>
+                    </label>
+                    <span className={classNames.text} style={{ marginLeft: '15px' }}>Notify Course Invites</span>
+                </div>
+              
             </div>
 
             <div className={classNames.settingsCard}>

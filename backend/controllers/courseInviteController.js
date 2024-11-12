@@ -2,6 +2,8 @@ const CourseInvite = require('../models/courseInviteModel')
 const Course = require('../models/courseModel')
 const User = require('../models/userModel')
 
+const nodemailer = require('nodemailer')
+
 const createInvite = async (req, res) => {
     try {
 
@@ -33,6 +35,42 @@ const createInvite = async (req, res) => {
                 email
             })
         } catch (e) { }
+
+        const user = await User.findOne({
+            where: {
+                email
+            }
+        })
+
+        if (user && user.inviteNotifications) {
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD_APP_EMAIL,
+                },
+                sendingRate: 1,
+            });
+
+            // TODO: Make link correct if hosted anywhere other than localhost
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: email,
+                subject: "Course Clash - You've been invited to a course!",
+                html: `<h1>You have been invited to join: ${course.courseName}</h1>
+                <p>${req.user.firstName} ${req.user.lastName} invites you to join the course.</p>
+                `,
+            };
+
+            transporter.sendMail(mailOptions, (err, info) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+            });
+
+        }
 
         res.status(200).json({ invite })
 
