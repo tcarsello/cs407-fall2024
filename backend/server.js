@@ -23,6 +23,7 @@ require('./models/roundModel')
 require('./models/friendshipModel')
 require('./models/roundQuestionModel')
 require('./models/announcementModel')
+require('./models/assistantModel')
 
 const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')
@@ -40,6 +41,7 @@ const gameRoutes = require('./routes/gameRoutes')
 const roundRoutes = require('./routes/roundRoutes')
 const friendshipRoutes = require('./routes/friendshipRoutes')
 const announcementRoutes = require('./routes/announcementRoutes')
+const assistantRoutes = require('./routes/assistantRoutes')
 
 const app = express()
 
@@ -70,6 +72,7 @@ app.use('/api/game', gameRoutes)
 app.use('/api/round', roundRoutes)
 app.use('/api/friendship', friendshipRoutes)
 app.use('/api/annoucement', announcementRoutes)
+app.use('/api/assistant', assistantRoutes)
 
 sequelize.authenticate()
     .then(() => {
