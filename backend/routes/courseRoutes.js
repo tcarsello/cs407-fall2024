@@ -7,7 +7,7 @@ const { createCourse, getCourse, deleteCourse, updateCourse,
     uploadCoursePicture, getCoursePicture, getCourseTopics, createTerm,
     getCourseTerms, getCourseQuestions, getCoursePosts, exportCourseQuestions,
     importCourseQuestions, getCourseGamesWithNames, importCourseTerms,
-    exportCourseTerms } = require('../controllers/courseController')
+    exportCourseTerms , getCourseAnnouncementsPublic, getCourseAnnouncementsPrivate } = require('../controllers/courseController')
 const { createInvite } = require('../controllers/courseInviteController')
 
 const router = express.Router()
@@ -38,6 +38,8 @@ router.get('/:courseId/terms', requireAuth, getCourseTerms)
 router.get('/:courseId/questions', requireAuth, getCourseQuestions)
 router.get('/:courseId/posts', requireAuth, getCoursePosts)
 router.get('/:courseId/courseGamesWithNames', requireAuth, getCourseGamesWithNames)
+router.get('/:courseId/announcements/public', requireAuth, getCourseAnnouncementsPublic)
+router.get('/:courseId/announcements/private', requireAuth, getCourseAnnouncementsPrivate)
 
 router.post('/:courseId/export/questions', requireAuth, exportCourseQuestions)
 router.post('/:courseId/export/terms', requireAuth, exportCourseTerms)

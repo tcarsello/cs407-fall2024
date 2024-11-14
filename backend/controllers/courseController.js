@@ -1,6 +1,7 @@
 require('dotenv').config()
 
 const Course = require('../models/courseModel')
+const Announcement = require('../models/announcementModel')
 const User = require('../models/userModel')
 const CourseInvite = require('../models/courseInviteModel')
 const Topic = require('../models/topicModel')
@@ -1008,6 +1009,44 @@ const importCourseTerms = async (req, res) => {
     }
 }
 
+const getCourseAnnouncementsPublic = async (req, res) => {
+    try {
+        const { courseId } = req.params
+
+        const announcements = await Announcement.findAll({
+            where: {
+                courseId,
+                public: true,
+            }
+        })
+
+        res.status(200).json()
+    } catch (err) {
+        console.eror(err)
+        res.status(400).json({error: err})
+    }
+}
+
+const getCourseAnnouncementsPrivate = async (req, res) => {
+    try {
+        const { courseId } = req.params
+
+        const announcements = await Announcement.findAll({
+            where: {
+                courseId,
+                public: false
+            }
+        })
+
+        res.status(200).json({announcements})
+    } catch (err) {
+        console.eror(err)
+        res.status(400).json({error: err})
+    }
+}
+
+
+
 module.exports = {
     createCourse,
     getCourse,
@@ -1034,4 +1073,6 @@ module.exports = {
     getCourseGamesWithNames,
     exportCourseTerms,
     importCourseTerms,
+    getCourseAnnouncementsPublic,
+    getCourseAnnouncementsPrivate,
 }
