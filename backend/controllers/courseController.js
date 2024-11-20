@@ -1020,7 +1020,7 @@ const getCourseAnnouncementsPublic = async (req, res) => {
             }
         })
 
-        res.status(200).json()
+        res.status(200).json({announcements})
     } catch (err) {
         console.error(err)
         res.status(400).json({error: err})

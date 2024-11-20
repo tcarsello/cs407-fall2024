@@ -71,7 +71,7 @@ app.use('/api/challenge', challengeRoutes)
 app.use('/api/game', gameRoutes)
 app.use('/api/round', roundRoutes)
 app.use('/api/friendship', friendshipRoutes)
-app.use('/api/annoucement', announcementRoutes)
+app.use('/api/announcement', announcementRoutes)
 app.use('/api/assistant', assistantRoutes)
 
 sequelize.authenticate()
