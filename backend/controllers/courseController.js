@@ -1022,7 +1022,7 @@ const getCourseAnnouncementsPublic = async (req, res) => {
 
         res.status(200).json()
     } catch (err) {
-        console.eror(err)
+        console.error(err)
         res.status(400).json({error: err})
     }
 }
@@ -1040,7 +1040,7 @@ const getCourseAnnouncementsPrivate = async (req, res) => {
 
         res.status(200).json({announcements})
     } catch (err) {
-        console.eror(err)
+        console.error(err)
         res.status(400).json({error: err})
     }
 }
