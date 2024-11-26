@@ -586,6 +586,83 @@ const getCourseTopics = async (req, res) => {
         res.status(400).json({ error: err })
     }
 }
+
+const getCourseTopicsWithStats = async (req, res) => {
+	try {
+		const { courseId } = req.params;
+
+        const queryString = `
+            SELECT
+                t.*,
+                SUM("q"."totalAnswers") AS "totalAnswers",
+                SUM("q"."correctAnswers") AS "correctAnswers"
+            FROM "topic" AS "t"
+            LEFT JOIN "question" AS "q"
+                ON "t"."topicId" = "q"."topicId"
+            WHERE
+                "t"."courseId" = :courseId
+            GROUP BY "t"."topicId"
+        `;
+		const topics = await sequelize.query(queryString, {
+			replacements: {
+				courseId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+		res.status(200).json({ topics });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
+const getGameStatistics = async (req, res) => {
+	try {
+		const { courseId } = req.params;
+
+		const queryString = `
+            SELECT
+                COUNT("g"."gameId") AS "totalGames",
+                SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 1 ELSE 0 END) AS "totalActive",
+                SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 0 ELSE 1 END) AS "totalComplete"
+            FROM "game" AS "g"
+            WHERE
+                "g"."courseId" = :courseId
+            
+        `;
+        const queryString2 = `
+            SELECT 
+                COUNT(DISTINCT unnest) AS "playerCount"
+            FROM (
+                SELECT 
+                    UNNEST(ARRAY["g"."playerOneId", "g"."playerTwoId"]) AS unnest
+                FROM "game" AS "g"
+                WHERE 
+                    "g"."courseId" = :courseId
+                    AND "g"."status" IN ('New', 'In Progress')
+            ) AS subquery;
+        `;
+		const gameData = await sequelize.query(queryString, {
+			replacements: {
+				courseId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+        const playerData = await sequelize.query(queryString2, {
+			replacements: {
+				courseId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+		const finalRes = {totalPlayers: playerData[0].playerCount, ...gameData[0]};
+		res.status(200).json(finalRes);
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
 const createTerm = async (req, res) => {
     const { courseId, topicId } = req.params;
     const { termName, termDefinition } = req.body;
@@ -1064,6 +1141,8 @@ module.exports = {
     uploadCoursePicture,
     getCoursePicture,
     getCourseTopics,
+    getCourseTopicsWithStats,
+    getGameStatistics,
     createTerm,
     getCourseTerms,
     getCourseQuestions,

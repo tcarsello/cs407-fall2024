@@ -36,7 +36,7 @@ const CourseStudy = () => {
     useEffect(() => {
         const fetchTopics = async () => {
             try {
-                const response = await fetch(`/api/course/${course.courseId}/topics`, {
+                const response = await fetch(`/api/course/${course.courseId}/topicsWithStats`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

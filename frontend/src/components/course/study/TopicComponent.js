@@ -29,6 +29,23 @@ import {
 } from '@mui/material';
 import { Edit2, X, Plus, BookOpen } from 'lucide-react';
 
+function perc2color(perc) {
+	var r,
+		g,
+		b = 0;
+	if (perc < 50) {
+		r = 255;
+		g = Math.round(5.1 * perc);
+	} else {
+		g = 255;
+		r = Math.round(510 - 5.1 * perc);
+	}
+	r = Math.round(r / 1.25);
+	g = Math.round(g / 1.25);
+	var h = r * 0x10000 + g * 0x100 + b * 0x1;
+	return "#" + ("000000" + h.toString(16)).slice(-6);
+}
+
 const TopicComponent = ({ topics, setTopics, refresh, activeForm, setActiveForm, setTopicFilter, topicFilter }) => {
 
     const { user } = useAuthContext()
@@ -203,6 +220,11 @@ const TopicComponent = ({ topics, setTopics, refresh, activeForm, setActiveForm,
                                         primary={topic.topicName}
                                     />
                                     {user.userId === course.coordinatorId && (
+                                        <>
+                                        {topic.totalAnswers > 0 && <ListItemText
+                                            primary={Math.round((topic.correctAnswers / topic.totalAnswers) * 100) + "% Correct"}
+                                            sx={{color: perc2color(Math.round((topic.correctAnswers / topic.totalAnswers) * 100))}}
+                                        />}
                                         <ListItemSecondaryAction>
                                             <IconButton 
                                                 onClick={() => handleEditTopicClick(topic)}
@@ -219,6 +241,7 @@ const TopicComponent = ({ topics, setTopics, refresh, activeForm, setActiveForm,
                                                 <X size={18} />
                                             </IconButton>
                                         </ListItemSecondaryAction>
+                                        </>
                                     )}
                                 </ListItem>
                                 {index < topics.length - 1 && <Divider />}

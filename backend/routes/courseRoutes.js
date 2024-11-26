@@ -7,7 +7,9 @@ const { createCourse, getCourse, deleteCourse, updateCourse,
     uploadCoursePicture, getCoursePicture, getCourseTopics, createTerm,
     getCourseTerms, getCourseQuestions, getCoursePosts, exportCourseQuestions,
     importCourseQuestions, getCourseGamesWithNames, importCourseTerms,
-    exportCourseTerms , getCourseAnnouncementsPublic, getCourseAnnouncementsPrivate } = require('../controllers/courseController')
+    exportCourseTerms , getCourseAnnouncementsPublic, getCourseAnnouncementsPrivate, 
+    getCourseTopicsWithStats,
+    getGameStatistics} = require('../controllers/courseController')
 const { createInvite } = require('../controllers/courseInviteController')
 
 const router = express.Router()
@@ -34,9 +36,11 @@ router.get('/:courseId/members', requireAuth, getMembers)
 router.get('/:courseId/settings', requireAuth, getSettingsAdmin)
 router.get('/:courseId/picture', getCoursePicture) // No auth required
 router.get('/:courseId/topics', requireAuth, getCourseTopics)
+router.get("/:courseId/topicsWithStats", requireAuth, getCourseTopicsWithStats);
 router.get('/:courseId/terms', requireAuth, getCourseTerms)
 router.get('/:courseId/questions', requireAuth, getCourseQuestions)
 router.get('/:courseId/posts', requireAuth, getCoursePosts)
+router.get("/:courseId/gameData", requireAuth, getGameStatistics);
 router.get('/:courseId/courseGamesWithNames', requireAuth, getCourseGamesWithNames)
 router.get('/:courseId/announcements/public', requireAuth, getCourseAnnouncementsPublic)
 router.get('/:courseId/announcements/private', requireAuth, getCourseAnnouncementsPrivate)
