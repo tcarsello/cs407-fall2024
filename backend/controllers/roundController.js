@@ -157,6 +157,8 @@ const submitAnswer = async (req, res) => {
 
         }
 
+        
+
         res.status(200).json(response)
     } catch (err) {
         console.error(err)

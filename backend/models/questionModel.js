@@ -29,6 +29,16 @@ const Question = sequelize.define('question', {
         defaultValue: 'regular',
         allowNull: false
     },
+    correctAnswers: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+    },
+    totalAnswers: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+    }
 }, {
     timestamps: true,
     tableName: 'question'
