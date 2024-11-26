@@ -22,6 +22,23 @@ import {
 } from '@mui/material';
 import { Delete, Edit, Close, Add } from '@mui/icons-material';
 
+function perc2color(perc) {
+	var r,
+		g,
+		b = 0;
+	if (perc < 50) {
+		r = 255;
+		g = Math.round(5.1 * perc);
+	} else {
+		g = 255;
+		r = Math.round(510 - 5.1 * perc);
+	}
+    r = Math.round(r/1.25)
+    g = Math.round(g/1.25)
+	var h = r * 0x10000 + g * 0x100 + b * 0x1;
+	return "#" + ("000000" + h.toString(16)).slice(-6);
+}
+
 const QuestionDetails = ({ question, hasImage, topics, onDelete, refresh }) => {
   const { user } = useAuthContext();
   const [answerList, setAnswerList] = useState([]);
@@ -170,6 +187,11 @@ const QuestionDetails = ({ question, hasImage, topics, onDelete, refresh }) => {
   return (
     <Card>
       <CardContent>
+        {formData.totalAnswers > 0 && <Box sx={{mb: 2}}>
+            <Typography variant="h8" sx={{color: perc2color(Math.round(100 * (formData.correctAnswers / formData.totalAnswers)))}}>
+                {Math.round(100 * (formData.correctAnswers / formData.totalAnswers))}% Correct
+            </Typography>
+        </Box>}
         <Box component="form" onSubmit={handleEditSubmit}>
           <TextField
             fullWidth

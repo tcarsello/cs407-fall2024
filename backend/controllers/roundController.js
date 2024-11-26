@@ -157,7 +157,17 @@ const submitAnswer = async (req, res) => {
 
         }
 
-        
+        await Question.increment(
+            {
+                totalAnswers: 1,
+                correctAnswers: response.isCorrect ? 1 : 0,
+            },
+            {
+                where: {
+                    questionId
+                }
+            }
+        )
 
         res.status(200).json(response)
     } catch (err) {

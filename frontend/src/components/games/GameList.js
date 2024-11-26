@@ -64,7 +64,7 @@ const Game = ({ game, history, refreshChallenges, refreshGames }) => {
                         </h2>
                         {!history && <p className={game.status.replaceAll(" ", "").toLowerCase()}>{game.status}</p>}
                         {history && (
-                            <p className={game.victory ? "victory" : "defeat"}>{game.outcome}</p>
+                            <p className={game.outcome.toLowerCase()}>{game.outcome}</p>
                         )}
                         <p className="time">{timeStampToStr(game.updatedAt)}</p>
                 </Link>

@@ -21,6 +21,12 @@ p.inprogress {
 	margin: 0;
 }
 
+p.tie {
+	color: gold;
+	font-size: large;
+	margin: 0;
+}
+
 p.new {
 	color: green;
 	font-size: large;
