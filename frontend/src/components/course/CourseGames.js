@@ -135,7 +135,7 @@ const CourseGames = () => {
 
 				const json = await response.json();
 				setGameData(json);
-                console.log(json);
+				console.log(json);
 			} catch (err) {
 				console.error(err);
 			}
@@ -156,6 +156,22 @@ const CourseGames = () => {
 		e.preventDefault();
 
 		try {
+            const countRes = await fetch(`/api/course/${course.courseId}/getUserGameCount/${user.userId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            });
+
+            const countJson = await countRes.json();
+
+            if (countJson.totalActive >= countJson.gameLimit) {
+				setCreateChallengeError("Too Many Games!");
+				setCreateFriendChallengeError("Too Many Games!");
+				throw Error("Too Many Games!");
+            }
+
 			const bodyContent = {
 				courseId: course.courseId,
 				contenderId: user.userId,
@@ -239,6 +255,21 @@ const CourseGames = () => {
 
 	const handleAcceptChallenge = async (index) => {
 		try {
+            const countRes = await fetch(`/api/course/${course.courseId}/getUserGameCount/${user.userId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            });
+
+            const countJson = await countRes.json();
+
+            if (countJson.totalActive >= countJson.gameLimit) {
+                alert("Too Many Games!");
+                throw Error("Too Many Games!");
+            }
+
 			const challenge = incomingChallengeList[index];
 
 			const bodyContent = { ...challenge };
@@ -326,7 +357,7 @@ const CourseGames = () => {
 									</Stack>
 								</AccordionSummary>
 								<AccordionDetails>
-									<Stack direction="column" spacing={2} alignItems="start">
+									<Stack direction="column" spacing={2} alignItems="start" key={gameList}>
 										<Typography variant="p">Active Games: {gameData.totalActive}</Typography>
 										<Typography variant="p">Completed Games: {gameData.totalComplete}</Typography>
 										<Typography variant="p">Total Games: {gameData.totalGames}</Typography>

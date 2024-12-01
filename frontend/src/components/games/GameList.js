@@ -24,6 +24,20 @@ const Game = ({ game, history, refreshChallenges, refreshGames }) => {
     const sendRematch = async () => {
 
         try {
+            const countRes = await fetch(`/api/course/${game.courseId}/getUserGameCount/${user.userId}`, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            })
+
+            const countJson = await countRes.json()
+
+            if (countJson.totalActive >= countJson.gameLimit) {
+                alert('Too many games! Could not rematch!')
+                return;
+            }
 
             const response = await fetch(`/api/game/${game.gameId}/rematch`, {
                 method: 'POST',

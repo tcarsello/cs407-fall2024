@@ -46,11 +46,10 @@ const createCourse = async (req, res) => {
 }
 
 const getCourse = async (req, res) => {
-    try {
+	try {
+		const { courseId } = req.params;
 
-        const { courseId } = req.params
-
-        const queryString = `
+		const queryString = `
             SELECT
                 unionq."userId",
                 unionq."courseId"
@@ -92,31 +91,30 @@ const getCourse = async (req, res) => {
                 unionq."userId"= :userId
                 AND unionq."courseId"= :courseId
             LIMIT 1;
-        `
+        `;
 
-        const results = await sequelize.query(queryString, {
-            replacements: {
-                courseId,
-                userId: req.user.userId
-            },
-            type: Sequelize.QueryTypes.SELECT
-        })
+		const results = await sequelize.query(queryString, {
+			replacements: {
+				courseId,
+				userId: req.user.userId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
 
-        if (results.length <= 0) throw 'Course not found for such user'
+		if (results.length <= 0) throw "Course not found for such user";
 
-        const course = await Course.findOne({
-            where: {
-                courseId: results[0].courseId
-            }
-        })
+		const course = await Course.findOne({
+			where: {
+				courseId: results[0].courseId,
+			},
+		});
 
-        res.status(200).json(course.dataValues)
-
-    } catch (err) {
-        console.error(err)
-        res.status(400).json({ error: err })
-    }
-}
+		res.status(200).json(course.dataValues);
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
 
 const deleteCourse = async (req, res) => {
     try {
@@ -611,6 +609,39 @@ const getCourseTopicsWithStats = async (req, res) => {
 		});
 
 		res.status(200).json({ topics });
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
+const getUserGameCount = async (req, res) => {
+	try {
+		const { courseId, userId } = req.params;
+
+		const queryString = `
+            SELECT
+                COUNT("g"."gameId") AS "totalGames",
+                SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 1 ELSE 0 END) AS "totalActive",
+                SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 0 ELSE 1 END) AS "totalComplete",
+                "c"."gameLimit" AS "gameLimit"
+            FROM "game" AS "g"
+            JOIN "course" AS "c" ON "g"."courseId" = "c"."courseId"
+            WHERE
+                "g"."courseId" = :courseId
+                AND ("g"."playerOneId" = :userId OR "g"."playerTwoId" = :userId)
+            GROUP BY
+                "c"."gameLimit"
+        `;
+		const gameData = await sequelize.query(queryString, {
+			replacements: {
+				courseId,
+				userId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+		res.status(200).json(gameData[0]);
 	} catch (err) {
 		console.error(err);
 		res.status(400).json({ error: err });
@@ -1142,6 +1173,7 @@ module.exports = {
     getCoursePicture,
     getCourseTopics,
     getCourseTopicsWithStats,
+    getUserGameCount,
     getGameStatistics,
     createTerm,
     getCourseTerms,

@@ -36,6 +36,7 @@ const CourseDetails = ({ course, onDelete }) => {
     const [leaveCoursePopupEnabled, setLeaveCoursePopupEnabled] = useState(false)
     const [coursePictureUrl, setCoursePictureUrl] = useState()
     const [isHovered, setIsHovered] = useState(false);
+    const [myGames, setMyGames] = useState(0);
 
     const handleDeleteCourse = async () => {
         const response = await fetch(`/api/course/${course.courseId}`, {
@@ -84,8 +85,25 @@ const CourseDetails = ({ course, onDelete }) => {
             }
         }
 
+        const fetchMyGames = async () => {
+            try {
+                const response = await fetch(`/api/course/${course.courseId}/getUserGameCount/${user.userId}`);
+
+                if (!response.ok) {
+                    console.error("Failed to fetch game count");
+                    return;
+                }
+
+                const json = await response.json()
+                setMyGames(json.totalActive)
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
         if (user && course) {
             fetchCourseImage()
+            fetchMyGames()
         }
 
     }, [])
@@ -197,7 +215,7 @@ const CourseDetails = ({ course, onDelete }) => {
                                 <Chip 
                                     size="small"
                                     icon={<GamepadIcon size={14} />}
-                                    label={`${0} / ${course.gameLimit} Games`}
+                                    label={`${myGames} / ${course.gameLimit} Games`}
                                     variant="outlined"
                                     color={course.gameLimit === 0 ? "error" : "default"}
                                 />
