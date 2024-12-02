@@ -35,7 +35,7 @@ const demoteAssistant = async (req, res) => {
             })
         }
 
-        res.status(200).json({messsage: 'User Promoted'})
+        res.status(200).json({messsage: 'User Demoted'})
     } catch (err) {
         console.error(err)
         res.status(400).json({error: err})

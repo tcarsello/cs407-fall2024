@@ -135,7 +135,6 @@ const CourseGames = () => {
 
 				const json = await response.json();
 				setGameData(json);
-				console.log(json);
 			} catch (err) {
 				console.error(err);
 			}

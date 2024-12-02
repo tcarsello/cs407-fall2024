@@ -9,7 +9,7 @@ const { createCourse, getCourse, deleteCourse, updateCourse,
     importCourseQuestions, getCourseGamesWithNames, importCourseTerms,
     exportCourseTerms , getCourseAnnouncementsPublic, getCourseAnnouncementsPrivate, 
     getCourseTopicsWithStats,
-    getGameStatistics,
+    getGameStatistics, getCourseAssistants,
     getUserGameCount} = require('../controllers/courseController')
 const { createInvite } = require('../controllers/courseInviteController')
 
@@ -46,6 +46,7 @@ router.get("/:courseId/getUserGameCount/:userId", getUserGameCount);
 router.get('/:courseId/courseGamesWithNames', requireAuth, getCourseGamesWithNames)
 router.get('/:courseId/announcements/public', requireAuth, getCourseAnnouncementsPublic)
 router.get('/:courseId/announcements/private', requireAuth, getCourseAnnouncementsPrivate)
+router.get('/:courseId/assistants', requireAuth, getCourseAssistants)
 
 router.post('/:courseId/export/questions', requireAuth, exportCourseQuestions)
 router.post('/:courseId/export/terms', requireAuth, exportCourseTerms)

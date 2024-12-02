@@ -12,7 +12,8 @@ const createAnnouncement = async (req, res) => {
         const announcement = await Announcement.create({
             courseId,
             title,
-            body
+            body,
+            public
         })
 
         res.status(200).json({announcement})
@@ -67,11 +68,11 @@ const updateAnnouncement = async (req, res) => {
 
 const deleteAnnouncement = async (req, res) => {
     try {
-        const { annoucementId } = req.params
+        const { announcementId } = req.params
 
         await Announcement.destroy({
             where: {
-                annoucementId
+                announcementId
             }
         })
 

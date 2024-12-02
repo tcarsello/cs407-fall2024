@@ -10,6 +10,7 @@ const Question = require('../models/questionModel')
 const Post = require('../models/postModel')
 const PostUpvote = require('../models/postUpvoteModel')
 const Answer = require('../models/answerModel')
+const Assistant = require('../models/assistantModel')
 
 const Buffer = require('buffer').Buffer
 const path = require('path')
@@ -1139,12 +1140,27 @@ const getCourseAnnouncementsPrivate = async (req, res) => {
     try {
         const { courseId } = req.params
 
-        const announcements = await Announcement.findAll({
+        const course = await Course.findOne({
+            where: { courseId },
+        })
+
+        const assistant = await Assistant.findOne({
             where: {
-                courseId,
-                public: false
+                courseId: courseId,
+                userId: req.user.userId,
             }
         })
+
+        let announcements = []
+
+        if (course.coordinatorId == req.user.userId || assistant) {
+            announcements = await Announcement.findAll({
+                where: {
+                    courseId,
+                    public: false
+                }
+            })
+        }
 
         res.status(200).json({announcements})
     } catch (err) {
@@ -1153,7 +1169,38 @@ const getCourseAnnouncementsPrivate = async (req, res) => {
     }
 }
 
+const getCourseAssistants = async (req, res) => {
+    try {
 
+        const { courseId } = req.params
+
+        const queryString = `
+            SELECT
+                u."userId",
+                u."firstName",
+                u."lastName"
+            FROM
+                assistant a
+                INNER JOIN course c on c."courseId"=a."courseId"
+                INNER JOIN "user" u on u."userId"=a."userId"
+            WHERE
+                a."courseId"=:courseId
+            ;
+        `
+
+		const assistants = await sequelize.query(queryString, {
+			replacements: {
+				courseId,
+			},
+			type: Sequelize.QueryTypes.SELECT,
+		});
+
+        res.status(200).json({ assistants })
+    } catch (err) {
+        console.error(err)
+        res.status(400).json({error: err})
+    }
+}
 
 module.exports = {
     createCourse,
@@ -1186,4 +1233,5 @@ module.exports = {
     importCourseTerms,
     getCourseAnnouncementsPublic,
     getCourseAnnouncementsPrivate,
+    getCourseAssistants,
 }
