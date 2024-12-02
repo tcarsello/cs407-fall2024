@@ -53,7 +53,7 @@ const CourseMembers = () => {
     const [inviteList, setInviteList] = useState([])
     const [memberList, setMemberList] = useState([])
     const [invitesExpanded, setInvitesExpanded] = useState(true);
-    const [membersExpanded, setMembersExpanded] = useState(true);
+    const [assistantList, setAssistantList] = useState([])
 
     const [inviteUserEnabled, setInviteUserEnabled] = useState(false)
     const [inviteUserError, setInviteUserError] = useState()
@@ -63,6 +63,9 @@ const CourseMembers = () => {
 
     const [addFriendEnabled, setAddFriendEnabled] = useState(false)
     const [addFriendId, setAddFriendId] = useState(-1)
+
+    const [promoteUserEnabled, setPromoteUserEnabled] = useState(false)
+    const [promoteUserId, setPromoteUserId] = useState(-1)
 
     const resetInviteForm = useCallback(() => {
         setInviteUserEnabled(false);
@@ -74,6 +77,11 @@ const CourseMembers = () => {
         setAddFriendEnabled(false);
         setAddFriendId(-1);
     }, []);
+
+    const resetPromoteForm = useCallback(() => {
+        setPromoteUserEnabled(false)
+        setPromoteUserId(-1)
+    })
 
     useEffect(() => {
 
@@ -113,9 +121,29 @@ const CourseMembers = () => {
             }
         }
 
+        const fetchAssistants = async () => {
+            try {
+
+                const response = await fetch(`/api/course/${course.courseId}/assistants`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                })
+
+                const json = await response.json()
+                setAssistantList(json.assistants)
+
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
         if (user && course) {
             fetchInvites()
             fetchMembers()
+            fetchAssistants()
         }
 
     }, [user, course])
@@ -158,6 +186,54 @@ const CourseMembers = () => {
 
         setAddFriendEnabled(false)
         setAddFriendId(-1)
+    }
+
+    const handlePromoteAssistant = async (e) => {
+        e.preventDefault()
+        try {
+
+            const response = await fetch(`/api/assistant/promote`, {
+                method: 'POST',
+                body: JSON.stringify({
+                        courseId: course.courseId,
+                        userId: promoteUserId,
+                    }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+
+            if (response.ok && !assistantList.some(assistant => assistant.userId === promoteUserId)) {
+                setAssistantList(prev => [...prev, memberList.find(member => member.userId === promoteUserId)])
+            }
+
+        } catch (err) {
+            console.error(err)
+        }
+
+        setPromoteUserEnabled(false)
+        setPromoteUserId(-1)
+    }
+
+    const handleDemoteAssistant = async (userId) => {
+        try {
+
+            await fetch(`/api/assistant/demote`, {
+                method: 'POST',
+                body: JSON.stringify({
+                        courseId: course.courseId,
+                        userId: userId,
+                    }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     return (
@@ -225,7 +301,7 @@ const CourseMembers = () => {
                         </Paper>
                     )}
 
-                    <Paper sx={{ p: 3 }}>
+                    <Paper sx={{ p: 3, mb: 3 }}>
                         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
                             <Users size={24} color="#1976d2" />
                             <Typography variant="h5" fontWeight="medium">
@@ -245,6 +321,46 @@ const CourseMembers = () => {
                             ))}
                         </List>
                     </Paper>
+
+                    {user.userId === course.coordinatorId && (
+                        <Paper sx={{ p: 3, mb: 3}}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Mail size={24} color="#1976d2" />
+                                    <Typography variant="h5" fontWeight="medium">
+                                        Teaching Assistants ({assistantList ? assistantList.length : 0})
+                                    </Typography>
+                                </Stack>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<UserPlus />}
+                                    onClick={() => setPromoteUserEnabled(true)}
+                                    sx={{
+                                        background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                        color: 'white'
+                                    }}
+                                >
+                                    Promote Assistant
+                                </Button>
+                            </Stack>
+
+                            <List>
+                                {assistantList?.map((member) => (
+                                    <ListItem key={member.userId}>
+                                        <MemberDetails
+                                            member={member}
+                                            onDelete={() => {
+                                                setAssistantList(prev => prev.filter(assistant => assistant.userId !== member.userId))
+                                                handleDemoteAssistant(member.userId)
+                                            }}
+                                            canKick={false} 
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+
+                        </Paper>
+                    )}
                 </Grid>
 
                 {/* Friends Sidebar */}
@@ -399,6 +515,63 @@ const CourseMembers = () => {
                     </DialogActions>
                 </form>
             </Dialog>
+
+            <Dialog 
+                open={promoteUserEnabled} 
+                onClose={resetPromoteForm}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle sx={{ 
+                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                    color: 'white'
+                }}>
+                    Promote a Teaching Assistant
+                </DialogTitle>
+                <form onSubmit={handlePromoteAssistant}>
+                    <DialogContent sx={{ pt: 3 }}>
+                        <FormControl fullWidth>
+                            <InputLabel>Select User</InputLabel>
+                            <Select
+                                value={promoteUserId}
+                                onChange={(e) => setPromoteUserId(e.target.value)}
+                                label="Select User"
+                                required
+                            >
+                                <MenuItem value={-1}><em>None</em></MenuItem>
+                                {memberList
+                                    ?.filter(member => 
+                                        member.userId !== user.userId && 
+                                        !assistantList.some(assistant => assistant.userId === member.userId)
+                                    )
+                                    .map((member) => (
+                                        <MenuItem key={member.userId} value={member.userId}>
+                                            {`${member.firstName} ${member.lastName}`}
+                                        </MenuItem>
+                                    ))
+                                }
+                            </Select>
+                        </FormControl>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={resetPromoteForm}>Cancel</Button>
+                        <Button 
+                            type="submit"
+                            variant="contained"
+                            disabled={promoteUserId === -1}
+                            sx={{
+                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                '&:hover': {
+                                    background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
+                                }
+                            }}
+                        >
+                            Promote User
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+ 
         </Container>
     );
 };

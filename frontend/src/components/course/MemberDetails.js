@@ -2,12 +2,16 @@ import { GrFormClose } from 'react-icons/gr'
 import { useCourseContext } from '../../context/CourseContext'
 import { useAuthContext } from '../../hooks/UseAuthContext'
 
-const MemberDetails = ({ member, onDelete }) => {
+const MemberDetails = ({ member, onDelete, canKick = true }) => {
 
     const { user } = useAuthContext()
     const { course } = useCourseContext()
 
     const handleKick = () => {
+        if (!canKick) {
+            onDelete()
+            return
+        }
 
         try {
 
