@@ -19,8 +19,11 @@ import {
   DialogContent,
   DialogActions,
   FormControlLabel,
+  Tooltip,
+  Grid2,
 } from '@mui/material';
 import { Delete, Edit, Close, Add } from '@mui/icons-material';
+import { MessageCircleMore } from 'lucide-react';
 
 function perc2color(perc) {
 	var r,
@@ -48,6 +51,8 @@ const QuestionDetails = ({ question, hasImage, topics, onDelete, refresh }) => {
   const [formData, setFormData] = useState({ ...question, topicName: topics.find(topic => topic.topicId === question.topicId)?.topicName || 'No Topic' });
   const [formError, setFormError] = useState();
   const [newAnswers, setNewAnswers] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [openFeedbackDialog, setFeedbackDialog] = useState(false);
 
   useEffect(() => {
     const fetchAnswers = async () => {
@@ -69,6 +74,26 @@ const QuestionDetails = ({ question, hasImage, topics, onDelete, refresh }) => {
         console.error(err);
       }
     };
+
+    const fetchFeedback = async () => {
+			try {
+				const response = await fetch(`/api/question/${question.questionId}/feedback`, {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${user.token}`,
+					},
+				});
+
+        if (response.ok) {
+          const json = await response.json();
+          setFeedback(json.feedback);
+          console.log(json.feedback);
+        }
+			} catch (err) {
+        console.error(err);
+      }
+		};
 
     const fetchPicture = async () => {
       if (hasImage) {
@@ -94,6 +119,7 @@ const QuestionDetails = ({ question, hasImage, topics, onDelete, refresh }) => {
 
     fetchAnswers();
     fetchPicture();
+    fetchFeedback();
   }, [question, user, hasImage]);
 
   const handleDeleteQuestion = async () => {
@@ -185,159 +211,209 @@ const QuestionDetails = ({ question, hasImage, topics, onDelete, refresh }) => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        {formData.totalAnswers > 0 && <Box sx={{mb: 2}}>
-            <Typography variant="h8" sx={{color: perc2color(Math.round(100 * (formData.correctAnswers / formData.totalAnswers)))}}>
-                {Math.round(100 * (formData.correctAnswers / formData.totalAnswers))}% Correct
-            </Typography>
-        </Box>}
-        <Box component="form" onSubmit={handleEditSubmit}>
-          <TextField
-            fullWidth
-            label="Question"
-            name="text"
-            value={formData.text}
-            onChange={handleFormChange}
-            disabled={!isEditing}
-            variant={isEditing ? "outlined" : "filled"}
-            sx={{ mb: 2 }}
-          />
+		<Card>
+			<CardContent>
+				<Grid2 container alignContent="center" sx={{ mb: 2 }}>
+					{formData.totalAnswers > 0 && (
+						<Typography
+							variant="h8"
+							sx={{ color: perc2color(Math.round(100 * (formData.correctAnswers / formData.totalAnswers))) }}>
+							{Math.round(100 * (formData.correctAnswers / formData.totalAnswers))}% Correct
+						</Typography>
+					)}
+					{feedback.length > 0 && (
+						<Tooltip title="View Question Feedback">
+							<IconButton
+								onClick={() => setFeedbackDialog(true)}
+								sx={{
+									bgcolor: "background.paper",
+									boxShadow: 1,
+									"&:hover": { bgcolor: "grey.100" },
+									marginLeft: "auto",
+								}}>
+								<MessageCircleMore />
+							</IconButton>
+						</Tooltip>
+					)}
+				</Grid2>
+				<Box component="form" onSubmit={handleEditSubmit}>
+					<TextField
+						fullWidth
+						label="Question"
+						name="text"
+						value={formData.text}
+						onChange={handleFormChange}
+						disabled={!isEditing}
+						variant={isEditing ? "outlined" : "filled"}
+						sx={{ mb: 2 }}
+					/>
 
-          <TextField
-            fullWidth
-            label="Topic"
-            name="topicName"
-            value={formData.topicName}
-            onChange={handleFormChange}
-            disabled={!isEditing}
-            variant={isEditing ? "outlined" : "filled"}
-            sx={{ mb: 2 }}
-          />
-        
-            <FormControl 
-                disabled={!isEditing}
-                //variant={isEditing ? "outlined" : "filled"}
-                component="fieldset"
-                sx={{ mb: 2 }}
-            >  
-              <FormLabel component="legend">Question Difficulty</FormLabel>
-              <RadioGroup
-                row
-                name='difficulty'
-                value={formData.difficulty}
-                onChange={handleFormChange}
-              >
-                <FormControlLabel value="easy" control={<Radio />} label="Easy" />
-                <FormControlLabel value="regular" control={<Radio />} label="Regular" />
-                <FormControlLabel value="hard" control={<Radio />} label="Hard" />
-              </RadioGroup>
-            </FormControl>
+					<TextField
+						fullWidth
+						label="Topic"
+						name="topicName"
+						value={formData.topicName}
+						onChange={handleFormChange}
+						disabled={!isEditing}
+						variant={isEditing ? "outlined" : "filled"}
+						sx={{ mb: 2 }}
+					/>
 
-          {pictureUrl && (
-            <Box
-              sx={{
-                mb: 2,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                height: '200px',
-                bgcolor: 'grey.200',
-                borderRadius: '4px',
-                overflow: 'scroll',
-              }}
-            >
-              <img
-                src={pictureUrl}
-                alt="Question"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                  objectPosition: 'center',
-                }}
-              />
-            </Box>
-          )}
+					<FormControl
+						disabled={!isEditing}
+						//variant={isEditing ? "outlined" : "filled"}
+						component="fieldset"
+						sx={{ mb: 2 }}>
+						<FormLabel component="legend">Question Difficulty</FormLabel>
+						<RadioGroup row name="difficulty" value={formData.difficulty} onChange={handleFormChange}>
+							<FormControlLabel value="easy" control={<Radio />} label="Easy" />
+							<FormControlLabel value="regular" control={<Radio />} label="Regular" />
+							<FormControlLabel value="hard" control={<Radio />} label="Hard" />
+						</RadioGroup>
+					</FormControl>
 
-          <Typography variant="h6" sx={{ mb: 1 }}>Answer Choices:</Typography>
-          {(isEditing ? newAnswers : answerList).map((answer, index) => (
-            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={answer.isCorrect}
-                    onChange={(e) => handleAnswerChange(index, "isCorrect", e.target.checked)}
-                    disabled={!isEditing}
-                  />
-                }
-                label=""
-              />
-              <TextField
-                fullWidth
-                value={answer.text}
-                onChange={(e) => handleAnswerChange(index, "text", e.target.value)}
-                disabled={!isEditing}
-                variant={isEditing ? "outlined" : "filled"}
-              />
-              {isEditing && (
-                <IconButton onClick={() => removeAnswer(index)}>
-                  <Close />
-                </IconButton>
-              )}
+					{pictureUrl && (
+						<Box
+							sx={{
+								mb: 2,
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								width: "100%",
+								height: "200px",
+								bgcolor: "grey.200",
+								borderRadius: "4px",
+								overflow: "scroll",
+							}}>
+							<img
+								src={pictureUrl}
+								alt="Question"
+								style={{
+									maxWidth: "100%",
+									maxHeight: "100%",
+									objectFit: "contain",
+									objectPosition: "center",
+								}}
+							/>
+						</Box>
+					)}
+
+					<Typography variant="h6" sx={{ mb: 1 }}>
+						Answer Choices:
+					</Typography>
+					{(isEditing ? newAnswers : answerList).map((answer, index) => (
+						<Box key={index} sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={answer.isCorrect}
+										onChange={(e) => handleAnswerChange(index, "isCorrect", e.target.checked)}
+										disabled={!isEditing}
+									/>
+								}
+								label=""
+							/>
+							<TextField
+								fullWidth
+								value={answer.text}
+								onChange={(e) => handleAnswerChange(index, "text", e.target.value)}
+								disabled={!isEditing}
+								variant={isEditing ? "outlined" : "filled"}
+							/>
+							{isEditing && (
+								<IconButton onClick={() => removeAnswer(index)}>
+									<Close />
+								</IconButton>
+							)}
+						</Box>
+					))}
+					{isEditing && (
+						<Button startIcon={<Add />} onClick={addAnswer} sx={{ mt: 1 }}>
+							Add Answer Choice
+						</Button>
+					)}
+
+					{formError && (
+						<Typography color="error" sx={{ mt: 2 }}>
+							{formError}
+						</Typography>
+					)}
+				</Box>
+			</CardContent>
+			<CardActions>
+				{isEditing ? (
+					<>
+						<Button variant="contained" color="primary" type="submit" onClick={handleEditSubmit}>
+							Save Changes
+						</Button>
+						<Button variant="outlined" onClick={toggleEdit}>
+							Cancel
+						</Button>
+					</>
+				) : (
+					<>
+						<Button startIcon={<Edit />} onClick={toggleEdit}>
+							Edit
+						</Button>
+						<Button startIcon={<Delete />} color="error" onClick={() => setDeleteQuestionDialogEnabled(true)}>
+							Delete
+						</Button>
+					</>
+				)}
+			</CardActions>
+
+			<Dialog open={deleteQuestionDialogEnabled} onClose={() => setDeleteQuestionDialogEnabled(false)}>
+				<DialogTitle>Delete Question</DialogTitle>
+				<DialogContent>Are you sure you want to delete this question?</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setDeleteQuestionDialogEnabled(false)}>Cancel</Button>
+					<Button
+						onClick={() => {
+							setDeleteQuestionDialogEnabled(false);
+							handleDeleteQuestion();
+						}}
+						color="error">
+						Delete
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			<Dialog
+				open={openFeedbackDialog}
+				onClose={() => {
+					setFeedbackDialog(false);
+				}}
+				fullWidth
+				maxWidth="sm">
+				<DialogTitle
+					sx={{
+						background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+						color: "white",
+					}}>
+					Question Feedback
+				</DialogTitle>
+				<DialogContent sx={{ pt: 3 }}>
+          {feedback.map((f) => (
+            <Box>
+              <Card sx={{mt:3, py: 3, px: 2}}>
+                <Typography component={"p"} sx={{wordBreak: "break-word"}}>
+                  {f.content}
+                </Typography>
+              </Card>
             </Box>
           ))}
-          {isEditing && (
-            <Button startIcon={<Add />} onClick={addAnswer} sx={{ mt: 1 }}>
-              Add Answer Choice
-            </Button>
-          )}
-
-          {formError && (
-            <Typography color="error" sx={{ mt: 2 }}>{formError}</Typography>
-          )}
-        </Box>
-      </CardContent>
-      <CardActions>
-        {isEditing ? (
-          <>
-            <Button variant="contained" color="primary" type="submit" onClick={handleEditSubmit}>
-              Save Changes
-            </Button>
-            <Button variant="outlined" onClick={toggleEdit}>
-              Cancel
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button startIcon={<Edit />} onClick={toggleEdit}>
-              Edit
-            </Button>
-            <Button startIcon={<Delete />} color="error" onClick={() => setDeleteQuestionDialogEnabled(true)}>
-              Delete
-            </Button>
-          </>
-        )}
-      </CardActions>
-
-      <Dialog open={deleteQuestionDialogEnabled} onClose={() => setDeleteQuestionDialogEnabled(false)}>
-        <DialogTitle>Delete Question</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete this question?
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteQuestionDialogEnabled(false)}>Cancel</Button>
-          <Button onClick={() => {
-            setDeleteQuestionDialogEnabled(false);
-            handleDeleteQuestion();
-          }} color="error">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Card>
-  );
+				<DialogActions sx={{ p: 3 }}>
+					<Button
+						onClick={() => {
+							setFeedbackDialog(false);
+						}}>
+						Close
+					</Button>
+				</DialogActions>
+			</Dialog>
+		</Card>
+	);
 };
 
 export default QuestionDetails;

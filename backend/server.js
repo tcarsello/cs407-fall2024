@@ -24,6 +24,7 @@ require('./models/friendshipModel')
 require('./models/roundQuestionModel')
 require('./models/announcementModel')
 require('./models/assistantModel')
+require('./models/feedbackModel')
 
 const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')

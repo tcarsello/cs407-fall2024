@@ -9,6 +9,7 @@ const Answer = require('../models/answerModel')
 const sequelize = require('../database')
 const { Sequelize } = require('sequelize')
 const s3 = require('../objectstore')
+const Feedback = require('../models/feedbackModel')
 
 const Buffer = require('buffer').Buffer
 
@@ -254,8 +255,66 @@ const getQuestionPicture = async (req, res) => {
         console.error(err)
         res.status(400).json({ error: err })
     }
+}
 
-} 
+const submitFeedback = async (req, res) => {
+	try {
+		const { questionId } = req.params;
+		const { userId, feedback } = req.body;
+
+		if (!questionId) {
+			throw Error("Question Id Required");
+		}
+
+		if (!userId) {
+			throw Error("User Id Required");
+		}
+
+		if (!feedback) {
+			throw Error("Feedback Required");
+		}
+
+		await Feedback.create({
+			userId,
+			questionId,
+			content: feedback,
+		});
+
+		return res.status(201).json({
+			message: "Feedback created successfully",
+		});
+	} catch (err) {
+		if (err.name && err.name === "SequelizeUniqueConstraintError") {
+			return res.status(400).json({
+				error: "Feedback already submitted for this question!",
+			});
+		} else {
+            console.error(err);
+        }
+		res.status(400).json({ error: err });
+	}
+};
+
+const getFeedback = async (req, res) => {
+    try {
+        const { questionId } = req.params;
+
+        if (!questionId) {
+            throw Error("Question Id Required")
+        }
+
+        const feedback = await Feedback.findAll({
+			where: { questionId: questionId },
+			order: [["createdAt", "DESC"]],
+		});
+
+        res.status(200).json({feedback})
+
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({error: err})
+    }
+}
 
 module.exports = {
     createQuestion,
@@ -264,4 +323,6 @@ module.exports = {
     deleteQuestion,
     getQuestionAnswers,
     getQuestionPicture,
+    submitFeedback,
+    getFeedback,
 }

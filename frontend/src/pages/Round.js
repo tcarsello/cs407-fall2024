@@ -9,14 +9,20 @@ import {
     Button,
     Box,
     Stack,
-    LinearProgress,
     IconButton,
     Card,
     CardContent,
     Fade,
-    Slide
+    Slide,
+    Grid2,
+    Tooltip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField
 } from '@mui/material';
-import { ArrowLeftCircle, HelpCircle } from 'lucide-react';
+import { ArrowLeftCircle, HelpCircle, MessageCircleMore } from 'lucide-react';
 
 const Round = () => {
     return (
@@ -42,6 +48,10 @@ const RoundComponent = () => {
     const [selectedAnswerId, setSelectedAnswerId] = useState()
     const [correctAnswerId, setCorrectAnswerId] = useState()
     const [submitted, setSubmitted] = useState(false)
+
+    const [openFeedbackDialog, setFeedbackDialog] = useState(false)
+    const [feedbackError, setFeedbackError] = useState();
+    const [feedback, setFeedback] = useState();
 
     useEffect(() => {
 
@@ -84,6 +94,43 @@ const RoundComponent = () => {
 
         setSelectedAnswerId(answer.answerId)
     }
+
+    const handleFeedbackSubmit = async () => {
+		try {
+			if (!feedback) {
+				setFeedbackError("Feedback must not be empty!");
+				return;
+			}
+
+			const bodyContent = {
+				userId: user.userId,
+                feedback: feedback
+			};
+
+			const response = await fetch(`/api/question/${questionId}/submitFeedback`, {
+				method: "POST",
+				body: JSON.stringify(bodyContent),
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${user.token}`,
+				},
+			});
+
+			const json = await response.json();
+
+			if (!response.ok) {
+				setFeedbackError(json.error || "Could not submit feedback");
+				return;
+			}
+
+			setFeedbackDialog(false);
+			setFeedbackError();
+			alert("Feedback Sent!");
+		} catch (err) {
+			setFeedbackError(err);
+			console.error(err);
+		}
+	};
 
     const handleSubmit = async () => {
 
@@ -129,104 +176,171 @@ const RoundComponent = () => {
         setSelectedAnswerId()
         setCorrectAnswerId()
         setSubmitted(false)
+		setFeedback()
+		setFeedbackError()
     }
 
     return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
-            {/* Header */}
-            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <IconButton 
-                    onClick={() => navigate(game ? `/game/${game.gameId}` : '/')}
-                    sx={{ 
-                        bgcolor: 'background.paper',
-                        boxShadow: 1,
-                        '&:hover': { bgcolor: 'grey.100' }
-                    }}
-                >
-                    <ArrowLeftCircle />
-                </IconButton>
-                <Typography variant="h4" fontWeight="bold">
-                    Round {roundId}
-                </Typography>
-            </Box>
+		<Container maxWidth="md" sx={{ py: 4 }}>
+			{/* Header */}
+			<Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 2 }}>
+				<IconButton
+					onClick={() => navigate(game ? `/game/${game.gameId}` : "/")}
+					sx={{
+						bgcolor: "background.paper",
+						boxShadow: 1,
+						"&:hover": { bgcolor: "grey.100" },
+					}}>
+					<ArrowLeftCircle />
+				</IconButton>
+				<Typography variant="h4" fontWeight="bold">
+					Round {roundId}
+				</Typography>
+			</Box>
 
-            {(game && course) && (
-                <Fade in={true}>
-                    <Paper 
-                        elevation={3} 
-                        sx={{
-                            borderRadius: 3,
-                            overflow: 'hidden'
-                        }}
-                    >
-                        {/* Question Section */}
-                        <Box 
-                            sx={{
-                                p: 4,
-                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-                                color: 'white'
-                            }}
-                        >
-                            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                                <HelpCircle size={32} />
-                                <Typography variant="h5" fontWeight="medium">
-                                    Question
-                                </Typography>
-                            </Stack>
-                            <Typography variant="h6">
-                                {questionText}
-                            </Typography>
-                        </Box>
+			{game && course && (
+				<Fade in={true}>
+					<Paper
+						elevation={3}
+						sx={{
+							borderRadius: 3,
+							overflow: "hidden",
+						}}>
+						{/* Question Section */}
+						<Box
+							sx={{
+								p: 4,
+								background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+								color: "white",
+							}}>
+							<Grid2 container alignItems="center">
+								<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+									<HelpCircle size={32} />
+									<Typography variant="h5" fontWeight="medium">
+										Question
+									</Typography>
+								</Stack>
+								<Tooltip title="Submit Feedback">
+									<IconButton
+										onClick={() => setFeedbackDialog(true)}
+										sx={{
+											bgcolor: "background.paper",
+											boxShadow: 1,
+											"&:hover": { bgcolor: "grey.100" },
+											marginLeft: "auto",
+											title: "Submit Feedback",
+										}}>
+										<MessageCircleMore />
+									</IconButton>
+								</Tooltip>
+							</Grid2>
+							<Typography variant="h6">{questionText}</Typography>
+						</Box>
 
-                        {/* Answer Options */}
-                        <Box sx={{ p: 4 }}>
-                            <Stack spacing={2}>
-                                {answerList && answerList.map((answer, index) => (
-                                    <Slide 
-                                        direction="right" 
-                                        in={true} 
-                                        style={{ transitionDelay: `${index * 100}ms` }}
-                                        key={index}
-                                    >
-                                        <div>
-                                            <AnswerOption
-                                                answer={answer}
-                                                selected={selectedAnswerId === answer.answerId}
-                                                correct={submitted && correctAnswerId === answer.answerId}
-                                                incorrect={submitted && correctAnswerId !== selectedAnswerId && selectedAnswerId === answer.answerId}
-                                                handleSelect={handleSelect}
-                                            />
-                                        </div>
-                                    </Slide>
-                                ))}
-                            </Stack>
+						{/* Answer Options */}
+						<Box sx={{ p: 4 }}>
+							<Stack spacing={2}>
+								{answerList &&
+									answerList.map((answer, index) => (
+										<Slide
+											direction="right"
+											in={true}
+											style={{ transitionDelay: `${index * 100}ms` }}
+											key={index}>
+											<div>
+												<AnswerOption
+													answer={answer}
+													selected={selectedAnswerId === answer.answerId}
+													correct={submitted && correctAnswerId === answer.answerId}
+													incorrect={
+														submitted &&
+														correctAnswerId !== selectedAnswerId &&
+														selectedAnswerId === answer.answerId
+													}
+													handleSelect={handleSelect}
+												/>
+											</div>
+										</Slide>
+									))}
+							</Stack>
 
-                            <Box sx={{ mt: 4, textAlign: 'center' }}>
-                                <Button
-                                    variant="contained"
-                                    size="large"
-                                    onClick={!submitted ? handleSubmit : advanceQuestion}
-                                    disabled={!selectedAnswerId}
-                                    sx={{
-                                        px: 6,
-                                        py: 1.5,
-                                        borderRadius: 2,
-                                        background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-                                        '&:hover': {
-                                            background: 'linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)'
-                                        }
-                                    }}
-                                >
-                                    {!submitted ? 'Submit Answer' : 'Next Question'}
-                                </Button>
-                            </Box>
-                        </Box>
-                    </Paper>
-                </Fade>
-            )}
-        </Container>
-    );
+							<Box sx={{ mt: 4, textAlign: "center" }}>
+								<Button
+									variant="contained"
+									size="large"
+									onClick={!submitted ? handleSubmit : advanceQuestion}
+									disabled={!selectedAnswerId}
+									sx={{
+										px: 6,
+										py: 1.5,
+										borderRadius: 2,
+										background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+										"&:hover": {
+											background: "linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)",
+										},
+									}}>
+									{!submitted ? "Submit Answer" : "Next Question"}
+								</Button>
+							</Box>
+						</Box>
+					</Paper>
+				</Fade>
+			)}
+			{/* Feedback Dialog */}
+			<Dialog
+				open={openFeedbackDialog}
+				onClose={() => {
+					setFeedbackDialog(false);
+				}}
+				fullWidth
+				maxWidth="sm">
+				<DialogTitle
+					sx={{
+						background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+						color: "white",
+					}}>
+					Submit Question Feedback
+				</DialogTitle>
+				<Box>
+					<DialogContent sx={{ pt: 3 }}>
+						<TextField
+							multiline={true}
+							minRows={4}
+							maxRows={8}
+							fullWidth
+							label="Feedback"
+							error={!!feedbackError}
+							helperText={feedbackError}
+							value={feedback}
+							onChange={(e) => setFeedback(e.target.value)}
+						/>
+					</DialogContent>
+					<DialogActions sx={{ p: 3 }}>
+						<Button
+							onClick={() => {
+								setFeedbackDialog(false);
+								setFeedbackError();
+							}}>
+							Cancel
+						</Button>
+						<Button
+							onClick={handleFeedbackSubmit}
+							variant="contained"
+							sx={{
+								background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+								"&:hover": {
+									background: "linear-gradient(45deg, #1976D2 30%, #5E35B1 90%)",
+								},
+							}}>
+							Submit
+						</Button>
+					</DialogActions>
+				</Box>
+			</Dialog>
+		</Container>
+	);
 };
+
 
 const AnswerOption = ({ answer, selected, correct, incorrect, handleSelect }) => {
     const getBackgroundColor = () => {
