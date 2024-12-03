@@ -642,6 +642,8 @@ const getUserGameCount = async (req, res) => {
 			type: Sequelize.QueryTypes.SELECT,
 		});
 
+        if (!gameData[0]) gameData[0] = {totalGames: 0}
+
 		res.status(200).json(gameData[0]);
 	} catch (err) {
 		console.error(err);

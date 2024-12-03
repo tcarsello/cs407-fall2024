@@ -264,6 +264,7 @@ const CourseGames = () => {
 
             const countJson = await countRes.json();
 
+            console.log('hi')
             if (countJson.totalActive >= countJson.gameLimit) {
                 alert("Too Many Games!");
                 throw Error("Too Many Games!");
