@@ -16,6 +16,7 @@ const Challenge = require('../models/challengeModel')
 const Game = require('../models/gameModel')
 
 const { createJWT } = require('../utils')
+const GameStats = require('../models/gameStatsModel')
 
 const genSalt = async () => {
     const salt = await bcrypt.genSalt(5)
@@ -751,6 +752,30 @@ const referFriend = async (req, res) => {
     }
 }
 
+const getUserGameStats = async (req, res) => {
+	try {
+		const { userId } = req.params;
+		if (!userId) {
+			throw Error("Must provide userId!");
+		}
+
+		const gameStats = await GameStats.findAll({
+			where: { userId },
+			include: [
+				{
+					model: User,
+					attributes: ["firstName", "lastName"],
+				},
+			],
+		});
+
+        res.status(200).json(gameStats);
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
 module.exports = {
     createUser,
     forgotPassword,
@@ -773,4 +798,5 @@ module.exports = {
     getGamesByCourseWithNames,
     getGamesWithNames,
     referFriend,
+    getUserGameStats,
 }

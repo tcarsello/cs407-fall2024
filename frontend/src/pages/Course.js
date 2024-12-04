@@ -29,8 +29,10 @@ import {
     GamepadIcon,
     MessageSquare,
     Users,
-    Settings
+    Settings,
+    ChartBar
 } from 'lucide-react';
+import CourseGameStats from '../components/course/CourseGameStats'
 
 const Course = () => {
 
@@ -53,6 +55,7 @@ const CourseHomeContent = () => {
         { id: 'Games', icon: GamepadIcon, label: 'Games' },
         { id: 'Discussion', icon: MessageSquare, label: 'Discussion' },
         { id: 'Course Members', icon: Users, label: 'Members' },
+        { id: 'Game Stats', icon: ChartBar, label: 'Game Stats'},
     ];
 
     const { user } = useAuthContext()
@@ -61,6 +64,7 @@ const CourseHomeContent = () => {
     const [mainComponent, setMainComponent] = useState('Home')
 
     const [coordinator, setCoordinator] = useState()
+    const [keyValue, setKeyValue] = useState(0)
 
     useEffect(() => {
 
@@ -114,6 +118,7 @@ const CourseHomeContent = () => {
             case 'Discussion': return <CourseDiscussion />;
             case 'Course Members': return <CourseMembers />;
             case 'Settings': return <CourseSettings />;
+            case 'Game Stats': return <CourseGameStats />;
             case 'Home':
             default: return <CourseHome />;
         }
@@ -150,7 +155,7 @@ const CourseHomeContent = () => {
                     {navItems.map((item) => (
                         <Tooltip key={item.id} title={item.label} placement="right">
                             <IconButton
-                                onClick={() => setMainComponent(item.id)}
+                                onClick={() => {setKeyValue(keyValue + 1); setMainComponent(item.id);}}
                                 sx={{
                                     color: mainComponent === item.id ? 'white' : 'rgba(255,255,255,0.7)',
                                     backgroundColor: mainComponent === item.id ? 'rgba(255,255,255,0.1)' : 'transparent',
@@ -168,7 +173,7 @@ const CourseHomeContent = () => {
                     {user.userId === course.coordinatorId && (
                         <Tooltip title="Settings" placement="right">
                             <IconButton
-                                onClick={() => setMainComponent('Settings')}
+                                onClick={() => {setKeyValue(keyValue + 1); setMainComponent('Settings');}}
                                 sx={{
                                     color: mainComponent === 'Settings' ? 'white' : 'rgba(255,255,255,0.7)',
                                     backgroundColor: mainComponent === 'Settings' ? 'rgba(255,255,255,0.1)' : 'transparent',
@@ -241,7 +246,7 @@ const CourseHomeContent = () => {
                 </Paper>
 
                 {/* Page Content */}
-                <Box sx={{ p: 3 }}>
+                <Box sx={{ p: 3 }} key={keyValue}>
                     {renderMainComponent()}
                 </Box>
             </Box>

@@ -25,6 +25,7 @@ require('./models/roundQuestionModel')
 require('./models/announcementModel')
 require('./models/assistantModel')
 require('./models/feedbackModel')
+require('./models/gameStatsModel')
 
 const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')

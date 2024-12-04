@@ -215,7 +215,7 @@ const CourseDetails = ({ course, onDelete }) => {
                                 <Chip 
                                     size="small"
                                     icon={<GamepadIcon size={14} />}
-                                    label={`${myGames} / ${course.gameLimit} Games`}
+                                    label={`${myGames || 0} / ${course.gameLimit} Games`}
                                     variant="outlined"
                                     color={course.gameLimit === 0 ? "error" : "default"}
                                 />

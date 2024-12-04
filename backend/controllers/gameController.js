@@ -301,14 +301,17 @@ const declareScore = async (req, res) => {
         let status = 'In Progress'
         if (playerOneScore > playerTwoScore) status = 'Player One Win'
         if (playerOneScore < playerTwoScore) status = 'Player Two Win'
-        if (playerOneScore == playerTwoScore) status = 'Tie'
+        if (playerOneScore === playerTwoScore) status = 'Tie'
 
-        await Game.update(
-            { status },
+        const game = await Game.findOne(
             {
                 where: { gameId }
             }
-        )
+        );
+
+        if (game.status === "In Progress" || game.status === "New") {
+            await game.update({ status: status });
+        }
 
         res.status(200).json({ message: 'Status updated' })
 

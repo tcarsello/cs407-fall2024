@@ -7,7 +7,8 @@ const { createUser, forgotPassword, loginUser, verifyToken, getUser, deleteUser,
     getGamesByCourse, referFriend, 
     getGames,
     getGamesByCourseWithNames,
-    getGamesWithNames} = require('../controllers/userController')
+    getGamesWithNames,
+    getUserGameStats} = require('../controllers/userController')
 
 const router = express.Router()
 
@@ -36,5 +37,6 @@ router.get('/:userId/games/:courseId', requireAuth, getGamesByCourse)
 router.get('/:userId/games', requireAuth, getGames);
 router.get("/:userId/gamesWithNames/:courseId", requireAuth, getGamesByCourseWithNames);
 router.get("/:userId/gamesWithNames", requireAuth, getGamesWithNames);
+router.get("/:userId/gameStats", requireAuth, getUserGameStats);
 
 module.exports = router

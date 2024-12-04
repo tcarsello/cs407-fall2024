@@ -24,6 +24,7 @@ const { generateJoinCode } = require('../utils')
 const { Parser } = require('json2csv')
 const { parse } = require('csv-parse')
 const { getGamesWithNames } = require('./userController')
+const GameStats = require('../models/gameStatsModel')
 
 const createCourse = async (req, res) => {
     try {
@@ -658,8 +659,8 @@ const getGameStatistics = async (req, res) => {
 		const queryString = `
             SELECT
                 COUNT("g"."gameId") AS "totalGames",
-                SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 1 ELSE 0 END) AS "totalActive",
-                SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 0 ELSE 1 END) AS "totalComplete"
+                COALESCE(SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 1 ELSE 0 END), 0) AS "totalActive",
+                COALESCE(SUM(CASE WHEN "g"."status" IN ('New', 'In Progress') THEN 0 ELSE 1 END), 0) AS "totalComplete"
             FROM "game" AS "g"
             WHERE
                 "g"."courseId" = :courseId
@@ -691,6 +692,26 @@ const getGameStatistics = async (req, res) => {
 		});
 		const finalRes = {totalPlayers: playerData[0].playerCount, ...gameData[0]};
 		res.status(200).json(finalRes);
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err });
+	}
+};
+
+const getCourseGameStats = async (req, res) => {
+	const { courseId } = req.params;
+
+	try {
+		const gameStats = await GameStats.findAll({
+			where: { courseId },
+			include: [
+				{
+					model: User,
+					attributes: ["firstName", "lastName"],
+				},
+			],
+		});
+		res.status(200).json(gameStats);
 	} catch (err) {
 		console.error(err);
 		res.status(400).json({ error: err });
@@ -1236,4 +1257,5 @@ module.exports = {
     getCourseAnnouncementsPublic,
     getCourseAnnouncementsPrivate,
     getCourseAssistants,
+    getCourseGameStats,
 }

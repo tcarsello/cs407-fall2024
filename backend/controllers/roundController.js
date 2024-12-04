@@ -4,6 +4,7 @@ const Round = require("../models/roundModel")
 const RoundQuestion = require('../models/roundQuestionModel')
 const Answer = require('../models/answerModel')
 const Question = require('../models/questionModel')
+const GameStats = require("../models/gameStatsModel")
 
 const createRound = async (req, res) => {
     try {
@@ -157,17 +158,26 @@ const submitAnswer = async (req, res) => {
 
         }
 
-        await Question.increment(
-            {
-                totalAnswers: 1,
-                correctAnswers: response.isCorrect ? 1 : 0,
-            },
-            {
-                where: {
-                    questionId
+        const gameStats = (
+					await GameStats.findOrCreate({
+						where: { userId: req.user.userId, courseId: game.courseId },
+					})
+				)[0];
+
+		await Promise.all([
+            Question.increment(
+                {
+                    totalAnswers: 1,
+                    correctAnswers: response.isCorrect ? 1 : 0,
+                },
+                {
+                    where: {
+                        questionId,
+                    },
                 }
-            }
-        )
+            ),
+            gameStats.increment({ questionsAnswered: 1, questionsCorrect: response.isCorrect ? 1 : 0 }),
+        ]);
 
         res.status(200).json(response)
     } catch (err) {

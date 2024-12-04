@@ -12,39 +12,33 @@ import { useFriendContext } from "../context/FriendContext";
 import GameList from "../components/games/GameList";
 
 import {
-    Container,
-    Grid,
-    Paper,
-    Typography,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    IconButton,
-    Box,
-    Divider,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemAvatar,
-    ListItemSecondaryAction,
-    Avatar,
-    Chip,
-    Stack,
-    Fade,
-	Alert
-} from '@mui/material';
+	Container,
+	Grid,
+	Paper,
+	Typography,
+	Button,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	TextField,
+	IconButton,
+	Box,
+	Divider,
+	List,
+	ListItem,
+	ListItemText,
+	ListItemAvatar,
+	ListItemSecondaryAction,
+	Avatar,
+	Chip,
+	Stack,
+	Fade,
+	Alert,
+	Grid2,
+} from "@mui/material";
 
-import {
-	Trash2,
-    Plus,
-    UserPlus,
-    Share2,
-    Mail,
-    X as CloseIcon
-} from 'lucide-react';
+import { Trash2, Plus, UserPlus, Share2, Mail, X as CloseIcon } from "lucide-react";
 
 const Home = () => {
 	const { user } = useAuthContext();
@@ -76,7 +70,8 @@ const Home = () => {
 	const [referFriendEmail, setReferFriendEmail] = useState("");
 	const [referFriendError, setReferFriendError] = useState("");
 
-    const [updateGames, setUpdateGames] = useState(0)
+	const [updateGames, setUpdateGames] = useState(0);
+	const [myGameStats, setMyGameStats] = useState();
 
 	useEffect(() => {
 		if (user && !user.lightMode) {
@@ -185,6 +180,35 @@ const Home = () => {
 			.then((json) => {
 				setInviteList(json.invites);
 			});
+
+		fetch(`/api/user/${user.userId}/gameStats`, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${user.token}`,
+			},
+		})
+			.then((resp) => resp.json())
+			.then((json) => {
+                if (json.error) {
+                    return;
+                }
+				if (json && json.length >= 1) {
+					const final = { ...json[0] };
+					json.forEach((element, index) => {
+						if (index === 0) {
+							return;
+						}
+						final.gamesWon += element.gamesWon;
+						final.gamesTied += element.gamesTied;
+						final.gamesLost += element.gamesLost;
+						final.gamesPlayed += element.gamesPlayed;
+						final.questionsAnswered += element.questionsAnswered;
+						final.questionsCorrect += element.questionsCorrect;
+					});
+					setMyGameStats(final);
+				}
+			});
 	}, [user]);
 
 	const handleReferFriendSubmit = async (e) => {
@@ -213,22 +237,21 @@ const Home = () => {
 	};
 
 	return (
-		<Container maxWidth={false} sx={{ height: '100vh', bgcolor: 'background.default' }}>
+		<Container maxWidth={false} sx={{ height: "100vh", bgcolor: "background.default" }}>
 			<Grid container spacing={3} sx={{ py: 4, px: 2 }}>
 				{/* Left Sidebar */}
 				<Grid item xs={12} md={3}>
 					<Stack spacing={3} position="sticky" top={20}>
 						{/* Profile Card */}
-						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
 							<Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-								<Avatar 
-									sx={{ 
-										width: 48, 
+								<Avatar
+									sx={{
+										width: 48,
 										height: 48,
-										bgcolor: 'primary.main',
-										fontSize: '1.2rem'
-									}}
-								>
+										bgcolor: "primary.main",
+										fontSize: "1.2rem",
+									}}>
 									{user?.firstName?.[0]}
 								</Avatar>
 								<Box>
@@ -240,7 +263,7 @@ const Home = () => {
 									</Typography>
 								</Box>
 							</Stack>
-	
+
 							<Stack spacing={2}>
 								<Button
 									fullWidth
@@ -249,14 +272,13 @@ const Home = () => {
 									startIcon={<Plus />}
 									onClick={() => setCreateCourseEnabled(true)}
 									sx={{
-										background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-										color: 'white',
+										background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+										color: "white",
 										borderRadius: 2,
-										textTransform: 'none',
+										textTransform: "none",
 										py: 1.5,
-										boxShadow: '0 3px 5px 2px rgba(33, 150, 243, .3)'
-									}}
-								>
+										boxShadow: "0 3px 5px 2px rgba(33, 150, 243, .3)",
+									}}>
 									Create New Course
 								</Button>
 								<Button
@@ -267,99 +289,90 @@ const Home = () => {
 									onClick={() => setJoinCourseEnabled(true)}
 									sx={{
 										borderRadius: 2,
-										textTransform: 'none',
-										py: 1.5
-									}}
-								>
+										textTransform: "none",
+										py: 1.5,
+									}}>
 									Join a Course
 								</Button>
 							</Stack>
 						</Paper>
-	
+
 						{/* Friends List */}
-						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
 							<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
 								<Typography variant="h6">Friends</Typography>
-								<Chip 
-									label={friendsList?.length || 0}
-									color="primary"
-									size="small"
-								/>
+								<Chip label={friendsList?.length || 0} color="primary" size="small" />
 							</Stack>
-							
-							<List sx={{ maxHeight: 300, overflow: 'auto' }}>
+
+							<List sx={{ maxHeight: 300, overflow: "auto" }}>
 								{friendsList?.map((friend, index) => (
 									<ListItem
 										key={index}
 										secondaryAction={
-											<IconButton 
-												edge="end" 
-												size="small" 
+											<IconButton
+												edge="end"
+												size="small"
 												onClick={() => removeFriend(friend.userId)}
-												sx={{ color: 'error.main' }}
-											>
+												sx={{ color: "error.main" }}>
 												<Trash2 size={16} />
 											</IconButton>
 										}
-										sx={{ px: 0 }}
-									>
+										sx={{ px: 0 }}>
 										<ListItemAvatar>
-											<Avatar sx={{ 
-												bgcolor: 'primary.light', 
-												width: 32, 
-												height: 32, 
-												fontSize: '0.875rem' 
-											}}>
+											<Avatar
+												sx={{
+													bgcolor: "primary.light",
+													width: 32,
+													height: 32,
+													fontSize: "0.875rem",
+												}}>
 												{friend.firstName[0]}
 											</Avatar>
 										</ListItemAvatar>
-										<ListItemText 
+										<ListItemText
 											primary={`${friend.firstName} ${friend.lastName}`}
-											primaryTypographyProps={{ variant: 'body2' }}
+											primaryTypographyProps={{ variant: "body2" }}
 										/>
 									</ListItem>
 								))}
 							</List>
-							
+
 							<Button
 								fullWidth
 								startIcon={<Share2 size={18} />}
 								onClick={() => setReferFriendEnabled(true)}
-								sx={{ 
-									mt: 2, 
-									textTransform: 'none',
-									color: 'primary.main'
-								}}
-							>
+								sx={{
+									mt: 2,
+									textTransform: "none",
+									color: "primary.main",
+								}}>
 								Invite Friends
 							</Button>
 						</Paper>
 					</Stack>
 				</Grid>
-	
+
 				{/* Main Content Area */}
 				<Grid item xs={12} md={9}>
 					<Stack spacing={3}>
 						{/* Course Invites Banner */}
 						{inviteList?.length > 0 && (
-							<Paper 
-								elevation={0} 
-								sx={{ 
-									p: 2, 
+							<Paper
+								elevation={0}
+								sx={{
+									p: 2,
 									borderRadius: 2,
-									bgcolor: 'primary.light',
-									color: 'primary.contrastText'
-								}}
-							>
+									bgcolor: "primary.light",
+									color: "primary.contrastText",
+								}}>
 								<Stack direction="row" justifyContent="space-between" alignItems="center">
 									<Stack direction="row" spacing={2} alignItems="center">
 										<Mail />
 										<Box>
-											<Typography variant="h6">
-												New Course Invites
-											</Typography>
+											<Typography variant="h6">New Course Invites</Typography>
 											<Typography variant="body2">
-												You have {inviteList.length} pending course {inviteList.length === 1 ? 'invitation' : 'invitations'}
+												You have {inviteList.length} pending course{" "}
+												{inviteList.length === 1 ? "invitation" : "invitations"}
 											</Typography>
 										</Box>
 									</Stack>
@@ -382,18 +395,12 @@ const Home = () => {
 								</Stack>
 							</Paper>
 						)}
-	
+
 						{/* My Courses Section */}
-						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
 							<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-								<Typography variant="h5">
-									My Courses
-								</Typography>
-								<Chip 
-									label={`${myCourseList?.length || 0} Courses`}
-									color="primary"
-									variant="outlined"
-								/>
+								<Typography variant="h5">My Courses</Typography>
+								<Chip label={`${myCourseList?.length || 0} Courses`} color="primary" variant="outlined" />
 							</Stack>
 							<Stack spacing={2}>
 								{myCourseList?.map((course) => (
@@ -401,49 +408,38 @@ const Home = () => {
 										<div>
 											<CourseDetails
 												course={course}
-												onDelete={() => setMyCourseList(
-													myCourseList.filter(item => item.courseId !== course.courseId)
-												)}
+												onDelete={() =>
+													setMyCourseList(myCourseList.filter((item) => item.courseId !== course.courseId))
+												}
 											/>
 										</div>
 									</Fade>
 								))}
 								{myCourseList?.length === 0 && (
-									<Box 
-										sx={{ 
-											py: 4, 
-											textAlign: 'center',
-											color: 'text.secondary',
-											bgcolor: 'grey.50',
-											borderRadius: 2
-										}}
-									>
+									<Box
+										sx={{
+											py: 4,
+											textAlign: "center",
+											color: "text.secondary",
+											bgcolor: "grey.50",
+											borderRadius: 2,
+										}}>
 										<Typography variant="body1" gutterBottom>
 											No courses created yet
 										</Typography>
-										<Button
-											startIcon={<Plus />}
-											onClick={() => setCreateCourseEnabled(true)}
-											sx={{ mt: 1 }}
-										>
+										<Button startIcon={<Plus />} onClick={() => setCreateCourseEnabled(true)} sx={{ mt: 1 }}>
 											Create Your First Course
 										</Button>
 									</Box>
 								)}
 							</Stack>
 						</Paper>
-	
+
 						{/* Joined Courses Section */}
-						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
 							<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-								<Typography variant="h5">
-									Joined Courses
-								</Typography>
-								<Chip 
-									label={`${joinedCourseList?.length || 0} Courses`}
-									color="primary"
-									variant="outlined"
-								/>
+								<Typography variant="h5">Joined Courses</Typography>
+								<Chip label={`${joinedCourseList?.length || 0} Courses`} color="primary" variant="outlined" />
 							</Stack>
 							<Stack spacing={2}>
 								{joinedCourseList?.map((course) => (
@@ -451,84 +447,98 @@ const Home = () => {
 										<div>
 											<CourseDetails
 												course={course}
-												onDelete={() => setJoinedCourseList(
-													joinedCourseList.filter(item => item.courseId !== course.courseId)
-												)}
+												onDelete={() =>
+													setJoinedCourseList(joinedCourseList.filter((item) => item.courseId !== course.courseId))
+												}
 											/>
 										</div>
 									</Fade>
 								))}
 								{joinedCourseList?.length === 0 && (
-									<Box 
-										sx={{ 
-											py: 4, 
-											textAlign: 'center',
-											color: 'text.secondary',
-											bgcolor: 'grey.50',
-											borderRadius: 2
-										}}
-									>
+									<Box
+										sx={{
+											py: 4,
+											textAlign: "center",
+											color: "text.secondary",
+											bgcolor: "grey.50",
+											borderRadius: 2,
+										}}>
 										<Typography variant="body1" gutterBottom>
 											You haven't joined any courses yet
 										</Typography>
-										<Button
-											startIcon={<UserPlus />}
-											onClick={() => setJoinCourseEnabled(true)}
-											sx={{ mt: 1 }}
-										>
+										<Button startIcon={<UserPlus />} onClick={() => setJoinCourseEnabled(true)} sx={{ mt: 1 }}>
 											Join a Course
 										</Button>
 									</Box>
 								)}
 							</Stack>
 						</Paper>
-	
+
+						{/* Stats Section */}
+						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
+							{myGameStats && (
+								<Box>
+									<Typography variant="h5" component="h1" sx={{ pb: 2 }}>
+										My Stats
+									</Typography>
+									<GameStatsHeader disabled={true} />
+									<GameStatsCard gameStats={myGameStats} />
+								</Box>
+							)}
+						</Paper>
+
 						{/* Games Section */}
-						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper' }}>
+						<Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper" }}>
 							<Typography variant="h5" gutterBottom>
 								Games
 							</Typography>
 							<Divider sx={{ mb: 3 }} />
 							<Stack spacing={3}>
 								<Box>
-									<Typography variant="h6" gutterBottom>Active Games</Typography>
-									<GameList title="" divClass="" key={updateGames+1}/>
+									<Typography variant="h6" gutterBottom>
+										Active Games
+									</Typography>
+									<GameList title="" divClass="" key={updateGames + 1} />
 								</Box>
 								<Box>
-									<Typography variant="h6" gutterBottom>Game History</Typography>
-									<GameList title="" divClass="" history={true} key={updateGames} refreshGames={() => setUpdateGames(prev => prev+1)}/>
+									<Typography variant="h6" gutterBottom>
+										Game History
+									</Typography>
+									<GameList
+										title=""
+										divClass=""
+										history={true}
+										key={updateGames}
+										refreshGames={() => setUpdateGames((prev) => prev + 1)}
+									/>
 								</Box>
 							</Stack>
 						</Paper>
 					</Stack>
 				</Grid>
 			</Grid>
-	
+
 			{/* Create Course Dialog */}
-			<Dialog 
-				open={createCourseEnabled} 
+			<Dialog
+				open={createCourseEnabled}
 				onClose={() => {
 					setCreateCourseEnabled(false);
 					setCreateCourseFormError();
 				}}
 				fullWidth
-				maxWidth="sm"
-			>
-				<DialogTitle sx={{ 
-					background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-					color: 'white'
-				}}>
+				maxWidth="sm">
+				<DialogTitle
+					sx={{
+						background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+						color: "white",
+					}}>
 					Create a New Course
 				</DialogTitle>
 				<form onSubmit={handleCreateCourseFormSubmit}>
 					<DialogContent sx={{ pt: 3 }}>
 						<Stack spacing={3}>
-							{createCourseFormError && (
-								<Alert severity="error">
-									{createCourseFormError}
-								</Alert>
-							)}
-							
+							{createCourseFormError && <Alert severity="error">{createCourseFormError}</Alert>}
+
 							<TextField
 								fullWidth
 								label="Course Name"
@@ -537,7 +547,7 @@ const Home = () => {
 								onChange={handleCreateCourseFormChange}
 								required
 							/>
-							
+
 							<TextField
 								fullWidth
 								label="Course Description"
@@ -550,47 +560,40 @@ const Home = () => {
 						</Stack>
 					</DialogContent>
 					<DialogActions sx={{ p: 3 }}>
-						<Button onClick={() => setCreateCourseEnabled(false)}>
-							Cancel
-						</Button>
-						<Button 
+						<Button onClick={() => setCreateCourseEnabled(false)}>Cancel</Button>
+						<Button
 							type="submit"
 							variant="contained"
 							sx={{
-								background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-							}}
-						>
+								background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+							}}>
 							Create Course
 						</Button>
 					</DialogActions>
 				</form>
 			</Dialog>
-	
+
 			{/* Join Course Dialog */}
-			<Dialog 
+			<Dialog
 				open={joinCourseEnabled}
 				onClose={() => {
 					setJoinCourseEnabled(false);
 					setJoinCourseFormError();
 				}}
 				fullWidth
-				maxWidth="sm"
-			>
-				<DialogTitle sx={{ 
-					background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-					color: 'white'
-				}}>
+				maxWidth="sm">
+				<DialogTitle
+					sx={{
+						background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+						color: "white",
+					}}>
 					Join a Course
 				</DialogTitle>
 				<form onSubmit={handleJoinCourseFormSubmit}>
 					<DialogContent sx={{ pt: 3 }}>
 						<Stack spacing={3}>
-							{joinCourseFormError && (
-								<Alert severity="error">
-									{joinCourseFormError}
-								</Alert>
-							)}
-							
+							{joinCourseFormError && <Alert severity="error">{joinCourseFormError}</Alert>}
+
 							<TextField
 								fullWidth
 								label="Join Code"
@@ -602,77 +605,213 @@ const Home = () => {
 						</Stack>
 					</DialogContent>
 					<DialogActions sx={{ p: 3 }}>
-						<Button onClick={() => setJoinCourseEnabled(false)}>
-							Cancel
-						</Button>
-						<Button 
+						<Button onClick={() => setJoinCourseEnabled(false)}>Cancel</Button>
+						<Button
 							type="submit"
 							variant="contained"
 							sx={{
-								background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-							}}
-						>
+								background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+							}}>
 							Join Course
 						</Button>
 					</DialogActions>
 				</form>
 			</Dialog>
 
-            {/* Refer Friend Dialog */}
-            <Dialog 
-                open={referFriendEnabled}
-                onClose={() => {
-                    setReferFriendEnabled(false);
-                    setReferFriendEmail("");
-                    setReferFriendError();
-                }}
-                fullWidth
-                maxWidth="sm"
-            >
-                <DialogTitle sx={{ 
-                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-                    color: 'white'
-                }}>
-                    Refer a Friend
-                </DialogTitle>
-                <form onSubmit={handleReferFriendSubmit}>
-                    <DialogContent sx={{ pt: 3 }}>
-                        <Stack spacing={3}>
-                            {referFriendError && (
-                                <Alert severity="error">
-                                    {referFriendError}
-                                </Alert>
-                            )}
-                            
-                            <TextField
-                                fullWidth
-                                label="Email"
-                                name="referFriendEmail"
-                                type="email"
-                                value={referFriendEmail}
-                                onChange={(e) => setReferFriendEmail(e.target.value)}
-                                required
-                            />
-                        </Stack>
-                    </DialogContent>
-                    <DialogActions sx={{ p: 3 }}>
-                        <Button onClick={() => setReferFriendEnabled(false)}>
-                            Cancel
-                        </Button>
-                        <Button 
-                            type="submit"
-                            variant="contained"
-                            sx={{
-                                background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
-                            }}
-                        >
-                            Send Invitation
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
-        </Container>
-    );
+			{/* Refer Friend Dialog */}
+			<Dialog
+				open={referFriendEnabled}
+				onClose={() => {
+					setReferFriendEnabled(false);
+					setReferFriendEmail("");
+					setReferFriendError();
+				}}
+				fullWidth
+				maxWidth="sm">
+				<DialogTitle
+					sx={{
+						background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+						color: "white",
+					}}>
+					Refer a Friend
+				</DialogTitle>
+				<form onSubmit={handleReferFriendSubmit}>
+					<DialogContent sx={{ pt: 3 }}>
+						<Stack spacing={3}>
+							{referFriendError && <Alert severity="error">{referFriendError}</Alert>}
+
+							<TextField
+								fullWidth
+								label="Email"
+								name="referFriendEmail"
+								type="email"
+								value={referFriendEmail}
+								onChange={(e) => setReferFriendEmail(e.target.value)}
+								required
+							/>
+						</Stack>
+					</DialogContent>
+					<DialogActions sx={{ p: 3 }}>
+						<Button onClick={() => setReferFriendEnabled(false)}>Cancel</Button>
+						<Button
+							type="submit"
+							variant="contained"
+							sx={{
+								background: "linear-gradient(45deg, #2196F3 30%, #673AB7 90%)",
+							}}>
+							Send Invitation
+						</Button>
+					</DialogActions>
+				</form>
+			</Dialog>
+		</Container>
+	);
+};
+
+const GameStatsHeader = ({ disabled, onClick }) => {
+	return (
+		<Box
+			sx={{
+				borderRadius: 0,
+				bgcolor: "grey.300",
+			}}>
+			<Grid2 container spacing={2}>
+				<Grid2 container spacing={2} size={2}></Grid2>
+				<Grid2 container spacing={2} size={10}>
+					<Grid2 textAlign="center" size={2} display="flex" justifyContent="center">
+						<Button
+							onClick={() => onClick("gamesWon")}
+							variant="body1"
+							disabled
+							sx={{
+								"&:disabled": {
+									color: "ButtonText",
+								},
+							}}>
+							{"Games Won"}
+						</Button>
+					</Grid2>
+					<Grid2 textAlign="center" size={2} display="flex" justifyContent="center">
+						<Button
+							onClick={() => onClick("gamesTied")}
+							variant="body1"
+							disabled
+							sx={{
+								"&:disabled": {
+									color: "ButtonText",
+								},
+							}}>
+							{"Games Tied"}
+						</Button>
+					</Grid2>
+					<Grid2 textAlign="center" size={2} display="flex" justifyContent="center">
+						<Button
+							onClick={() => onClick("gamesLost")}
+							variant="body1"
+							disabled
+							sx={{
+								"&:disabled": {
+									color: "ButtonText",
+								},
+							}}>
+							{"Games Lost"}
+						</Button>
+					</Grid2>
+					<Grid2 textAlign="center" size={2} display="flex" justifyContent="center">
+						<Button
+							onClick={() => onClick("gamesPlayed")}
+							variant="body1"
+							disabled
+							sx={{
+								"&:disabled": {
+									color: "ButtonText",
+								},
+							}}>
+							{"Games Played"}
+						</Button>
+					</Grid2>
+					<Grid2 textAlign="center" size={2} display="flex" justifyContent="center">
+						<Button
+							onClick={() => onClick("questionsCorrect")}
+							variant="body1"
+							disabled
+							sx={{
+								"&:disabled": {
+									color: "ButtonText",
+								},
+							}}>
+							{"Questions Correct"}
+						</Button>
+					</Grid2>
+					<Grid2 textAlign="center" size={2} display="flex" justifyContent="center">
+						<Button
+							onClick={() => onClick("questionsAnswered")}
+							variant="body1"
+							disabled
+							sx={{
+								"&:disabled": {
+									color: "ButtonText",
+								},
+							}}>
+							{"Questions Answered"}
+						</Button>
+					</Grid2>
+				</Grid2>
+			</Grid2>
+		</Box>
+	);
+};
+
+const GameStatsCard = ({ gameStats }) => {
+	return (
+		<Box
+			sx={{
+				borderRadius: 0,
+				"&:hover": {
+					bgcolor: "grey.50",
+				},
+				py: 2,
+			}}>
+			<Grid2 container spacing={2}>
+				<Grid2 container spacing={2} size={2}>
+					<Stack direction="row" spacing={3} alignItems="center" sx={{ pl: 2 }}>
+						<Avatar
+							sx={{
+								width: 24,
+								height: 24,
+								bgcolor: "primary.main",
+								fontSize: "0.875rem",
+							}}>
+							{gameStats.user.firstName ? gameStats.user.firstName[0] : ""}
+						</Avatar>
+						<Typography variant="body2" color="text.secondary">
+							{gameStats.user.firstName} {gameStats.user.lastName}
+						</Typography>
+					</Stack>
+				</Grid2>
+				<Grid2 container spacing={2} size={10}>
+					<Grid2 textAlign="center" size={2}>
+						<Typography variant="body1">{gameStats.gamesWon}</Typography>
+					</Grid2>
+					<Grid2 textAlign="center" size={2}>
+						<Typography variant="body1">{gameStats.gamesTied}</Typography>
+					</Grid2>
+					<Grid2 textAlign="center" size={2}>
+						<Typography variant="body1">{gameStats.gamesLost}</Typography>
+					</Grid2>
+					<Grid2 textAlign="center" size={2}>
+						<Typography variant="body1">{gameStats.gamesPlayed}</Typography>
+					</Grid2>
+					<Grid2 textAlign="center" size={2}>
+						<Typography variant="body1">{gameStats.questionsCorrect}</Typography>
+					</Grid2>
+					<Grid2 textAlign="center" size={2}>
+						<Typography variant="body1">{gameStats.questionsAnswered}</Typography>
+					</Grid2>
+				</Grid2>
+			</Grid2>
+		</Box>
+	);
 };
 
 export default Home;

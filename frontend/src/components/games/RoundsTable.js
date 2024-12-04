@@ -108,7 +108,7 @@ const RoundsTable = () => {
         setPlayerOneScore(total1)
         setPlayerTwoScore(total2)
 
-        if (roundList.length === game.maxRounds && playerOneScore + playerTwoScore == roundList.length) {
+        if (roundList.length >= game.maxRounds && playerOneScore + playerTwoScore >= roundList.length) {
             if (roundList.at(-1).roundWinner !== 'Unfinished' && (game.status === 'In Progress')) {
                 // Declare score
                 try {
