@@ -47,6 +47,12 @@ const User = sequelize.define('user', {
         allowNull: false,
         defaultValue: false,
     },
+    announcementNotifications: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
+
 }, {
     tableName: 'user',
     timestamps: true,

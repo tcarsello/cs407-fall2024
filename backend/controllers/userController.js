@@ -194,7 +194,7 @@ const updateUser = async (req, res) => {
     try {
 
         const { userId } = req.params
-        const { email, firstName, lastName, password, lightMode, challengeNotifications, inviteNotifications } = req.body
+        const { email, firstName, lastName, password, lightMode, challengeNotifications, inviteNotifications, announcementNotifications } = req.body
 
         if (userId != req.user.userId) throw "Wrong user"
 
@@ -214,6 +214,7 @@ const updateUser = async (req, res) => {
                 lightMode,
                 challengeNotifications,
                 inviteNotifications,
+                announcementNotifications,
             },
             {
                 where: {

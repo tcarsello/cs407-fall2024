@@ -45,6 +45,7 @@ const UserSettings = () => {
 
     const [challengeNotifications, setChallengeNotifications] = useState(user.challengeNotifications)
     const [inviteNotifications, setInviteNotifications] = useState(user.inviteNotifications)
+    const [announcementNotifications, setAnnouncementNotifications] = useState(user.announcementNotifications)
 
     useEffect(() => {
 
@@ -313,7 +314,37 @@ const UserSettings = () => {
         }
     }
 
+    const handleAnnouncementNotificationsToggle = async () => {
+        const newSetting = !announcementNotifications
 
+        try {
+
+            const response = await fetch(`/api/user/${user.userId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({announcementNotifications: newSetting}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                }
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                throw Error('failed to patch announcement notifications')
+            }
+
+            user.lightMode = !user.lightMode
+            localStorage.setItem('user', JSON.stringify(json))
+            dispatch({ type: 'LOGIN', payload: json })
+
+            setAnnouncementNotifications(newSetting)
+
+        } catch (err) {
+            console.error(err)
+        }
+ 
+    }
 
     return (
         <div className={classNames.settingsPageContainer}>
@@ -441,6 +472,14 @@ const UserSettings = () => {
                         <span className="slider round"></span>
                     </label>
                     <span className={classNames.text} style={{ marginLeft: '15px' }}>Notify Course Invites</span>
+                </div>
+                <br />
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" defaultChecked={!user.announcementNotifications} onChange={handleAnnouncementNotificationsToggle}/>
+                        <span className="slider round"></span>
+                    </label>
+                    <span className={classNames.text} style={{ marginLeft: '15px' }}>Notify Course Announcements</span>
                 </div>
               
             </div>
