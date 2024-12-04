@@ -115,6 +115,16 @@ const submitAnswer = async (req, res) => {
             }
         })
 
+        if (!topics) throw 'Course topics not found'
+
+        const question = await Question.findOne({
+            where: {
+                questionId: roundQuestion.questionId
+            }
+        })
+
+        if (!topics) throw 'Course topics not found'
+
         const answer = await Answer.findOne({
             where: {
                 questionId,
@@ -185,6 +195,7 @@ const submitAnswer = async (req, res) => {
             gameStats.increment({ questionsAnswered: 1, questionsCorrect: response.isCorrect ? 1 : 0 }),
         ]);
         
+        var newStats = gameStats.topicStats;
         if (gameStats.topicStats == "" || gameStats.topicStats == "0") {
             var newStats = "";
              for (const topic of topics) {
@@ -193,10 +204,50 @@ const submitAnswer = async (req, res) => {
                 newStats += "0/0"
                 newStats += ", "
             }
-            newStats = newStats.slice(0, -2);
-
-            gameStats.update({topicStats: newStats})
         }
+
+        for (const topic of topics) {
+            if (topic.topicId == question.topicId) {
+                var ratio
+                if (newStats.split(topic.topicName).length == 1) {
+                    ratio = newStats.split(topic.topicName)[0].split(": ")[1].split(",")[0]
+                } else {
+                    ratio = newStats.split(topic.topicName)[1].split(": ")[1].split(",")[0]
+                }
+                
+                var correct = ratio.split("/")[0]
+                var total = ratio.split("/")[1]
+
+                var inc = 0
+
+                if (response.isCorrect == true) {
+                    inc = 1
+                }
+
+                const newCorrect = Number(correct) + inc 
+                const newTotal = Number(total) + 1
+
+                const newTopicStat = topic.topicName + ": " + newCorrect + "/" + newTotal + ", "
+
+                var preFix = newStats.split(topic.topicName + ": " + ratio + ",")[0]
+
+                if (!preFix || preFix == null) {
+                    preFix = ""
+                } 
+
+                var postFix = newStats.split(topic.topicName + ": " + ratio + ",")[1]
+
+                if (!postFix || postFix == null) {
+                    postFix = ""
+                } 
+
+                newStats = preFix + newTopicStat + postFix
+
+                gameStats.update({topicStats: newStats})
+                break
+            }
+        }
+        
         res.status(200).json(response)
     } catch (err) {
         console.error(err)
