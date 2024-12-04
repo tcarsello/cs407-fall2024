@@ -3,6 +3,7 @@ const sequelize = require("../database");
 
 const User = require("./userModel");
 const Course = require("./courseModel");
+const { FORCE } = require("sequelize/lib/index-hints");
 
 const GameStats = sequelize.define(
 	"game_stats",
@@ -74,6 +75,11 @@ const GameStats = sequelize.define(
 				return this.gamesWon + this.gamesTied + this.gamesLost;
 			},
 		},
+		topicStats: {
+			type: DataTypes.STRING,
+			allowNull: false,
+			defaultValue: "0"
+		}
 	},
 	{
 		tableName: "game_stats",
