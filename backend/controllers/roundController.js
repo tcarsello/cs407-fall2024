@@ -109,6 +109,12 @@ const submitAnswer = async (req, res) => {
 
         if (!game) throw 'Game not found'
 
+        const topics = await Topic.findAll({
+            where: {
+                courseId: game.courseId
+            }
+        })
+
         const answer = await Answer.findOne({
             where: {
                 questionId,
@@ -178,7 +184,19 @@ const submitAnswer = async (req, res) => {
             ),
             gameStats.increment({ questionsAnswered: 1, questionsCorrect: response.isCorrect ? 1 : 0 }),
         ]);
+        
+        if (gameStats.topicStats == "" || gameStats.topicStats == "0") {
+            var newStats = "";
+             for (const topic of topics) {
+                newStats += topic.topicName
+                newStats += ": "
+                newStats += "0/0"
+                newStats += ", "
+            }
+            newStats = newStats.slice(0, -2);
 
+            gameStats.update({topicStats: newStats})
+        }
         res.status(200).json(response)
     } catch (err) {
         console.error(err)
