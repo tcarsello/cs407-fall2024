@@ -298,9 +298,7 @@ const TopicStatsCard = ({ gameStats, dark }) => {
 	const topicStats = topicStats_raw
 	  .split(", ") 
 	  .map((topic) => {
-		console.log(topic)
 		const [topicName, stats] = topic.split(": "); 
-		console.log(stats)
 		const [numCorrect, total] = stats.split("/").map(Number); 
 		return { topicName, numCorrect, total }; 
 	  });
