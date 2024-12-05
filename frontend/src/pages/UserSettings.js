@@ -9,6 +9,36 @@ import { useState, useEffect } from 'react'
 import { useAuthContext } from '../hooks/UseAuthContext'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { useDisplayContext } from '../context/DisplayContext'
+import {
+    Container,
+    Paper,
+    Typography,
+    TextField,
+    Button,
+    Box,
+    Stack,
+    Avatar,
+    Switch,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Alert,
+    FormControlLabel,
+    IconButton,
+    Grid,
+    InputAdornment
+} from '@mui/material';
+import {
+    Person,
+    Lock,
+    Image as ImageIcon,
+    Palette,
+    Notifications,
+    DeleteForever,
+    Visibility,
+    VisibilityOff,
+} from '@mui/icons-material';
 
 const UserSettings = () => {
 
@@ -46,6 +76,9 @@ const UserSettings = () => {
     const [challengeNotifications, setChallengeNotifications] = useState(user.challengeNotifications)
     const [inviteNotifications, setInviteNotifications] = useState(user.inviteNotifications)
     const [announcementNotifications, setAnnouncementNotifications] = useState(user.announcementNotifications)
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
 
@@ -347,162 +380,272 @@ const UserSettings = () => {
     }
 
     return (
-        <div className={classNames.settingsPageContainer}>
-            <div className={classNames.settingsCard}>
-                <h2 className={classNames.text}>Account Details</h2>
-                <form onSubmit={handleUpdateAccount}>
-                    <div>
-                        <label className={classNames.text}>Email Address</label>
-                        <input
-                            className={classNames.standardFormInput}
-                            type='email'
-                            name='email'
-                            placeholder='Email'
-                            value={accountForm.email}
-                            onChange={handleAccountChange}
-                            required
+        <Container maxWidth="md" sx={{ py: 4 }}>
+            <Stack spacing={3}>
+                {/* Account Details Card */}
+                <Paper elevation={2} sx={{ p: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                        <Person color="primary" />
+                        <Typography variant="h5" fontWeight="bold">
+                            Account Details
+                        </Typography>
+                    </Stack>
+                    <form onSubmit={handleUpdateAccount}>
+                        <Stack spacing={3}>
+                            <TextField
+                                fullWidth
+                                label="Email Address"
+                                name="email"
+                                type="email"
+                                value={accountForm.email}
+                                onChange={handleAccountChange}
+                                required
+                            />
+                            <TextField
+                                fullWidth
+                                label="First Name"
+                                name="firstName"
+                                value={accountForm.firstName}
+                                onChange={handleAccountChange}
+                                required
+                            />
+                            <TextField
+                                fullWidth
+                                label="Last Name"
+                                name="lastName"
+                                value={accountForm.lastName}
+                                onChange={handleAccountChange}
+                                required
+                            />
+                            {accountError && <Alert severity="error">{accountError}</Alert>}
+                            {accountMsg && <Alert severity="success">{accountMsg}</Alert>}
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                sx={{
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                    alignSelf: 'flex-start'
+                                }}
+                            >
+                                Update Account
+                            </Button>
+                        </Stack>
+                    </form>
+                </Paper>
+
+                {/* Password Change Card */}
+                <Paper elevation={2} sx={{ p: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                        <Lock color="primary" />
+                        <Typography variant="h5" fontWeight="bold">
+                            Change Password
+                        </Typography>
+                    </Stack>
+                    <form onSubmit={handleChangePassword}>
+                        <Stack spacing={3}>
+                            <TextField
+                                fullWidth
+                                label="New Password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                value={passwordForm.password}
+                                onChange={handlePasswordFormChange}
+                                required
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => setShowPassword(!showPassword)}>
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                            <TextField
+                                fullWidth
+                                label="Confirm Password"
+                                name="confirmPassword"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                value={passwordForm.confirmPassword}
+                                onChange={handlePasswordFormChange}
+                                required
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                            {passwordError && <Alert severity="error">{passwordError}</Alert>}
+                            {passwordMsg && <Alert severity="success">{passwordMsg}</Alert>}
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                sx={{
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                    alignSelf: 'flex-start'
+                                }}
+                            >
+                                Change Password
+                            </Button>
+                        </Stack>
+                    </form>
+                </Paper>
+
+                {/* Profile Picture Card */}
+                <Paper elevation={2} sx={{ p: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                        <ImageIcon color="primary" />
+                        <Typography variant="h5" fontWeight="bold">
+                            Profile Picture
+                        </Typography>
+                    </Stack>
+                    <Grid container spacing={3} alignItems="center">
+                        <Grid item>
+                            <Avatar
+                                src={profilePictureUrl}
+                                sx={{ width: 100, height: 100 }}
+                            />
+                        </Grid>
+                        <Grid item xs>
+                            <Stack spacing={2}>
+                                <Button
+                                    variant="outlined"
+                                    component="label"
+                                >
+                                    Choose File
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleUpload}
+                                    disabled={isUploading || !selectedFile}
+                                    sx={{
+                                        background: 'linear-gradient(45deg, #2196F3 30%, #673AB7 90%)',
+                                    }}
+                                >
+                                    {isUploading ? 'Uploading...' : 'Upload Profile Picture'}
+                                </Button>
+                                {uploadError && <Alert severity="error">{uploadError}</Alert>}
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Paper>
+
+                {/* Display Settings Card */}
+                <Paper elevation={2} sx={{ p: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                        <Palette color="primary" />
+                        <Typography variant="h5" fontWeight="bold">
+                            Display Settings
+                        </Typography>
+                    </Stack>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={!user.lightMode}
+                                onChange={handleDisplayModeChange}
+                            />
+                        }
+                        label={displayMode}
+                    />
+                </Paper>
+
+                {/* Notification Settings Card */}
+                <Paper elevation={2} sx={{ p: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                        <Notifications color="primary" />
+                        <Typography variant="h5" fontWeight="bold">
+                            Email Notification Settings
+                        </Typography>
+                    </Stack>
+                    <Stack spacing={2}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={!user.challengeNotifications}
+                                    onChange={handleChallengeNotificationToggle}
+                                />
+                            }
+                            label="Notify Incoming Challenge"
                         />
-                    </div>
-                    <div>
-                        <label className={classNames.text}>First Name</label>
-                        <input
-                            className={classNames.standardFormInput}
-                            type='text'
-                            name='firstName'
-                            placeholder='First Name'
-                            value={accountForm.firstName}
-                            onChange={handleAccountChange}
-                            required
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={!user.inviteNotifications}
+                                    onChange={handleInviteNotificationsToggle}
+                                />
+                            }
+                            label="Notify Course Invites"
                         />
-                    </div>
-                    <div>
-                        <label className={classNames.text}>Last Name</label>
-                        <input
-                            className={classNames.standardFormInput}
-                            type='text'
-                            name='lastName'
-                            placeholder='Last Name'
-                            value={accountForm.lastName}
-                            onChange={handleAccountChange}
-                            required
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={!user.announcementNotifications}
+                                    onChange={handleAnnouncementNotificationsToggle}
+                                />
+                            }
+                            label="Notify Course Announcements"
                         />
-                    </div>
-                    <button className={classNames.button}>Update Account</button>
-                    {accountError ? <p className='form-error'>{accountError}</p> : null}
-                    {accountMsg ? <p className='form-msg'>{accountMsg}</p> : null}
-                </form>
-            </div>
+                    </Stack>
+                </Paper>
 
-            <div className={classNames.settingsCard}>
-                <h2 className={classNames.text}>Change Password</h2>
-                <form onSubmit={handleChangePassword}>
-                    <div>
-                        <label className={classNames.text}>New Password</label>
-                        <input
-                            className={classNames.standardFormInput}
-                            type='password'
-                            name='password'
-                            placeholder='New Password'
-                            value={passwordForm.password}
-                            onChange={handlePasswordFormChange}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className={classNames.text}>Confirm Password</label>
-                        <input
-                            className={classNames.standardFormInput}
-                            type='password'
-                            name='confirmPassword'
-                            placeholder='Confirm New Password'
-                            value={passwordForm.confirmPassword}
-                            onChange={handlePasswordFormChange}
-                            required
-                        />
-                    </div>
-                    <button className={classNames.button}>Change Password</button>
-                    {passwordError ? <p className='form-error'>{passwordError}</p> : null}
-                    {passwordMsg ? <p className='form-msg'>{passwordMsg}</p> : null}
-                </form>
-            </div>
+                {/* Delete Account Card */}
+                <Paper elevation={2} sx={{ p: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                        <DeleteForever color="error" />
+                        <Typography variant="h5" fontWeight="bold" color="error">
+                            Delete Account
+                        </Typography>
+                    </Stack>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                        If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => setDeleteDialogEnabled(true)}
+                    >
+                        Delete Account
+                    </Button>
+                </Paper>
 
-            <div className={classNames.settingsCard}>
-                <h2 className={classNames.text}>Profile Picture</h2>
-                <div className='flex' style={{ alignItems: 'center' }}>
-                    <div className='settings-pfp-container'>
-                        {profilePictureUrl && <img src={profilePictureUrl} alt='Profile Picture' />}
-                    </div>
-                    <div style={{ paddingLeft: '15px' }}>
-                        <input
-                            className={classNames.standardFormInput}
-                            type='file'
-                            accept='image/*'
-                            onChange={handleFileChange}
-                        />
-                        <button className={classNames.button} onClick={handleUpload}>{isUploading ? 'Uploading ...' : 'Upload Pofile Picture'}</button>
-                        {uploadError && <p className='form-error'>{uploadError}</p>}
-                    </div>
-                </div>
-            </div>
+                {/* Confirmation Dialog */}
+                <Dialog
+                    open={deleteDialogEnabled}
+                    onClose={() => setDeleteDialogEnabled(false)}
+                >
+                    <DialogTitle>Confirm Account Deletion</DialogTitle>
+                    <DialogContent>
+                        <Typography>
+                            Are you sure you want to delete your account? This action cannot be undone.
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDeleteDialogEnabled(false)}>Cancel</Button>
+                        <Button
+                            onClick={() => {
+                                setDeleteDialogEnabled(false);
+                                handleDeleteAccount();
+                            }}
+                            color="error"
+                            variant="contained"
+                        >
+                            Delete Account
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Stack>
+        </Container>
+    );
+};
 
-            <div className={classNames.settingsCard}>
-                <h2 className={classNames.text}>Display Settings</h2>
-                <p className={classNames.text} style={{ margin: '0' }}>Modify your display.</p>
-                <div className='vspacer-med'></div>
-                <label class="switch">
-                    <input type="checkbox" defaultChecked={!user.lightMode} onChange={(e) => handleDisplayModeChange(e)}/>
-                    <span className="slider round"></span>
-                </label>
-                <p className={classNames.text}>{displayMode}</p>
-            </div>
-
-            <div className={classNames.settingsCard}>
-                <h2>Email Notification Settings</h2>
-                <div>
-                    <label class="switch">
-                        <input type="checkbox" defaultChecked={!user.challengeNotifications} onChange={handleChallengeNotificationToggle}/>
-                        <span className="slider round"></span>
-                    </label>
-                    <span className={classNames.text} style={{ marginLeft: '15px' }}>Notify Incoming Challenge</span>
-                </div>
-                <br />
-                <div>
-                    <label class="switch">
-                        <input type="checkbox" defaultChecked={!user.inviteNotifications} onChange={handleInviteNotificationsToggle}/>
-                        <span className="slider round"></span>
-                    </label>
-                    <span className={classNames.text} style={{ marginLeft: '15px' }}>Notify Course Invites</span>
-                </div>
-                <br />
-                <div>
-                    <label class="switch">
-                        <input type="checkbox" defaultChecked={!user.announcementNotifications} onChange={handleAnnouncementNotificationsToggle}/>
-                        <span className="slider round"></span>
-                    </label>
-                    <span className={classNames.text} style={{ marginLeft: '15px' }}>Notify Course Announcements</span>
-                </div>
-              
-            </div>
-
-            <div className={classNames.settingsCard}>
-                <h2 className={classNames.text}>Delete Account</h2>
-                <div></div>
-                <p className={classNames.text} style={{ margin: '0' }}>If you would like to delete your account, you may. Once deleted, you will not be able to access any of your data.</p>
-                <button onClick={() => setDeleteDialogEnabled(true)} className={classNames.button} style={{ backgroundColor: 'crimson' }}>Delete Account </button>
-            </div>
-
-            <ConfirmDialog
-                text='Are you sure you want to delete your account?'
-                isOpen={deleteDialogEnabled}
-                onClose={() => setDeleteDialogEnabled(false)}
-                onConfirm={() => {
-                    setDeleteDialogEnabled(false)
-                    handleDeleteAccount()
-                }}
-            />
-
-        </div>
-    )
-}
-
-export default UserSettings
+export default UserSettings;
