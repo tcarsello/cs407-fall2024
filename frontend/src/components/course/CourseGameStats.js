@@ -57,6 +57,7 @@ const CourseGameStats = () => {
 							</Typography>
 							<GameStatsHeader disabled={true} />
 							<GameStatsCard gameStats={myGameStats} />
+							<TopicStatsCard gameStats={myGameStats} />
 						</Box>
 					)}
 					{!myGameStats && (
@@ -277,5 +278,86 @@ const GameStatsCard = ({ gameStats, dark }) => {
 		</Box>
 	);
 };
+
+
+const TopicStatsCard = ({ gameStats, dark }) => {
+
+	if (!gameStats.topicStats || gameStats.topicStats == "0") {
+		return
+	}
+	// Parse topicStats string into an array of objects
+	var topicStats_raw = gameStats.topicStats
+
+	while (topicStats_raw.endsWith(" ")) {
+		topicStats_raw = topicStats_raw.slice(0, -1)
+	}
+
+	while (topicStats_raw.endsWith(",")) {
+		topicStats_raw = topicStats_raw.slice(0, -1)
+	}
+	const topicStats = topicStats_raw
+	  .split(", ") 
+	  .map((topic) => {
+		console.log(topic)
+		const [topicName, stats] = topic.split(": "); 
+		console.log(stats)
+		const [numCorrect, total] = stats.split("/").map(Number); 
+		return { topicName, numCorrect, total }; 
+	  });
+  
+	return (
+	  <Box
+		sx={{
+		  borderRadius: 0,
+		  "&:hover": {
+			bgcolor: "grey.50",
+		  },
+		  py: 2,
+		  ...(dark && {
+			bgcolor: "grey.100",
+			"&:hover": {
+			  bgcolor: "grey.200",
+			},
+		  }),
+		}}
+	  >
+		<Grid2 container spacing={2}>
+			{/* Topic Stats Header */}
+			<Grid2 container spacing={2} size={12} bgcolor={"grey.300"}>
+			{topicStats.map((topic) => (
+			  <Grid2 container key={topic.topicName} spacing={1} size={2}>
+				<Grid2 textAlign="center" size={6}>
+				  <Typography variant="body1">{topic.topicName}</Typography>
+				</Grid2>
+				<Grid2 textAlign="center" size={3}>
+				  <Typography variant="body1">✅</Typography>
+				</Grid2>
+				<Grid2 textAlign="center" size={3}>
+				  <Typography variant="body1">Total</Typography>
+				</Grid2>
+			  </Grid2>
+			))}
+		  </Grid2>
+  
+		  {/* Topic Stats */}
+		  <Grid2 container spacing={2} size={12}>
+			{topicStats.map((topic) => (
+			  <Grid2 container key={topic.topicName} spacing={1} size={2}>
+				<Grid2 textAlign="center" size={6}>
+				  <Typography variant="body1">{}</Typography>
+				</Grid2>
+				<Grid2 textAlign="center" size={3}>
+				  <Typography variant="body1">{topic.numCorrect}</Typography>
+				</Grid2>
+				<Grid2 textAlign="center" size={3}>
+				  <Typography variant="body1">{topic.total}</Typography>
+				</Grid2>
+			  </Grid2>
+			))}
+		  </Grid2>
+		</Grid2>
+	  </Box>
+	);
+  };
 
 export default CourseGameStats;
