@@ -293,6 +293,22 @@ const CourseGames = () => {
 
 	const handleRandomChallenge = async () => {
 		try {
+            const countRes = await fetch(`/api/course/${course.courseId}/getUserGameCount/${user.userId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            });
+
+            const countJson = await countRes.json();
+
+            console.log('hi')
+            if (countJson.totalActive >= countJson.gameLimit) {
+                alert("Too Many Games!");
+                throw Error("Too Many Games!");
+            }
+
 			const candidates = memberList.filter(
 				(member) =>
 					!incomingChallengeList.some((incoming) => member.userId === incoming.contenderId) &&
